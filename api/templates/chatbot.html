@@ -170,80 +170,208 @@
             margin-bottom: 12px;
         }
 
-        /* ── Model Selector ── */
-        .model-card {
-            background: rgba(79, 142, 247, 0.06);
-            border: 1px solid rgba(79, 142, 247, 0.15);
-            border-radius: var(--radius-sm);
-            padding: 10px 12px;
-            margin-bottom: 6px;
-            cursor: pointer;
+        /* ── Model Selector (Collapsible Accordion) ── */
+        .model-accordion {
+            border: 1px solid rgba(79, 142, 247, 0.2);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: rgba(79, 142, 247, 0.04);
             transition: var(--transition);
+        }
+
+        .model-accordion:hover {
+            border-color: rgba(79, 142, 247, 0.35);
+        }
+
+        .model-accordion.open {
+            border-color: var(--accent);
+            box-shadow: 0 4px 20px rgba(79, 142, 247, 0.12);
+        }
+
+        /* ── Active model header (always visible) ── */
+        .model-header {
             display: flex;
             align-items: center;
             gap: 10px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+            position: relative;
         }
 
-        .model-card:hover {
-            border-color: var(--accent);
-            background: rgba(79, 142, 247, 0.12);
+        .model-header:hover {
+            background: rgba(79, 142, 247, 0.08);
         }
 
-        .model-card.active {
-            border-color: var(--success);
-            background: rgba(76, 175, 80, 0.1);
-        }
-
-        .model-card.loading-model {
-            border-color: var(--warning);
-            background: rgba(255, 152, 0, 0.1);
-        }
-
-        .model-card.unavailable {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        .model-status-icon {
-            width: 12px;
-            height: 12px;
+        .model-header-dot {
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             flex-shrink: 0;
-            background: var(--text-muted);
+            background: var(--success);
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
             transition: var(--transition);
         }
 
-        .model-card.active .model-status-icon {
-            background: var(--success);
-            box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
-        }
-
-        .model-card.loading-model .model-status-icon {
+        .model-header-dot.loading {
             background: var(--warning);
+            box-shadow: 0 0 8px rgba(255, 152, 0, 0.5);
             animation: pulse-dot 0.8s infinite;
         }
 
-        .model-info {
+        .model-header-dot.offline {
+            background: var(--text-muted);
+            box-shadow: none;
+        }
+
+        .model-header-info {
             flex: 1;
             min-width: 0;
         }
 
-        .model-name {
-            font-size: 0.82rem;
+        .model-header-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .model-header-meta {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .model-header-chevron {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            color: var(--text-muted);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .model-accordion.open .model-header-chevron {
+            transform: rotate(180deg);
+        }
+
+        /* ── Dropdown list (collapsible) ── */
+        .model-dropdown {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.25s ease;
+            opacity: 0;
+        }
+
+        .model-accordion.open .model-dropdown {
+            max-height: 400px;
+            opacity: 1;
+        }
+
+        .model-dropdown-inner {
+            padding: 0 8px 8px;
+        }
+
+        .model-dropdown-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0 14px 8px;
+        }
+
+        /* ── Individual model option cards ── */
+        .model-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .model-option:hover {
+            background: rgba(79, 142, 247, 0.1);
+        }
+
+        .model-option.active {
+            background: rgba(76, 175, 80, 0.08);
+        }
+
+        .model-option.loading-model {
+            background: rgba(255, 152, 0, 0.08);
+        }
+
+        .model-option.unavailable {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .model-option + .model-option {
+            margin-top: 2px;
+        }
+
+        .model-option-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: var(--text-muted);
+            opacity: 0.4;
+            transition: var(--transition);
+        }
+
+        .model-option.active .model-option-dot {
+            background: var(--success);
+            box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+            opacity: 1;
+        }
+
+        .model-option.loading-model .model-option-dot {
+            background: var(--warning);
+            animation: pulse-dot 0.8s infinite;
+            opacity: 1;
+        }
+
+        .model-option-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .model-option-name {
+            font-size: 0.8rem;
             font-weight: 600;
             color: var(--text-primary);
         }
 
-        .model-desc {
-            font-size: 0.68rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        .model-size {
+        .model-option-desc {
             font-size: 0.65rem;
             color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .model-option-size {
+            font-size: 0.62rem;
+            color: var(--text-muted);
             flex-shrink: 0;
+            padding: 2px 7px;
+            background: rgba(79, 142, 247, 0.08);
+            border-radius: 10px;
+        }
+
+        .model-option.active .model-option-check {
+            display: flex;
+        }
+
+        .model-option-check {
+            display: none;
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            color: var(--success);
         }
 
         .stat-card {
@@ -721,11 +849,28 @@
         <!-- ── Sidebar ── -->
         <aside class="sidebar" id="sidebar">
 
-            <!-- Model Selector -->
+            <!-- Model Selector (Collapsible) -->
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Model Selection</div>
-                <div id="modelSelector">
-                    <!-- Populated by JS -->
+                <div class="model-accordion" id="modelAccordion">
+                    <!-- Active model header -->
+                    <div class="model-header" id="modelHeader" onclick="toggleModelDropdown()">
+                        <div class="model-header-dot offline" id="modelHeaderDot"></div>
+                        <div class="model-header-info">
+                            <div class="model-header-name" id="modelHeaderName">Loading...</div>
+                            <div class="model-header-meta" id="modelHeaderMeta">Initializing</div>
+                        </div>
+                        <svg class="model-header-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <!-- Expandable model list -->
+                    <div class="model-dropdown" id="modelDropdown">
+                        <div class="model-dropdown-divider"></div>
+                        <div class="model-dropdown-inner" id="modelSelector">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -857,10 +1002,15 @@
         const headerSubtitle  = document.getElementById('headerSubtitle');
         const hintModelName   = document.getElementById('hintModelName');
         const modelSelector   = document.getElementById('modelSelector');
+        const modelAccordion  = document.getElementById('modelAccordion');
+        const modelHeaderDot  = document.getElementById('modelHeaderDot');
+        const modelHeaderName = document.getElementById('modelHeaderName');
+        const modelHeaderMeta = document.getElementById('modelHeaderMeta');
 
         let isProcessing = false;
         let isSwitchingModel = false;
         let currentModelKey = null;
+        let allModels = [];
 
         // ── Auto-resize textarea ──────────────────────────────────
         messageInput.addEventListener('input', function() {
@@ -885,33 +1035,72 @@
                 const data = await res.json();
 
                 currentModelKey = data.active_model;
-                renderModelSelector(data.models);
+                allModels = data.models || [];
+                renderModelSelector(allModels);
+                updateModelHeader(allModels);
                 updateModelDisplay(data);
             } catch (err) {
                 console.warn('Could not load models:', err);
             }
         }
 
+        // ── Toggle accordion ─────────────────────────────────
+        window.toggleModelDropdown = function() {
+            modelAccordion.classList.toggle('open');
+        };
+
+        function collapseDropdown() {
+            modelAccordion.classList.remove('open');
+        }
+
+        // ── Update the always-visible header ──────────────────────
+        function updateModelHeader(models) {
+            const active = models.find(m => m.active);
+            const loading = models.find(m => m.key === currentModelKey && !m.active);
+
+            if (isSwitchingModel) {
+                modelHeaderDot.className = 'model-header-dot loading';
+                modelHeaderName.textContent = 'Switching...';
+                modelHeaderMeta.textContent = 'Loading new model';
+            } else if (active) {
+                modelHeaderDot.className = 'model-header-dot';
+                modelHeaderName.textContent = active.display_name;
+                modelHeaderMeta.textContent = active.size + ' \u2022 ' + active.description;
+            } else {
+                modelHeaderDot.className = 'model-header-dot offline';
+                modelHeaderName.textContent = 'No model';
+                modelHeaderMeta.textContent = 'Click to select';
+            }
+        }
+
+        // ── Render dropdown option cards ──────────────────────────
         function renderModelSelector(models) {
             modelSelector.innerHTML = '';
             models.forEach(m => {
-                const card = document.createElement('div');
-                card.className = 'model-card'
+                const opt = document.createElement('div');
+                opt.className = 'model-option'
                     + (m.active ? ' active' : '')
                     + (!m.available ? ' unavailable' : '');
-                card.dataset.key = m.key;
-                card.innerHTML = `
-                    <div class="model-status-icon"></div>
-                    <div class="model-info">
-                        <div class="model-name">${m.display_name}</div>
-                        <div class="model-desc">${m.description}</div>
+                opt.dataset.key = m.key;
+                opt.innerHTML = `
+                    <div class="model-option-dot"></div>
+                    <div class="model-option-info">
+                        <div class="model-option-name">${m.display_name}</div>
+                        <div class="model-option-desc">${m.description}</div>
                     </div>
-                    <div class="model-size">${m.size}</div>
+                    <div class="model-option-size">${m.size}</div>
+                    <svg class="model-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
                 `;
                 if (m.available) {
-                    card.addEventListener('click', () => switchModel(m.key));
+                    opt.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        switchModel(m.key);
+                        collapseDropdown();
+                    });
                 }
-                modelSelector.appendChild(card);
+                modelSelector.appendChild(opt);
             });
         }
 
@@ -945,14 +1134,19 @@
 
             isSwitchingModel = true;
 
-            // Update UI to loading state
-            const cards = modelSelector.querySelectorAll('.model-card');
-            cards.forEach(c => {
+            // Update dropdown options to loading state
+            const opts = modelSelector.querySelectorAll('.model-option');
+            opts.forEach(c => {
                 c.classList.remove('active', 'loading-model');
                 if (c.dataset.key === modelKey) {
                     c.classList.add('loading-model');
                 }
             });
+
+            // Update header to loading
+            modelHeaderDot.className = 'model-header-dot loading';
+            modelHeaderName.textContent = 'Switching...';
+            modelHeaderMeta.textContent = 'Loading new model';
 
             statusBadge.className = 'status-badge loading';
             statusText.textContent = 'Switching model...';
@@ -972,6 +1166,7 @@
 
                 const result = await res.json();
                 currentModelKey = modelKey;
+                isSwitchingModel = false;
 
                 // Refresh model list to get updated status
                 await loadModels();
@@ -982,14 +1177,13 @@
                 );
 
             } catch (err) {
+                isSwitchingModel = false;
                 statusBadge.className = 'status-badge offline';
                 statusText.textContent = 'Switch failed';
                 addSystemMessage('Failed to switch model: ' + err.message);
                 // Refresh to restore correct state
                 await loadModels();
             }
-
-            isSwitchingModel = false;
         }
 
         // ── Add system message ────────────────────────────────────
