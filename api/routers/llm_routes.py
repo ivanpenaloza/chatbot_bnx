@@ -1,12 +1,17 @@
 '''
-LLM Router - AI Chatbot with Offline Gemma 3 Model
+LLM Router - AI Chatbot with Multi-Model Offline Support
 
 This module provides REST API endpoints for an AI-powered chatbot
 that answers statistical questions about the cubo_datos_v2 dataset
-using a locally-stored Gemma 3 model (fully offline, no internet needed).
+using locally-stored LLM models (fully offline, no internet needed).
 
-The model must be downloaded first using download_model.py and placed
-at the path configured in GEMMA_MODEL_LOCAL_PATH.
+Supported models:
+  - Qwen2.5-0.5B-Instruct  (fastest, ~1GB)
+  - TinyLlama-1.1B-Chat     (fast, ~2.2GB)
+  - Gemma-3-1B-IT            (best quality, ~3.8GB)
+
+Only one model is loaded in memory at a time. Switching models
+unloads the current one first to conserve GPU/CPU resources.
 
 Authors: Ivan Dario Penaloza Rojas <ip70574@citi.com>
 Manager: Ivan Dario Penaloza Rojas <ip70574@citi.com>
@@ -14,6 +19,8 @@ Manager: Ivan Dario Penaloza Rojas <ip70574@citi.com>
 
 import os
 import sys
+import gc
+import time
 import logging
 import traceback
 from typing import Optional, Dict, Any
@@ -33,7 +40,8 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from config import (
-    GEMMA_MODEL_LOCAL_PATH,
+    AVAILABLE_MODELS,
+    DEFAULT_MODEL_KEY,
     CHATBOT_MAX_NEW_TOKENS,
     CHATBOT_TEMPERATURE,
     CHATBOT_TOP_P,
@@ -63,13 +71,20 @@ templates = Jinja2Templates(directory='templates')
 
 class ChatMessage(BaseModel):
     message: str
+    model_key: Optional[str] = None
     conversation_id: Optional[str] = None
 
 
 class ChatResponse(BaseModel):
     response: str
+    model_used: Optional[str] = None
+    inference_time: Optional[float] = None
     data_used: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
+
+
+class ModelSwitchRequest(BaseModel):
+    model_key: str
 
 
 # ─── Data Analyzer ───────────────────────────────────────────────────────────
@@ -343,37 +358,82 @@ class DataAnalyzer:
 data_analyzer = DataAnalyzer()
 
 
-# ─── Offline Gemma Model Client ──────────────────────────────────────────────
+# ─── Multi-Model Manager ─────────────────────────────────────────────────────
 
-class GemmaOfflineClient:
+class MultiModelManager:
     """
-    Loads and runs the Gemma 3 model locally from disk.
-    No internet connection required after initial download.
+    Manages multiple offline LLM models. Only one model is loaded
+    in memory at a time. Switching models unloads the current one
+    first to conserve GPU/CPU resources.
     """
 
     def __init__(self):
         self.model = None
         self.tokenizer = None
+        self.active_model_key: Optional[str] = None
         self.is_ready = False
+        self.is_loading = False
         self.device = "cpu"
 
-    def load_model(self):
-        """Load the Gemma 3 model and tokenizer from local directory."""
-        model_path = GEMMA_MODEL_LOCAL_PATH
+    def _unload_current(self):
+        """Unload the current model from memory."""
+        if self.model is not None:
+            logger.info(
+                f"Unloading model: {self.active_model_key}"
+            )
+            del self.model
+            del self.tokenizer
+            self.model = None
+            self.tokenizer = None
+            self.is_ready = False
+            self.active_model_key = None
+
+            # Force garbage collection + clear CUDA cache
+            gc.collect()
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                    logger.info("CUDA cache cleared")
+            except ImportError:
+                pass
+
+    def load_model(self, model_key: Optional[str] = None):
+        """Load a model by key. Unloads any currently loaded model first."""
+        if model_key is None:
+            model_key = DEFAULT_MODEL_KEY
+
+        if model_key not in AVAILABLE_MODELS:
+            logger.error(f"Unknown model key: {model_key}")
+            return False
+
+        # Already loaded
+        if self.active_model_key == model_key and self.is_ready:
+            logger.info(f"Model already loaded: {model_key}")
+            return True
+
+        self.is_loading = True
+        model_info = AVAILABLE_MODELS[model_key]
+        model_path = model_info["local_dir"]
 
         if not os.path.isdir(model_path):
             logger.error(
                 f"Model directory not found: {model_path}\n"
-                f"Please run 'python download_model.py' first to "
-                f"download the model."
+                f"Please run 'python download_model.py' first."
             )
-            return
+            self.is_loading = False
+            return False
 
         try:
             import torch
             from transformers import AutoTokenizer, AutoModelForCausalLM
 
-            logger.info(f"Loading Gemma 3 model from: {model_path}")
+            # Unload current model first
+            self._unload_current()
+
+            logger.info(
+                f"Loading model '{model_key}' from: {model_path}"
+            )
 
             # Determine device
             if torch.cuda.is_available():
@@ -391,8 +451,11 @@ class GemmaOfflineClient:
             )
 
             # Load model
-            logger.info("Loading model weights (this may take a moment)...")
-            dtype = torch.float16 if self.device == "cuda" else torch.float32
+            logger.info("Loading model weights...")
+            dtype = (
+                torch.float16 if self.device == "cuda"
+                else torch.float32
+            )
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_path,
                 local_files_only=True,
@@ -406,32 +469,44 @@ class GemmaOfflineClient:
                 self.model = self.model.to(self.device)
 
             self.model.eval()
+            self.active_model_key = model_key
             self.is_ready = True
-            logger.info("Gemma 3 model loaded successfully (OFFLINE)")
+            self.is_loading = False
+
+            display = model_info["display_name"]
+            logger.info(
+                f"Model '{display}' loaded successfully (OFFLINE)"
+            )
+            return True
 
         except ImportError as e:
             logger.error(
                 f"Missing dependency: {e}. "
                 f"Run: pip install transformers torch"
             )
+            self.is_loading = False
+            return False
         except Exception as e:
-            logger.error(f"Error loading Gemma model: {e}")
+            logger.error(f"Error loading model '{model_key}': {e}")
             traceback.print_exc()
+            self.is_loading = False
+            return False
 
     def generate_response(
         self,
         user_message: str,
         data_context: str,
         dynamic_context: str = ""
-    ) -> str:
-        """Generate a response using the locally-loaded Gemma 3 model."""
+    ) -> tuple:
+        """
+        Generate a response using the currently loaded model.
+        Returns (response_text, inference_time_seconds).
+        """
         if not self.is_ready:
             return (
-                "⚠️ The Gemma 3 model is not loaded. Please ensure:\n"
-                "1. You ran `python download_model.py` to download it\n"
-                "2. The model is at: " + GEMMA_MODEL_LOCAL_PATH + "\n"
-                "3. Required packages are installed: "
-                "transformers, torch\n"
+                "No model is loaded. Please select a model "
+                "from the sidebar.",
+                0.0
             )
 
         import torch
@@ -441,8 +516,7 @@ class GemmaOfflineClient:
         if dynamic_context:
             context += "\n\n" + dynamic_context
 
-        # Construct the conversation for the instruct model
-        # Using Gemma's chat template format
+        # Construct conversation
         conversation = [
             {"role": "user", "content": (
                 f"{CHATBOT_SYSTEM_PROMPT}\n\n"
@@ -477,7 +551,8 @@ class GemmaOfflineClient:
                 max_length=2048
             ).to(self.device)
 
-            # Generate
+            # Generate with timing
+            t0 = time.time()
             with torch.no_grad():
                 outputs = self.model.generate(
                     **inputs,
@@ -489,6 +564,7 @@ class GemmaOfflineClient:
                     do_sample=CHATBOT_DO_SAMPLE,
                     pad_token_id=self.tokenizer.eos_token_id,
                 )
+            inference_time = round(time.time() - t0, 2)
 
             # Decode only the new tokens
             new_tokens = outputs[0][inputs['input_ids'].shape[1]:]
@@ -502,16 +578,37 @@ class GemmaOfflineClient:
                     "response. Could you please rephrase your question?"
                 )
 
-            return response
+            return (response, inference_time)
 
         except Exception as e:
             logger.error(f"Error generating response: {e}")
             traceback.print_exc()
-            return f"⚠️ Error generating response: {str(e)}"
+            return (f"Error generating response: {str(e)}", 0.0)
+
+    def get_status(self) -> Dict[str, Any]:
+        """Return the current model manager status."""
+        models_status = []
+        for key, info in AVAILABLE_MODELS.items():
+            available = os.path.isdir(info["local_dir"])
+            models_status.append({
+                "key": key,
+                "display_name": info["display_name"],
+                "size": info["size"],
+                "description": info["description"],
+                "available": available,
+                "active": key == self.active_model_key,
+            })
+        return {
+            "active_model": self.active_model_key,
+            "is_ready": self.is_ready,
+            "is_loading": self.is_loading,
+            "device": self.device,
+            "models": models_status,
+        }
 
 
-# ─── Initialize LLM Client (model loaded at startup via main.py) ─────────────
-gemma_client = GemmaOfflineClient()
+# ─── Initialize Model Manager ────────────────────────────────────────────────
+model_manager = MultiModelManager()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -541,7 +638,7 @@ async def chatbot_ask(chat: ChatMessage):
     if not data_analyzer.is_loaded:
         return JSONResponse(content={
             "response": (
-                "⚠️ Dataset not available. The file "
+                "Dataset not available. The file "
                 "cubo_datos_v2.csv could not be loaded."
             ),
             "error": "data_not_loaded"
@@ -552,14 +649,23 @@ async def chatbot_ask(chat: ChatMessage):
     dynamic = data_analyzer.get_dynamic_context(chat.message)
 
     # Generate response
-    answer = gemma_client.generate_response(
+    answer, inference_time = model_manager.generate_response(
         user_message=chat.message,
         data_context=summary,
         dynamic_context=dynamic,
     )
 
+    active_info = AVAILABLE_MODELS.get(
+        model_manager.active_model_key, {}
+    )
+
     return JSONResponse(content={
         "response": answer,
+        "model_used": active_info.get(
+            "display_name", "Unknown"
+        ),
+        "model_key": model_manager.active_model_key,
+        "inference_time": inference_time,
         "data_used": {
             "rows_analyzed": (
                 len(data_analyzer.df)
@@ -568,6 +674,45 @@ async def chatbot_ask(chat: ChatMessage):
             "dynamic_context_used": bool(dynamic),
         }
     })
+
+
+@router.get("/chatbot/models", response_class=JSONResponse)
+async def chatbot_models():
+    """Return available models and their status."""
+    return JSONResponse(content=model_manager.get_status())
+
+
+@router.post("/chatbot/models/switch", response_class=JSONResponse)
+async def chatbot_switch_model(req: ModelSwitchRequest):
+    """Switch the active model. Unloads the current one first."""
+    if req.model_key not in AVAILABLE_MODELS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown model: {req.model_key}. "
+                   f"Available: {list(AVAILABLE_MODELS.keys())}"
+        )
+
+    if model_manager.is_loading:
+        raise HTTPException(
+            status_code=409,
+            detail="A model is currently being loaded. Please wait."
+        )
+
+    success = model_manager.load_model(req.model_key)
+
+    if success:
+        info = AVAILABLE_MODELS[req.model_key]
+        return JSONResponse(content={
+            "status": "success",
+            "message": f"{info['display_name']} loaded successfully",
+            "active_model": req.model_key,
+            "display_name": info["display_name"],
+        })
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to load model: {req.model_key}"
+        )
 
 
 @router.get("/chatbot/data-info", response_class=JSONResponse)
@@ -581,15 +726,21 @@ async def chatbot_data_info():
 @router.get("/chatbot/health", response_class=JSONResponse)
 async def chatbot_health():
     """Check chatbot service health."""
+    active_info = AVAILABLE_MODELS.get(
+        model_manager.active_model_key, {}
+    )
     return JSONResponse(content={
         "status": "healthy",
-        "model_path": GEMMA_MODEL_LOCAL_PATH,
-        "model_ready": gemma_client.is_ready,
+        "active_model": model_manager.active_model_key,
+        "model_display_name": active_info.get("display_name", "None"),
+        "model_ready": model_manager.is_ready,
+        "model_loading": model_manager.is_loading,
         "data_loaded": data_analyzer.is_loaded,
         "data_rows": (
             len(data_analyzer.df)
             if data_analyzer.df is not None else 0
         ),
+        "device": model_manager.device,
     })
 
 

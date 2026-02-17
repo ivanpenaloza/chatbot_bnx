@@ -123,63 +123,14 @@ async def lifespan(app):
     """Startup: load data + chatbot model. Shutdown: cleanup."""
     global app_data
 
-    # 1) Load Stargazer data (local CSV or datalake)
-    if is_local:
-        try:
-            logging.info("Running locally - loading data from CSV files...")
-            csv_base_path = os.path.join(
-                os.path.dirname(__file__),
-                "static", "data"
-            )
-            blue_csv_path = os.path.join(csv_base_path, "blue_data.csv")
-            green_csv_path = os.path.join(csv_base_path, "green_data.csv")
-            red_csv_path = os.path.join(csv_base_path, "red_data.csv")
-
-            if os.path.exists(blue_csv_path):
-                app_data['blue_data'] = pd.read_csv(blue_csv_path)
-                logging.info(f"Blue data loaded. Shape: {app_data['blue_data'].shape}")
-            else:
-                logging.warning(f"Blue CSV not found: {blue_csv_path}")
-
-            if os.path.exists(green_csv_path):
-                app_data['green_data'] = pd.read_csv(green_csv_path)
-                logging.info(f"Green data loaded. Shape: {app_data['green_data'].shape}")
-            else:
-                logging.warning(f"Green CSV not found: {green_csv_path}")
-
-            if os.path.exists(red_csv_path):
-                app_data['red_data'] = pd.read_csv(red_csv_path)
-                logging.info(f"Red data loaded. Shape: {app_data['red_data'].shape}")
-            else:
-                logging.warning(f"Red CSV not found: {red_csv_path}")
-
-            logging.info("Local CSV data loading completed!")
-        except Exception as e:
-            logging.error(f"Error loading CSV data: {e}")
-            app_data = {'blue_data': None, 'green_data': None, 'red_data': None, 'filesystem': None}
-    else:
-        try:
-            logging.info("Running remotely - loading data from datalake...")
-            app_data['filesystem'] = pyarrow.fs.HadoopFileSystem(
-                HDFS_HOST_NAME, port=HDFS_HOST_PORT,
-                user=SOEID, kerb_ticket=KERBEROS_TICKET_CACHE
-            )
-            app_data['blue_data'] = read_parquet_to_pandas(BLUE_PARQUET_PATH, app_data['filesystem'])
-            app_data['green_data'] = read_parquet_to_pandas(GREEN_PARQUET_PATH, app_data['filesystem'])
-            app_data['red_data'] = read_parquet_to_pandas(RED_PARQUET_PATH, app_data['filesystem'])
-            logging.info("All datalake data loaded successfully!")
-        except Exception as e:
-            logging.error(f"Error loading datalake data: {e}")
-            app_data = {'blue_data': None, 'green_data': None, 'red_data': None, 'filesystem': None}
-
-    # 2) Load Chatbot (dataset + Gemma 3 offline model)
-    from routers.llm_routes import data_analyzer, gemma_client
+    # 2) Load Chatbot (dataset + default model)
+    from routers.llm_routes import data_analyzer, model_manager
 
     logging.info("Loading chatbot dataset...")
     data_analyzer.load_data(CHATBOT_CSV_PATH)
 
-    logging.info("Loading Gemma 3 offline model...")
-    gemma_client.load_model()
+    logging.info("Loading default LLM model...")
+    model_manager.load_model()
     logging.info("Chatbot initialization complete.")
 
     yield  # app is running
