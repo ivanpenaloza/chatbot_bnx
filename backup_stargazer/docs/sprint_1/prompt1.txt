@@ -1,0 +1,101 @@
+I would like to update /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api
+
+so keeping the same project struture
+
+1) Keeping the same configuration at 
+
+'''Geogenius API'''
+# Authors: Ivan Dario Penaloza Rojas <ip70574@citi.com>
+# Manager: Ivan Dario Penaloza Rojas <ip70574@citi.com>
+
+# 0 Configuration
+import os
+import sys
+# 0.1 Vivaldi dependencies
+from config import *
+# 0.2 Python dependencies
+from fastapi import (
+    FastAPI,
+    Request
+)
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+import uvicorn
+import subprocess
+import pyarrow.dataset as ds
+import pyarrow.fs
+import logging
+import pandas as pd
+import re
+# 0.3 getting routes
+from routers import (
+    geogenius_routes,
+    llm_routes
+)
+
+# Set JAVA_HOME and HADOOP_HOME as before
+os.environ['JAVA_HOME'] = JAVA_HOME
+os.environ['HADOOP_HOME'] = HADOOP_HOME
+try:
+    classpath = subprocess.check_output(
+        [os.path.join(os.environ['HADOOP_HOME'], 'bin/hadoop'),
+         'classpath', '--glob'],
+        universal_newlines=True
+    ).strip()
+    os.environ['CLASSPATH'] = classpath
+except Exception:
+    pass
+os.environ['ARROW_LIBHDFS_DIR'] = ARROW_LIBHDFS_DIR
+
+# configuration spark
+os.environ["SPARK_HOME"] = SPARK_HOME
+os.environ["PYSPARK_PYTHON"] = PYSPARK_PYTHON
+
+os.environ["PYLIB"] = os.environ["SPARK_HOME"] + "/python/lib"
+sys.path.insert(0, os.environ["PYLIB"] + "/py4j-0.10.9.5-src.zip")
+sys.path.insert(0, os.environ["PYLIB"] + "/pyspark.zip")
+
+# configuration kerberos mlflow
+p = subprocess.Popen("whoami", stdout=subprocess.PIPE, shell=True)
+USER_KERBEROS: str = p.communicate()[0].decode("utf-8")[:-1]
+try:
+    p = subprocess.Popen("klist", stdout=subprocess.PIPE, shell=True)
+    output = p.communicate()[0].decode("utf-8")
+    match = re.search(r'FILE:(/tmp/krb5cc_\d+)', output)
+    KERBEROS_TICKET_CACHE = match.group(1)
+
+    os.environ['MLFLOW_KERBEROS_TICKET_CACHE'] = KERBEROS_TICKET_CACHE
+    os.environ['KRB5CCNAME'] = KERBEROS_TICKET_CACHE
+except Exception:
+    KERBEROS_TICKET_CACHE = ''
+
+os.environ['MLFLOW_KERBEROS_TICKET_CACHE'] = KERBEROS_TICKET_CACHE
+os.environ['MLFLOW_KERBEROS_USER'] = USER_KERBEROS
+os.environ['KRB5CCNAME'] = KERBEROS_TICKET_CACHE
+
+is_local = 'Desktop' in os.getcwd()
+
+if is_local:
+    # Add FFmpeg binary directory to PATH WINDOWS
+    os.environ["PATH"] = FFMPEG_WINDOWS_PATH + os.environ.get("PATH", "")
+else:
+    # Add FFmpeg binary directory to PATH LINUX
+    os.environ["FFMPEG_BINARY"] = FFMPEG_BINARY_LINUX_PATH
+    os.environ["PATH"] = FFMPEG_LINUX_PATH + os.environ.get("PATH", "")
+
+p = subprocess.Popen("whoami", stdout=subprocess.PIPE, shell=True)
+SOEID: str = p.communicate()[0].decode("utf-8")[:-1]
+
+2) The same config /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/config but perhap add another
+3) update completely the routes at /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/routers
+
+so you create a state of the art chatbox using plain javacript, css and html
+
+do not forget that the context or data that has to be used is located at /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/static/data/cubo_datos_v2.csv
+would be used to answer statistic questions about it
+
+for that purpose use huggingface with gemma3 model pretty small. The model must be offline and it
+must be uploaded. So first, download the model gemma3, next locate it in a different folder or location,
+then test it that the app works by loading the offline model that is located in a different place
+
