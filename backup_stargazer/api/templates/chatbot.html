@@ -170,6 +170,210 @@
             margin-bottom: 12px;
         }
 
+        /* ── Model Selector (Collapsible Accordion) ── */
+        .model-accordion {
+            border: 1px solid rgba(79, 142, 247, 0.2);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: rgba(79, 142, 247, 0.04);
+            transition: var(--transition);
+        }
+
+        .model-accordion:hover {
+            border-color: rgba(79, 142, 247, 0.35);
+        }
+
+        .model-accordion.open {
+            border-color: var(--accent);
+            box-shadow: 0 4px 20px rgba(79, 142, 247, 0.12);
+        }
+
+        /* ── Active model header (always visible) ── */
+        .model-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+            position: relative;
+        }
+
+        .model-header:hover {
+            background: rgba(79, 142, 247, 0.08);
+        }
+
+        .model-header-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: var(--success);
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+            transition: var(--transition);
+        }
+
+        .model-header-dot.loading {
+            background: var(--warning);
+            box-shadow: 0 0 8px rgba(255, 152, 0, 0.5);
+            animation: pulse-dot 0.8s infinite;
+        }
+
+        .model-header-dot.offline {
+            background: var(--text-muted);
+            box-shadow: none;
+        }
+
+        .model-header-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .model-header-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .model-header-meta {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .model-header-chevron {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            color: var(--text-muted);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .model-accordion.open .model-header-chevron {
+            transform: rotate(180deg);
+        }
+
+        /* ── Dropdown list (collapsible) ── */
+        .model-dropdown {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.25s ease;
+            opacity: 0;
+        }
+
+        .model-accordion.open .model-dropdown {
+            max-height: 400px;
+            opacity: 1;
+        }
+
+        .model-dropdown-inner {
+            padding: 0 8px 8px;
+        }
+
+        .model-dropdown-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0 14px 8px;
+        }
+
+        /* ── Individual model option cards ── */
+        .model-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .model-option:hover {
+            background: rgba(79, 142, 247, 0.1);
+        }
+
+        .model-option.active {
+            background: rgba(76, 175, 80, 0.08);
+        }
+
+        .model-option.loading-model {
+            background: rgba(255, 152, 0, 0.08);
+        }
+
+        .model-option.unavailable {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .model-option + .model-option {
+            margin-top: 2px;
+        }
+
+        .model-option-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: var(--text-muted);
+            opacity: 0.4;
+            transition: var(--transition);
+        }
+
+        .model-option.active .model-option-dot {
+            background: var(--success);
+            box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+            opacity: 1;
+        }
+
+        .model-option.loading-model .model-option-dot {
+            background: var(--warning);
+            animation: pulse-dot 0.8s infinite;
+            opacity: 1;
+        }
+
+        .model-option-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .model-option-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .model-option-desc {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .model-option-size {
+            font-size: 0.62rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            padding: 2px 7px;
+            background: rgba(79, 142, 247, 0.08);
+            border-radius: 10px;
+        }
+
+        .model-option.active .model-option-check {
+            display: flex;
+        }
+
+        .model-option-check {
+            display: none;
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            color: var(--success);
+        }
+
         .stat-card {
             background: rgba(79, 142, 247, 0.08);
             border: 1px solid rgba(79, 142, 247, 0.15);
@@ -371,15 +575,30 @@
             line-height: 1.5;
         }
 
-        .message-time {
+        .message-meta {
             font-size: 0.65rem;
             color: var(--text-muted);
             margin-top: 6px;
-            text-align: right;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
-        .message.bot .message-time {
-            text-align: left;
+        .message.user .message-meta {
+            justify-content: flex-end;
+        }
+
+        .message.bot .message-meta {
+            justify-content: flex-start;
+        }
+
+        .meta-model {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .meta-time {
+            color: var(--text-muted);
         }
 
         /* ── Typing indicator ── */
@@ -438,18 +657,6 @@
             text-align: center;
             padding: 40px;
             gap: 20px;
-        }
-
-        .welcome-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #7c4dff, #4f8ef7);
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 38px;
-            box-shadow: 0 8px 32px var(--accent-glow);
         }
 
         .welcome-title {
@@ -586,6 +793,11 @@
             text-align: center;
         }
 
+        .input-hint .active-model-name {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
         /* ═══════════════════════════════════════════════════════════════
            RESPONSIVE
            ═══════════════════════════════════════════════════════════════ */
@@ -619,10 +831,10 @@
     <!-- ═══════════════ HEADER ═══════════════ -->
     <header class="header">
         <div class="header-left">
-            <div class="logo">G</div>
+            <div class="logo">S</div>
             <div>
                 <div class="header-title">Stargazer DataBot</div>
-                <div class="header-subtitle">AI-Powered Data Analyst &bull; Offline Gemma 3</div>
+                <div class="header-subtitle" id="headerSubtitle">AI-Powered Data Analyst &bull; Loading...</div>
             </div>
         </div>
         <div class="status-badge loading" id="statusBadge">
@@ -636,6 +848,33 @@
 
         <!-- ── Sidebar ── -->
         <aside class="sidebar" id="sidebar">
+
+            <!-- Model Selector (Collapsible) -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Model Selection</div>
+                <div class="model-accordion" id="modelAccordion">
+                    <!-- Active model header -->
+                    <div class="model-header" id="modelHeader" onclick="toggleModelDropdown()">
+                        <div class="model-header-dot offline" id="modelHeaderDot"></div>
+                        <div class="model-header-info">
+                            <div class="model-header-name" id="modelHeaderName">Loading...</div>
+                            <div class="model-header-meta" id="modelHeaderMeta">Initializing</div>
+                        </div>
+                        <svg class="model-header-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <!-- Expandable model list -->
+                    <div class="model-dropdown" id="modelDropdown">
+                        <div class="model-dropdown-divider"></div>
+                        <div class="model-dropdown-inner" id="modelSelector">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dataset Stats -->
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Dataset Overview</div>
                 <div id="statsContainer">
@@ -658,6 +897,7 @@
                 </div>
             </div>
 
+            <!-- Quick Questions -->
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Quick Questions</div>
                 <div class="quick-questions">
@@ -688,11 +928,10 @@
             <div class="chat-messages" id="chatMessages">
                 <!-- Welcome screen -->
                 <div class="welcome-container" id="welcomeScreen">
-                    <div class="welcome-icon">🤖</div>
                     <h1 class="welcome-title">Stargazer DataBot</h1>
                     <p class="welcome-desc">
-                        I'm your AI data analyst powered by Gemma 3 running locally.
-                        Ask me anything about the campaign and financial products dataset.
+                        AI data analyst running locally. Select a model from the sidebar
+                        and ask anything about the campaign and financial products dataset.
                     </p>
                     <div class="welcome-features">
                         <div class="welcome-feature" onclick="askQuestion('Give me a general overview of the dataset')">
@@ -716,7 +955,7 @@
 
                 <!-- Typing indicator -->
                 <div class="typing-indicator" id="typingIndicator">
-                    <div class="message-avatar" style="background: linear-gradient(135deg, #7c4dff, #4f8ef7); color: white;">G</div>
+                    <div class="message-avatar" style="background: linear-gradient(135deg, #7c4dff, #4f8ef7); color: white;">S</div>
                     <div class="typing-dots">
                         <div class="typing-dot"></div>
                         <div class="typing-dot"></div>
@@ -740,7 +979,8 @@
                     </button>
                 </div>
                 <div class="input-hint">
-                    Press <strong>Enter</strong> to send &bull; <strong>Shift+Enter</strong> for new line &bull; Powered by Gemma 3 (Offline)
+                    Press <strong>Enter</strong> to send &bull; <strong>Shift+Enter</strong> for new line &bull;
+                    Model: <span class="active-model-name" id="hintModelName">--</span>
                 </div>
             </div>
         </div>
@@ -752,15 +992,25 @@
         'use strict';
 
         // ── DOM Elements ──────────────────────────────────────────
-        const chatMessages   = document.getElementById('chatMessages');
-        const messageInput   = document.getElementById('messageInput');
-        const sendBtn        = document.getElementById('sendBtn');
-        const typingIndicator= document.getElementById('typingIndicator');
-        const welcomeScreen  = document.getElementById('welcomeScreen');
-        const statusBadge    = document.getElementById('statusBadge');
-        const statusText     = document.getElementById('statusText');
+        const chatMessages    = document.getElementById('chatMessages');
+        const messageInput    = document.getElementById('messageInput');
+        const sendBtn         = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const welcomeScreen   = document.getElementById('welcomeScreen');
+        const statusBadge     = document.getElementById('statusBadge');
+        const statusText      = document.getElementById('statusText');
+        const headerSubtitle  = document.getElementById('headerSubtitle');
+        const hintModelName   = document.getElementById('hintModelName');
+        const modelSelector   = document.getElementById('modelSelector');
+        const modelAccordion  = document.getElementById('modelAccordion');
+        const modelHeaderDot  = document.getElementById('modelHeaderDot');
+        const modelHeaderName = document.getElementById('modelHeaderName');
+        const modelHeaderMeta = document.getElementById('modelHeaderMeta');
 
         let isProcessing = false;
+        let isSwitchingModel = false;
+        let currentModelKey = null;
+        let allModels = [];
 
         // ── Auto-resize textarea ──────────────────────────────────
         messageInput.addEventListener('input', function() {
@@ -776,6 +1026,179 @@
                 sendMessage();
             }
         };
+
+        // ── Load model list ───────────────────────────────────────
+        async function loadModels() {
+            try {
+                const res = await fetch('/api/v1/chatbot/models');
+                if (!res.ok) throw new Error('Models endpoint failed');
+                const data = await res.json();
+
+                currentModelKey = data.active_model;
+                allModels = data.models || [];
+                renderModelSelector(allModels);
+                updateModelHeader(allModels);
+                updateModelDisplay(data);
+            } catch (err) {
+                console.warn('Could not load models:', err);
+            }
+        }
+
+        // ── Toggle accordion ─────────────────────────────────
+        window.toggleModelDropdown = function() {
+            modelAccordion.classList.toggle('open');
+        };
+
+        function collapseDropdown() {
+            modelAccordion.classList.remove('open');
+        }
+
+        // ── Update the always-visible header ──────────────────────
+        function updateModelHeader(models) {
+            const active = models.find(m => m.active);
+            const loading = models.find(m => m.key === currentModelKey && !m.active);
+
+            if (isSwitchingModel) {
+                modelHeaderDot.className = 'model-header-dot loading';
+                modelHeaderName.textContent = 'Switching...';
+                modelHeaderMeta.textContent = 'Loading new model';
+            } else if (active) {
+                modelHeaderDot.className = 'model-header-dot';
+                modelHeaderName.textContent = active.display_name;
+                modelHeaderMeta.textContent = active.size + ' \u2022 ' + active.description;
+            } else {
+                modelHeaderDot.className = 'model-header-dot offline';
+                modelHeaderName.textContent = 'No model';
+                modelHeaderMeta.textContent = 'Click to select';
+            }
+        }
+
+        // ── Render dropdown option cards ──────────────────────────
+        function renderModelSelector(models) {
+            modelSelector.innerHTML = '';
+            models.forEach(m => {
+                const opt = document.createElement('div');
+                opt.className = 'model-option'
+                    + (m.active ? ' active' : '')
+                    + (!m.available ? ' unavailable' : '');
+                opt.dataset.key = m.key;
+                opt.innerHTML = `
+                    <div class="model-option-dot"></div>
+                    <div class="model-option-info">
+                        <div class="model-option-name">${m.display_name}</div>
+                        <div class="model-option-desc">${m.description}</div>
+                    </div>
+                    <div class="model-option-size">${m.size}</div>
+                    <svg class="model-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                `;
+                if (m.available) {
+                    opt.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        switchModel(m.key);
+                        collapseDropdown();
+                    });
+                }
+                modelSelector.appendChild(opt);
+            });
+        }
+
+        function updateModelDisplay(data) {
+            const activeModel = data.models
+                ? data.models.find(m => m.active)
+                : null;
+            const name = activeModel
+                ? activeModel.display_name
+                : 'No model';
+
+            headerSubtitle.textContent =
+                'AI-Powered Data Analyst \u2022 ' + name + ' (Offline)';
+            hintModelName.textContent = name;
+
+            if (data.is_ready) {
+                statusBadge.className = 'status-badge';
+                statusText.textContent = 'Online (' + name + ')';
+            } else if (data.is_loading) {
+                statusBadge.className = 'status-badge loading';
+                statusText.textContent = 'Loading model...';
+            } else {
+                statusBadge.className = 'status-badge offline';
+                statusText.textContent = 'No model loaded';
+            }
+        }
+
+        // ── Switch model ──────────────────────────────────────────
+        async function switchModel(modelKey) {
+            if (isSwitchingModel || modelKey === currentModelKey) return;
+
+            isSwitchingModel = true;
+
+            // Update dropdown options to loading state
+            const opts = modelSelector.querySelectorAll('.model-option');
+            opts.forEach(c => {
+                c.classList.remove('active', 'loading-model');
+                if (c.dataset.key === modelKey) {
+                    c.classList.add('loading-model');
+                }
+            });
+
+            // Update header to loading
+            modelHeaderDot.className = 'model-header-dot loading';
+            modelHeaderName.textContent = 'Switching...';
+            modelHeaderMeta.textContent = 'Loading new model';
+
+            statusBadge.className = 'status-badge loading';
+            statusText.textContent = 'Switching model...';
+            headerSubtitle.textContent = 'AI-Powered Data Analyst \u2022 Loading...';
+
+            try {
+                const res = await fetch('/api/v1/chatbot/models/switch', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({model_key: modelKey})
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.detail || 'Switch failed');
+                }
+
+                const result = await res.json();
+                currentModelKey = modelKey;
+                isSwitchingModel = false;
+
+                // Refresh model list to get updated status
+                await loadModels();
+
+                // Notify in chat
+                addSystemMessage(
+                    'Switched to <strong>' + result.display_name + '</strong>'
+                );
+
+            } catch (err) {
+                isSwitchingModel = false;
+                statusBadge.className = 'status-badge offline';
+                statusText.textContent = 'Switch failed';
+                addSystemMessage('Failed to switch model: ' + err.message);
+                // Refresh to restore correct state
+                await loadModels();
+            }
+        }
+
+        // ── Add system message ────────────────────────────────────
+        function addSystemMessage(html) {
+            if (welcomeScreen) {
+                welcomeScreen.style.display = 'none';
+            }
+            const div = document.createElement('div');
+            div.style.cssText =
+                'text-align:center;font-size:0.75rem;color:var(--text-muted);'
+                + 'padding:8px 16px;animation:msg-in 0.35s ease-out;';
+            div.innerHTML = html;
+            chatMessages.insertBefore(div, typingIndicator);
+            scrollToBottom();
+        }
 
         // ── Load stats on startup ─────────────────────────────────
         async function loadStats() {
@@ -807,15 +1230,21 @@
                 if (!res.ok) throw new Error('Health check failed');
                 const data = await res.json();
 
-                if (data.model_ready && data.data_loaded) {
+                if (data.model_ready) {
                     statusBadge.className = 'status-badge';
-                    statusText.textContent = 'Online (Offline Model)';
-                } else if (data.data_loaded && !data.model_ready) {
+                    statusText.textContent =
+                        'Online (' + (data.model_display_name || 'Model') + ')';
+                    headerSubtitle.textContent =
+                        'AI-Powered Data Analyst \u2022 '
+                        + (data.model_display_name || '') + ' (Offline)';
+                    hintModelName.textContent =
+                        data.model_display_name || '--';
+                } else if (data.model_loading) {
                     statusBadge.className = 'status-badge loading';
-                    statusText.textContent = 'Model not loaded';
+                    statusText.textContent = 'Loading model...';
                 } else {
                     statusBadge.className = 'status-badge offline';
-                    statusText.textContent = 'Not ready';
+                    statusText.textContent = 'No model loaded';
                 }
             } catch (err) {
                 statusBadge.className = 'status-badge offline';
@@ -884,7 +1313,7 @@
         }
 
         // ── Add message to chat ───────────────────────────────────
-        function addMessage(content, role) {
+        function addMessage(content, role, meta) {
             // Hide welcome screen on first message
             if (welcomeScreen) {
                 welcomeScreen.style.display = 'none';
@@ -893,19 +1322,29 @@
             const msgDiv = document.createElement('div');
             msgDiv.className = 'message ' + role;
 
-            const avatarText = role === 'user' ? 'U' : 'G';
+            const avatarText = role === 'user' ? 'U' : 'S';
 
             let formattedContent = role === 'bot'
                 ? formatResponse(content)
                 : '<p>' + content.replace(/\n/g, '<br>') + '</p>';
 
-            msgDiv.innerHTML = `
-                <div class="message-avatar">${avatarText}</div>
-                <div>
-                    <div class="message-content">${formattedContent}</div>
-                    <div class="message-time">${getTime()}</div>
-                </div>
-            `;
+            // Build meta line
+            let metaHtml = '<span class="meta-time">' + getTime() + '</span>';
+            if (role === 'bot' && meta) {
+                if (meta.model) {
+                    metaHtml += '<span class="meta-model">' + meta.model + '</span>';
+                }
+                if (meta.time) {
+                    metaHtml += '<span>' + meta.time + 's</span>';
+                }
+            }
+
+            msgDiv.innerHTML =
+                '<div class="message-avatar">' + avatarText + '</div>'
+                + '<div>'
+                + '<div class="message-content">' + formattedContent + '</div>'
+                + '<div class="message-meta">' + metaHtml + '</div>'
+                + '</div>';
 
             // Insert before typing indicator
             chatMessages.insertBefore(msgDiv, typingIndicator);
@@ -954,17 +1393,20 @@
                 if (!res.ok) {
                     const err = await res.json().catch(() => ({}));
                     addMessage(
-                        '⚠️ Error: ' + (err.detail || 'Server error'),
+                        'Error: ' + (err.detail || 'Server error'),
                         'bot'
                     );
                 } else {
                     const data = await res.json();
-                    addMessage(data.response, 'bot');
+                    addMessage(data.response, 'bot', {
+                        model: data.model_used,
+                        time: data.inference_time
+                    });
                 }
             } catch (err) {
                 hideTyping();
                 addMessage(
-                    '⚠️ Connection error. Please check the server.',
+                    'Connection error. Please check the server.',
                     'bot'
                 );
             }
@@ -982,8 +1424,9 @@
         };
 
         // ── Initialize ───────────────────────────────────────────
-        checkHealth();
+        loadModels();
         loadStats();
+        checkHealth();
         messageInput.focus();
 
         // Periodic health check

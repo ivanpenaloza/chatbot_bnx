@@ -1,13 +1,18 @@
 '''
-Chatbot Configuration - HuggingFace Gemma 3 Offline Model
+Chatbot Configuration - Multi-Model Offline LLM Support
 
 Configuration settings for the AI-powered chatbot that loads
-a locally-stored Gemma 3 model to answer statistical questions
+locally-stored LLM models to answer statistical questions
 about the cubo_datos_v2 dataset.
 
-The model must be downloaded once using the provided download script
-and stored at GEMMA_MODEL_LOCAL_PATH. After that, the application
+Models must be downloaded once using the provided download script
+and stored in the MODELS_BASE_DIR. After that, the application
 runs fully offline with no internet dependency.
+
+Supported models:
+  - Qwen2.5-0.5B-Instruct  (~1GB, fastest)
+  - TinyLlama-1.1B-Chat     (~2.2GB, fast)
+  - Gemma-3-1B-IT            (~3.8GB, best quality)
 
 Authors: Ivan Dario Penaloza Rojas <ip70574@citi.com>
 Manager: Ivan Dario Penaloza Rojas <ip70574@citi.com>
@@ -15,16 +20,40 @@ Manager: Ivan Dario Penaloza Rojas <ip70574@citi.com>
 
 import os
 
-# ─── Offline Model Configuration ─────────────────────────────────────────────
-# HuggingFace model identifier (used only for downloading)
-HF_MODEL_ID = "google/gemma-3-1b-it"
-
-# Local path where the downloaded model is stored (offline inference)
-# Change this to match the actual directory where you placed the model
-GEMMA_MODEL_LOCAL_PATH = os.environ.get(
-    "GEMMA_MODEL_PATH",
-    "/home/ivan/ProjectPrometheus/models/gemma-3-1b-it"
+# ─── Models Base Directory ────────────────────────────────────────────────────
+MODELS_BASE_DIR = os.environ.get(
+    "MODELS_BASE_DIR",
+    "/home/ivan/ProjectPrometheus/models"
 )
+
+# ─── Available Models Registry ───────────────────────────────────────────────
+# Each model entry: key -> {hf_id, local_dir, display_name, size, description}
+AVAILABLE_MODELS = {
+    "qwen2.5-0.5b": {
+        "hf_id": "Qwen/Qwen2.5-0.5B-Instruct",
+        "local_dir": os.path.join(MODELS_BASE_DIR, "qwen2.5-0.5b-instruct"),
+        "display_name": "Qwen 2.5 0.5B",
+        "size": "~1 GB",
+        "description": "Fastest. Great for quick answers.",
+    },
+    "tinyllama-1.1b": {
+        "hf_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        "local_dir": os.path.join(MODELS_BASE_DIR, "tinyllama-1.1b-chat"),
+        "display_name": "TinyLlama 1.1B",
+        "size": "~2.2 GB",
+        "description": "Fast and balanced performance.",
+    },
+    "gemma3-1b": {
+        "hf_id": "google/gemma-3-1b-it",
+        "local_dir": os.path.join(MODELS_BASE_DIR, "gemma-3-1b-it"),
+        "display_name": "Gemma 3 1B",
+        "size": "~3.8 GB",
+        "description": "Best quality. Slower inference.",
+    },
+}
+
+# Default model to load at startup
+DEFAULT_MODEL_KEY = os.environ.get("DEFAULT_MODEL", "qwen2.5-0.5b")
 
 # HuggingFace token (only needed during model download, not at runtime)
 HF_TOKEN = os.environ.get("HF_TOKEN", "")

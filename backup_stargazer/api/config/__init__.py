@@ -24,9 +24,10 @@ __all__ = [
     'all_lst',
     'neg_all_lst',
     # Chatbot settings
-    'HF_MODEL_ID',
+    'MODELS_BASE_DIR',
+    'AVAILABLE_MODELS',
+    'DEFAULT_MODEL_KEY',
     'HF_TOKEN',
-    'GEMMA_MODEL_LOCAL_PATH',
     'CHATBOT_MAX_NEW_TOKENS',
     'CHATBOT_TEMPERATURE',
     'CHATBOT_TOP_P',
