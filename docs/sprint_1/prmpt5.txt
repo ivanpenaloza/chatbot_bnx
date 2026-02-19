@@ -1,0 +1,9 @@
+I have the following tasks for you
+
+1) Update the quick sections based on the 9 questions that appear at /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/docs/context
+Those files provide de question, and the type of answer that we should expect you to give.
+2) Use the variable or column definition that appear at /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/docs/context/variable_definitions.md so 
+you can get more context what what the questions are about.
+3) Given the fact that there are questions about the possible values that a column
+may have, it is important that you equip those prompt in such a way that they can receive values from the table as input that is part of the context
+
