@@ -25,6 +25,15 @@ import pandas as pd
 import re
 # 0.3 getting routes
 from routers import llm_routes
+from routers import llm_router_question_1
+from routers import llm_router_question_2
+from routers import llm_router_question_3
+from routers import llm_router_question_4
+from routers import llm_router_question_5
+from routers import llm_router_question_6
+from routers import llm_router_question_7
+from routers import llm_router_question_8
+from routers import llm_router_question_9
 
 # Set JAVA_HOME and HADOOP_HOME as before
 os.environ['JAVA_HOME'] = JAVA_HOME
@@ -146,6 +155,15 @@ app = FastAPI(
 )
 
 app.include_router(llm_routes.router)
+app.include_router(llm_router_question_1.router)
+app.include_router(llm_router_question_2.router)
+app.include_router(llm_router_question_3.router)
+app.include_router(llm_router_question_4.router)
+app.include_router(llm_router_question_5.router)
+app.include_router(llm_router_question_6.router)
+app.include_router(llm_router_question_7.router)
+app.include_router(llm_router_question_8.router)
+app.include_router(llm_router_question_9.router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory='templates')
