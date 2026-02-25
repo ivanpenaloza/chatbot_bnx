@@ -129,6 +129,19 @@
         .message-content strong { color:var(--accent); font-weight:600; }
         .message-content code { background:rgba(79,142,247,0.15); padding:2px 6px; border-radius:4px; font-family:var(--font-mono); font-size:0.85em; }
         .message-content pre { background:rgba(0,0,0,0.3); padding:12px; border-radius:var(--radius-sm); overflow-x:auto; margin:8px 0; font-family:var(--font-mono); font-size:0.82em; }
+        .message-content h1,.message-content h2,.message-content h3,.message-content h4 { color:var(--accent); margin:14px 0 6px; line-height:1.3; }
+        .message-content h1 { font-size:1.2em; }
+        .message-content h2 { font-size:1.1em; }
+        .message-content h3 { font-size:1.0em; }
+        .message-content h4 { font-size:0.95em; }
+        .message-content hr { border:none; border-top:1px solid var(--border); margin:12px 0; }
+        .message-content blockquote { border-left:3px solid var(--accent); padding:4px 12px; margin:8px 0; color:var(--text-secondary); background:rgba(79,142,247,0.05); border-radius:0 var(--radius-sm) var(--radius-sm) 0; }
+        .message-content table { width:100%; border-collapse:collapse; margin:8px 0; font-size:0.85em; }
+        .message-content th,.message-content td { border:1px solid var(--border); padding:6px 10px; text-align:left; }
+        .message-content th { background:rgba(79,142,247,0.12); color:var(--accent); font-weight:600; }
+        .message-content tr:nth-child(even) { background:rgba(79,142,247,0.04); }
+        .message-content ol { list-style:decimal; margin:8px 0; padding-left:24px; }
+        .message-content ol li { margin-bottom:4px; }
         .message-meta { font-size:0.65rem; color:var(--text-muted); margin-top:6px; display:flex; gap:10px; }
         .message.user .message-meta { justify-content:flex-end; }
         .meta-model { color:var(--accent); font-weight:500; }
@@ -647,20 +660,152 @@
         }
 
         function formatResponse(text) {
-            var html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
-            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-            html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-            html = html.replace(/^[\-\*]\s+(.+)$/gm, '<li>$1</li>');
-            html = html.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
-            html = html.replace(/<\/ul>\s*<ul>/g, '');
-            html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
-            html = html.replace(/\n\n/g, '</p><p>');
-            html = html.replace(/\n/g, '<br>');
-            html = '<p>' + html + '</p>';
+            // Normalize literal \n sequences that LLMs sometimes produce
+            var raw = text.replace(/\\n/g, '\n');
+
+            // Escape HTML entities
+            raw = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            // Fenced code blocks (preserve content as-is)
+            var codeBlocks = [];
+            raw = raw.replace(/```(\w*)\n?([\s\S]*?)```/g, function(_, lang, code) {
+                var idx = codeBlocks.length;
+                codeBlocks.push('<pre><code>' + code.trim() + '</code></pre>');
+                return '\n%%CODEBLOCK_' + idx + '%%\n';
+            });
+
+            // Split into lines for line-by-line processing
+            var lines = raw.split('\n');
+            var html = '';
+            var inUl = false;
+            var inOl = false;
+            var inTable = false;
+            var tableHasHeader = false;
+
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                var trimmed = line.trim();
+
+                // Code block placeholder
+                var cbMatch = trimmed.match(/^%%CODEBLOCK_(\d+)%%$/);
+                if (cbMatch) {
+                    if (inUl) { html += '</ul>'; inUl = false; }
+                    if (inOl) { html += '</ol>'; inOl = false; }
+                    if (inTable) { html += '</tbody></table>'; inTable = false; }
+                    html += codeBlocks[parseInt(cbMatch[1])];
+                    continue;
+                }
+
+                // Horizontal rule
+                if (/^[-*_]{3,}$/.test(trimmed)) {
+                    if (inUl) { html += '</ul>'; inUl = false; }
+                    if (inOl) { html += '</ol>'; inOl = false; }
+                    if (inTable) { html += '</tbody></table>'; inTable = false; }
+                    html += '<hr>';
+                    continue;
+                }
+
+                // Headers (### before ## before #)
+                var headerMatch = trimmed.match(/^(#{1,4})\s+(.+)$/);
+                if (headerMatch) {
+                    if (inUl) { html += '</ul>'; inUl = false; }
+                    if (inOl) { html += '</ol>'; inOl = false; }
+                    if (inTable) { html += '</tbody></table>'; inTable = false; }
+                    var level = headerMatch[1].length;
+                    html += '<h' + level + '>' + inlineFormat(headerMatch[2]) + '</h' + level + '>';
+                    continue;
+                }
+
+                // Table rows (lines containing |)
+                if (trimmed.indexOf('|') !== -1 && trimmed.split('|').length >= 3) {
+                    // Check if it's a separator row (---|---|---)
+                    var isSeparator = /^[\s|:-]+$/.test(trimmed);
+                    if (isSeparator) {
+                        tableHasHeader = true;
+                        continue;
+                    }
+                    var cells = trimmed.replace(/^\||\|$/g, '').split('|').map(function(c) { return c.trim(); });
+                    if (!inTable) {
+                        if (inUl) { html += '</ul>'; inUl = false; }
+                        if (inOl) { html += '</ol>'; inOl = false; }
+                        html += '<table><thead><tr>';
+                        cells.forEach(function(c) { html += '<th>' + inlineFormat(c) + '</th>'; });
+                        html += '</tr></thead><tbody>';
+                        inTable = true;
+                        tableHasHeader = false;
+                    } else {
+                        html += '<tr>';
+                        cells.forEach(function(c) { html += '<td>' + inlineFormat(c) + '</td>'; });
+                        html += '</tr>';
+                    }
+                    continue;
+                } else if (inTable) {
+                    html += '</tbody></table>';
+                    inTable = false;
+                    tableHasHeader = false;
+                }
+
+                // Unordered list items
+                if (/^[-*•]\s+/.test(trimmed)) {
+                    if (inOl) { html += '</ol>'; inOl = false; }
+                    if (!inUl) { html += '<ul>'; inUl = true; }
+                    html += '<li>' + inlineFormat(trimmed.replace(/^[-*•]\s+/, '')) + '</li>';
+                    continue;
+                } else if (inUl) {
+                    html += '</ul>';
+                    inUl = false;
+                }
+
+                // Ordered list items
+                if (/^\d+[.)]\s+/.test(trimmed)) {
+                    if (inUl) { html += '</ul>'; inUl = false; }
+                    if (!inOl) { html += '<ol>'; inOl = true; }
+                    html += '<li>' + inlineFormat(trimmed.replace(/^\d+[.)]\s+/, '')) + '</li>';
+                    continue;
+                } else if (inOl) {
+                    html += '</ol>';
+                    inOl = false;
+                }
+
+                // Blockquote
+                if (/^&gt;\s*/.test(trimmed)) {
+                    html += '<blockquote>' + inlineFormat(trimmed.replace(/^&gt;\s*/, '')) + '</blockquote>';
+                    continue;
+                }
+
+                // Empty line = paragraph break
+                if (trimmed === '') {
+                    html += '<br>';
+                    continue;
+                }
+
+                // Regular paragraph line
+                html += '<p>' + inlineFormat(trimmed) + '</p>';
+            }
+
+            // Close any open lists/tables
+            if (inUl) html += '</ul>';
+            if (inOl) html += '</ol>';
+            if (inTable) html += '</tbody></table>';
+
+            // Clean up consecutive <br>
+            html = html.replace(/(<br>\s*){3,}/g, '<br><br>');
+            // Remove empty paragraphs
             html = html.replace(/<p>\s*<\/p>/g, '');
+
             return html;
+        }
+
+        function inlineFormat(text) {
+            // Inline code
+            text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+            // Bold
+            text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            // Italic
+            text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            // Underline (sometimes used by LLMs)
+            text = text.replace(/__(.+?)__/g, '<u>$1</u>');
+            return text;
         }
 
         function getTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
