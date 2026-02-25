@@ -1,0 +1,15 @@
+SAMPLE QUESTION:
+1. ¿Cómo va la campaña? / ¿Cuáles fueron los resultados de la campaña?
+
+SAMPLE ANSWER:
+Los resultados de la campaña C5-2025 muestran un panorama mixto dependiendo del producto que se analice.
+En términos generales, se lograron asignar 11.26 millones de ofertas con una eficiencia del 91.6%, lo cual es aceptable. Aquí hay un poco más de detalle por producto:
+CPC tuvo un desempeño complicado. Se asignaron 2.6 millones de ofertas con una tasa del 92%, lo cual representa una ligera recuperación respecto a la campaña anterior, pero se sigue viendo viendo una tendencia a la baja en volumen. El problema principal aquí es que se están perdiendo más de 226 mil ofertas porque entran en conflicto con las reglas de productos revolventes. Es decir, existen clientes que califican perfectamente para CPC, pero el sistema los está desviando automáticamente a otros productos.
+DC es el mejor producto en términos de eficiencia. Se logró un 95.3% de asignación con casi 1.85 millones de ofertas. Este producto tiene muy poca fricción en las reglas de negocio y está funcionando muy bien.
+AAC es interesante porque es el producto con mayor volumen - se asignaron 3.42 millones de ofertas - pero tiene la eficiencia más baja del portafolio, apenas 88.7%. Aquí el problema es que está chocando con límites de exposición crediticia. Existen muchos clientes a los que se quiere aumentarles el crédito, pero las políticas de riesgo nos están frenando.
+TCC está en un punto medio con 2.16 millones de ofertas asignadas y 91.2% de eficiencia. Aquí se ve un fenómeno de migración - muchos clientes que podrían tener una tarjeta clásica están siendo desviados a productos premium, lo cual no es necesariamente malo, pero está contrayendo este segmento.
+CNC es el producto más eficiente después de DC, con 94.5% de asignación y 1.23 millones de ofertas. El desafío aquí es que está limitado por su naturaleza - solo se puede ofrecer a clientes con nómina domiciliada, así que el universo es más pequeño pero muy bien calificado.
+En resumen: hay productos que funcionan muy bien (DC, CNC), uno con gran volumen pero desafíos operativos (AAC), y otros que necesitan atención estratégica urgente (CPC, TCC).
+
+
+

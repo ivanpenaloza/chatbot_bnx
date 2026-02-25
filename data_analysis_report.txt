@@ -1,0 +1,1122 @@
+Loading data from: api/static/data/cubo_datos_v2.csv
+✓ Data loaded successfully: 248,308 rows, 15 columns
+
+================================================================================
+DATA SCHEMA
+================================================================================
+             Column Data Type  Null Count Null %  Unique Values                                                                                                Definition
+     etiqueta_grupo    object           0  0.00%              2 Customer classification: "potenciales" (prospect clients) or "mailbase" (clients receiving credit offers)
+           producto    object           0  0.00%              8                                                        Credit product type indicator (e.g., CLI, DC, TCC)
+             toques   float64       13547  5.46%             10                        Cumulative number of offer attempts made to the customer before product acceptance
+    overlap_inicial    object           0  0.00%             93                              Initial credit product(s) with which the customer starts the Overlap process
+   asignacion_final    object           0  0.00%            118                                Final credit product(s) assigned to the customer after the Overlap process
+         ds_testlab    object       23392  9.42%            638                                                                       Tests to which the customer belongs
+          escenario    object           0  0.00%              5                                         Business strategy or rule under which product offers were defined
+             conteo     int64           0  0.00%           9130                Total number of customers sharing the same characteristics (product, scenario, test, etc.)
+     linea_ofrecida   float64           3  0.00%          36648                 Total sum of credit line amounts offered to all customers within the same characteristics
+                npv   float64           0  0.00%         130943                      Sum of projected Net Present Value (NPV) for customers with the same characteristics
+       rentabilidad   float64       20655  8.32%         117458                                Sum of projected profitability for customers with the same characteristics
+                 rr   float64       16974  6.84%         100333                                           Sum of projected RR for customers with the same characteristics
+           campania    object           0  0.00%              9                                                                                        Campaign indicator
+     flag_declinado     int64           0  0.00%              2                           Binary indicator showing whether the product was offered to the customer or not
+causa_no_asignacion    object       87482 35.23%             10        Description specifying why the product offer was not made to the customer (e.g., payment capacity)
+
+================================================================================
+NUMERIC COLUMNS - STATISTICAL SUMMARY
+================================================================================
+                   count          mean           std           min            25%           50%           75%           max  missing  missing_pct
+toques          234761.0  4.251528e+00  2.873835e+00  0.000000e+00       2.000000  4.000000e+00  7.000000e+00  9.000000e+00    13547     5.455724
+conteo          248308.0  1.356654e+03  1.931128e+04  1.000000e+00       2.000000  1.300000e+01  1.360000e+02  2.099314e+06        0     0.000000
+linea_ofrecida  248305.0  1.272208e+08  1.046620e+09  0.000000e+00  219100.000000  1.347500e+06  1.350000e+07  7.180000e+10        3     0.001208
+npv             248308.0  3.087398e+05  2.338808e+06 -1.670840e+06     249.775251  2.568661e+03  2.960997e+04  2.340000e+08        0     0.000000
+rentabilidad    227653.0  1.839870e+07  2.037738e+08 -3.260000e+08   18660.477050  1.262146e+05  1.286581e+06  2.020000e+10    20655     8.318298
+rr              231334.0  4.725387e+01  4.312312e+02  1.600000e-04       0.081079  5.072030e-01  5.211877e+00  4.550535e+04    16974     6.835865
+flag_declinado  248308.0  2.200332e-01  4.142696e-01  0.000000e+00       0.000000  0.000000e+00  0.000000e+00  1.000000e+00        0     0.000000
+
+================================================================================
+CATEGORICAL COLUMNS - UNIQUE VALUES
+================================================================================
+
+ETIQUETA_GRUPO
+--------------------------------------------------------------------------------
+Definition: Customer classification: "potenciales" (prospect clients) or "mailbase" (clients receiving credit offers)
+Total unique values: 2
+Missing values: 0 (0.00%)
+
+Value distribution:
+etiqueta_grupo
+elegibles    151472
+mailbase      96836
+
+
+PRODUCTO
+--------------------------------------------------------------------------------
+Definition: Credit product type indicator (e.g., CLI, DC, TCC)
+Total unique values: 8
+Missing values: 0 (0.00%)
+
+Value distribution:
+producto
+DC     77264
+AAC    45721
+CLI    42501
+CPC    33575
+CNC    24600
+CPT     8372
+CNT     8307
+TCC     7968
+
+
+TOQUES
+--------------------------------------------------------------------------------
+Definition: Cumulative number of offer attempts made to the customer before product acceptance
+Total unique values: 10
+Missing values: 13547 (5.46%)
+
+Value distribution:
+toques
+0.0    27435
+1.0    25725
+2.0    24978
+3.0    24366
+4.0    23464
+5.0    22778
+6.0    22491
+7.0    21980
+8.0    21134
+9.0    20410
+NaN    13547
+
+
+OVERLAP_INICIAL
+--------------------------------------------------------------------------------
+Definition: Initial credit product(s) with which the customer starts the Overlap process
+Total unique values: 93
+Missing values: 0 (0.00%)
+
+Value distribution:
+overlap_inicial
+CPC-DC-CLI-AAC-        31280
+CNC-DC-CLI-AAC-        22879
+CPC-DC-CLI-            20453
+CNC-DC-CLI-            16153
+DC-CLI-AAC-            15921
+CPC-DC-AAC-            10647
+DC-CLI-                 8427
+CPT-DC-CLI-AAC-         7825
+CNT-DC-CLI-AAC-         7716
+CNC-DC-AAC-             7661
+CPC-CLI-AAC-            7471
+CNT-DC-CLI-             6510
+CPC-DC-                 5433
+CPT-DC-CLI-             5262
+CPC-AAC-                4277
+CPC-TCC-DC-CLI-         4220
+CNC-CLI-AAC-            4110
+CNC-DC-                 4035
+CLI-AAC-                3628
+CNC-AAC-                2974
+DC-AAC-                 2571
+CNT-DC-AAC-             2525
+CPC-TCC-DC-             2446
+CNC-TCC-DC-CLI-         2415
+CPC-CLI-                2380
+CPT-DC-AAC-             2378
+CPC-TCC-                1948
+TCC-DC-CLI-             1896
+CNT-DC-                 1679
+CNC-TCC-DC-             1635
+DC-                     1593
+CPT-CLI-AAC-            1564
+CNT-CLI-AAC-            1535
+CNC-CLI-                1527
+CPT-DC-                 1412
+CNC-TCC-                1390
+CNC-CPT-DC-CLI-AAC-     1346
+CPC-                    1300
+CLI-                    1292
+CNC-                    1200
+TCC-DC-                 1050
+CNT-AAC-                1020
+CPT-AAC-                1012
+AAC-                     915
+CNT-CLI-                 832
+CPT-CLI-                 810
+CNT-TCC-                 606
+CNC-CPT-DC-CLI-          604
+TCC-                     592
+CNT-                     564
+CPT-TCC-                 545
+CNT-TCC-DC-              539
+CPT-TCC-DC-              513
+CPT-                     509
+CPC-TCC-CLI-             485
+CNC-CPT-DC-AAC-          466
+CNC-TCC-CLI-             439
+CPT-TCC-DC-CLI-          423
+CNT-CPT-DC-CLI-AAC-      418
+CNT-TCC-DC-CLI-          385
+TCC-CLI-                 284
+CNT-CPT-DC-CLI-          266
+CNC-CPT-DC-              248
+CNC-CPT-AAC-             219
+CNT-CPT-DC-AAC-          186
+CNC-CPT-TCC-             164
+CNC-CNT-TCC-             127
+CNT-CPT-AAC-             115
+CNC-CPT-                 115
+CNC-CPT-CLI-AAC-         115
+CNC-CNT-DC-CLI-AAC-      100
+CNT-CPT-TCC-              93
+CNC-CPC-DC-CLI-AAC-       86
+CNC-CPC-DC-AAC-           70
+CNT-CPT-DC-               64
+CNT-CPT-                  48
+CNC-CNT-AAC-              48
+CNC-CNT-                  44
+CNC-CPC-DC-CLI-           36
+CNC-CNT-DC-AAC-           33
+CNC-CPT-TCC-DC-CLI-       29
+CNC-CPC-DC-               27
+CNC-CPC-TCC-              26
+CNC-CPT-TCC-DC-           23
+CNC-CPT-CLI-              20
+CPT-TCC-CLI-              16
+CNT-CPT-CLI-AAC-          15
+CNC-CNT-DC-CLI-           13
+CNT-TCC-CLI-              11
+CNC-CPC-AAC-              11
+CNC-CPC-                   6
+CNC-CNT-DC-                5
+CNT-CPT-CLI-               4
+
+
+ASIGNACION_FINAL
+--------------------------------------------------------------------------------
+Definition: Final credit product(s) assigned to the customer after the Overlap process
+Total unique values: 118
+Missing values: 0 (0.00%)
+
+Value distribution:
+asignacion_final
+CPC-DC-WKP-            19245
+DC-WKP-                13864
+CLI-DC-WKP-            12351
+CNC-DC-WKP-            12154
+CLI-WKP-                8749
+AAC-DC-                 8473
+AAC-CPC-DC-             7876
+CPC-WKP-                7653
+DECANTADO-WKP-          7212
+AAC-                    6663
+CPT-DC-WKP-             6235
+CNT-DC-WKP-             5751
+AAC-CNC-DC-             5438
+DC-WKP-WKN-             5329
+DC-CLI-WKP-             5091
+AAC-CLI-CPC-DC-         4556
+CLI-DC-WKP-WKN-         4335
+AAC-CLI-DC-             4279
+CPC-CLI-DC-WKP-         4132
+CPC-AAC-DC-             4092
+AAC-CLI-                3990
+CNC-WKP-                3647
+CPC-DC-                 3471
+AAC-CLI-CNC-DC-         3244
+CNC-DC-                 3179
+CPC-AAC-                2868
+CLI-DC-                 2653
+CNC-AAC-DC-             2620
+CNC-CLI-DC-WKP-         2577
+DC-AAC-                 2542
+CPT-WKP-                2496
+AAC-DC-WKN-             2482
+AAC-CLI-CPC-            2296
+CNT-WKP-                2254
+DC-CLI-WKP-WKN-         2171
+DC-WKP-PWK-             2111
+DC-                     2071
+CPC-TCC-DC-             2008
+CLI-CPC-DC-WKP-         1766
+CLI-DC-WKP-PWK-         1639
+CPC-CLI-WKP-            1526
+AAC-DC-PWK-             1455
+CNT-DC-                 1451
+TCC-                    1413
+TCC-DC-                 1339
+AAC-CPC-                1316
+CLI-CNC-DC-WKP-         1312
+AAC-CLI-CNC-            1289
+CPC-TCC-                1289
+CLI-                    1279
+CLI-CPC-DC-             1218
+CLI-DC-WKN-             1185
+AAC-CLI-DC-WKN-         1161
+DC-AAC-WKN-             1145
+CPC-                    1135
+CNC-TCC-DC-             1097
+CLI-WKP-WKN-            1096
+AAC-CLI-DC-PWK-         1087
+CNC-AAC-                1052
+CPC-CLI-DC-             1042
+DC-CLI-                  981
+CPT-DC-WKP-WKN-          961
+CPT-DC-                  938
+CLI-CNC-DC-              936
+CNC-                     851
+CNC-CLI-DC-              794
+DC-CLI-WKP-PWK-          792
+AAC-WKN-                 764
+DC-WKN-                  617
+CLI-WKP-PWK-             599
+DECANTADO-WKP-WKN-       598
+DECANTADO-               597
+CNC-CLI-WKP-             587
+CLI-DC-PWK-              575
+CNC-TCC-                 575
+DC-CLI-WKN-              532
+CNT-                     526
+TCC-WKN-                 489
+TCC-DC-WKN-              424
+CPT-WKP-WKN-             415
+AAC-CNC-                 388
+AAC-PWK-                 383
+AAC-CLI-PWK-             324
+CPT-                     313
+TCC-DC-PWK-              303
+CPC-CLI-                 300
+DC-AAC-PWK-              293
+DECANTADO-WKP-PWK-       240
+DC-PWK-                  213
+TCC-PWK-                 182
+CNC-CLI-                 178
+DC-CLI-PWK-              159
+CLI-WKN-                 121
+CNT-WKP-WKN-             106
+CLI-PWK-                 101
+AAC-CLI-CPT-DC-           88
+CPT-CLI-DC-WKP-           82
+CNT-DC-WKP-WKN-           65
+CPT-AAC-                  57
+AAC-CLI-WKN-              56
+CPT-TCC-                  49
+AAC-CLI-CPT-              48
+CPT-CLI-WKP-              44
+AAC-CPT-DC-               43
+CPC-WKP-WKN-              26
+CNT-WKN-                  25
+CPC-DC-WKP-WKN-           20
+CPT-WKN-                  20
+CPT-DC-WKN-               14
+CPC-AAC-DC-WKN-           12
+AAC-CLI-CPC-DC-WKN-        9
+AAC-CLI-CPT-DC-WKN-        9
+DECANTADO-WKN-             8
+AAC-CPC-DC-WKN-            7
+AAC-CPC-WKN-               7
+CPT-CLI-                   6
+DECANTADO-PWK-             5
+CPC-WKN-                   3
+
+
+DS_TESTLAB
+--------------------------------------------------------------------------------
+Definition: Tests to which the customer belongs
+Total unique values: 638
+Missing values: 23392 (9.42%)
+
+Value distribution:
+ds_testlab
+NaN                                                                                23392
+C6_LOP_OO                                                                          13252
+C3_LOP_OO                                                                          11346
+C4_LOP_OO                                                                          11123
+C5_LOP_OO                                                                          10558
+C1_LOP_OO                                                                           5787
+C6_LOP_OO|C6_CG_CLI                                                                 4002
+C3_LOP_OO|C3_CG_CLI                                                                 3681
+C4_P06-                                                                             3356
+C3_P06-                                                                             2995
+C4_LOP_OO|C4_CG_CLI                                                                 2964
+C5_LOP_OO|C5_CG_CLI                                                                 2811
+C6_P05-AUTOMATIC_CLI|C6_LOP_OO                                                      2267
+C6_P05-CTRL_NO_CLI|C6_LOP_OO                                                        2228
+C4_MVP                                                                              2185
+C3_CG_INSTALLMENT                                                                   2170
+C3_P05-CTRL_NO_CLI|C3_LOP_OO                                                        2139
+C5_MVP                                                                              2080
+C1_LOP_OO|C1_CG_CLI                                                                 2074
+C6_MVP                                                                              2072
+C3_MVP                                                                              1964
+C4_P05-AUTOMATIC_CLI|C4_LOP_OO                                                      1945
+C3_P05-AUTOMATIC_CLI|C3_LOP_OO                                                      1932
+C5_P05-AUTOMATIC_CLI|C5_LOP_OO                                                      1835
+C6_CG_INSTALLMENT                                                                   1803
+C1_CG_INSTALLMENT                                                                   1751
+C6_P06-                                                                             1665
+C6_LOP_OO|C6_CLI_Random_test                                                        1664
+C1_LOP_OO|C1_CLI_Random_test                                                        1661
+C4_P05-CTRL_NO_CLI|C4_LOP_OO                                                        1631
+C3_P06-|C3_P02-                                                                     1601
+C5_P05-CTRL_NO_CLI|C5_LOP_OO                                                        1540
+C4_P06-|C4_MVP                                                                      1522
+C4_CG_INSTALLMENT                                                                   1429
+C5_P06-                                                                             1426
+C3_P02-                                                                             1386
+C5_CG_INSTALLMENT                                                                   1340
+C1_P06-                                                                             1329
+C3_P06-|C3_MVP                                                                      1122
+C5_P02-                                                                             1073
+C1_P05-CTRL_NO_CLI|C1_LOP_OO                                                        1065
+C1_MVP                                                                               988
+C4_MVP|C4_CG_CLI                                                                     949
+C3_MVP|C3_CG_CLI                                                                     911
+C5_MVP|C5_CG_CLI                                                                     898
+C6_P04-CTRL_NO_CLI|C6_LOP_OO                                                         889
+C1_P06-|C1_P02-                                                                      887
+C4_P06-|C4_P05-AUTOMATIC_CLI                                                         886
+C6_MVP|C6_CG_CLI                                                                     879
+C4_LOP_OO|C4_CLI_Random_test                                                         872
+C5_LOP_OO|C5_CLI_Random_test                                                         871
+C1_P05-AUTOMATIC_CLI|C1_LOP_OO                                                       841
+C4_P02-                                                                              840
+C3_P06-|C3_P05-AUTOMATIC_CLI                                                         839
+C6_P06-|C6_P02-                                                                      831
+C6_P05-CTRL_NO_CLI|C6_LOP_OO|C6_CG_CLI                                               798
+C3_CG_CLI                                                                            782
+C3_P06-|C3_CG_CLI                                                                    766
+C4_CG_CLI                                                                            739
+C5_P04-CTRL_NO_CLI|C5_LOP_OO                                                         731
+C4_P04-CTRL_NO_CLI|C4_LOP_OO                                                         724
+C5_CG_CLI                                                                            712
+C6_P05-CTRL_NO_CLI|C6_MVP                                                            710
+C4_P05-CTRL_NO_CLI|C4_MVP                                                            708
+C6_CG_CLI                                                                            698
+C3_P05-CTRL_NO_CLI|C3_LOP_OO|C3_CG_CLI                                               694
+C3_P06-|C3_P02-|C3_MVP                                                               694
+C5_P05-CTRL_NO_CLI|C5_MVP                                                            678
+C1_CG_CLI                                                                            675
+C3_P04-CTRL_NO_CLI|C3_LOP_OO                                                         662
+C4_P05-CTRL_NO_CLI|C4_LOP_OO|C4_CG_CLI                                               652
+C6_CT_TECH|C6_LOP_OO                                                                 647
+C4_P06-|C4_CG_CLI                                                                    638
+C3_P05-CTRL_NO_CLI|C3_MVP                                                            630
+C5_P05-CTRL_NO_CLI|C5_LOP_OO|C5_CG_CLI                                               611
+C4_P06-|C4_P02-                                                                      599
+C3_CG_INSTALLMENT|C3_CG_CLI                                                          563
+C6_P05-AUTOMATIC_CLI|C6_CT_TECH|C6_LOP_OO                                            541
+C1_MVP|C1_CG_CLI                                                                     532
+C6_P05-CTRL_NO_CLI|C6_P05-AUTOMATIC_CLI|C6_LOP_OO                                    516
+C6_P05-AUTOMATIC_CLI|C6_LOP_OO|C6_CLI_Random_test                                    513
+C1_MVP|C1_CLI_Random_test                                                            510
+C3_P05-CTRL_NO_CLI|C3_P05-AUTOMATIC_CLI|C3_LOP_OO                                    504
+C5_MVP|C5_CLI_Random_test                                                            502
+C3_P05-AUTOMATIC_CLI                                                                 501
+C6_P06-|C6_P05-AUTOMATIC_CLI                                                         499
+C6_P06-|C6_MVP                                                                       494
+C4_P06-|C4_P05-CTRL_NO_CLI                                                           487
+C3_CT_TECH|C3_LOP_OO                                                                 484
+C6_MVP|C6_CLI_Random_test                                                            482
+C3_P06-|C3_P02-|C3_P05-AUTOMATIC_CLI                                                 478
+C3_P06-|C3_P05-CTRL_NO_CLI                                                           477
+C3_P02-|C3_MVP                                                                       474
+C4_P05-CTRL_NO_CLI|C4_P05-AUTOMATIC_CLI|C4_LOP_OO                                    472
+C4_MVP|C4_CLI_Random_test                                                            470
+C5_P05-CTRL_NO_CLI|C5_P05-AUTOMATIC_CLI|C5_LOP_OO                                    452
+C1_P05-CTRL_NO_CLI|C1_LOP_OO|C1_CLI_Random_test                                      448
+C6_P05-CTRL_NO_CLI|C6_CT_TECH|C6_LOP_OO                                              446
+C3_P05-AUTOMATIC_CLI|C3_CT_TECH|C3_LOP_OO                                            444
+C6_CT_TECH                                                                           440
+C4_CT_TECH|C4_LOP_OO                                                                 440
+C5_P05-AUTOMATIC_CLI|C5_LOP_OO|C5_CLI_Random_test                                    439
+C1_P06-|C1_CLI_Random_test                                                           439
+C5_P06-|C5_P05-AUTOMATIC_CLI                                                         434
+C4_P05-AUTOMATIC_CLI|C4_LOP_OO|C4_CLI_Random_test                                    430
+C3_MVP|C3_CG_INSTALLMENT                                                             430
+C6_CT_TECH|C6_LOP_OO|C6_CG_CLI                                                       422
+C5_P02-|C5_MVP                                                                       418
+C4_P06-|C4_CLI_Random_test                                                           417
+C6_CG_INSTALLMENT|C6_CG_CLI                                                          417
+C5_P06-|C5_MVP                                                                       416
+C1_P02-                                                                              416
+C1_P06-|C1_MVP                                                                       412
+C1_CG_INSTALLMENT|C1_CLI_Random_test                                                 406
+C6_P05-CTRL_NO_CLI|C6_LOP_OO|C6_CLI_Random_test                                      405
+C3_P05-AUTOMATIC_CLI|C3_LOP_OO|C3_CG_CLI                                             403
+C3_P06-|C3_MVP|C3_CG_CLI                                                             402
+C4_P02-|C4_MVP                                                                       396
+C4_P04-CTRL_NO_CLI                                                                   395
+C6_P04-CTRL_NO_CLI                                                                   394
+C5_P04-CTRL_NO_CLI                                                                   392
+C6_P02-                                                                              391
+C5_P05-AUTOMATIC_CLI                                                                 390
+C4_CG_INSTALLMENT|C4_CG_CLI                                                          389
+C6_CT_TECH|C6_LOP_OO|C6_CLI_Random_test                                              388
+C3_P06-|C3_P02-|C3_CG_CLI                                                            387
+C1_P06-|C1_CG_CLI                                                                    387
+C1_P05-CTRL_NO_CLI|C1_LOP_OO|C1_CG_CLI                                               386
+C4_P05-AUTOMATIC_CLI                                                                 386
+C6_P05-AUTOMATIC_CLI|C6_LOP_OO|C6_CG_CLI                                             382
+C4_MVP|C4_CG_INSTALLMENT                                                             379
+C5_CG_INSTALLMENT|C5_CG_CLI                                                          379
+C1_CG_INSTALLMENT|C1_CG_CLI                                                          378
+C6_CG_INSTALLMENT|C6_CLI_Random_test                                                 378
+C4_P06-|C4_MVP|C4_CG_CLI                                                             378
+C1_CT_TECH|C1_LOP_OO|C1_CLI_Random_test                                              376
+C5_CT_TECH|C5_LOP_OO                                                                 374
+C3_P04-CTRL_NO_CLI                                                                   372
+C6_P06-|C6_CG_CLI                                                                    371
+C6_P06-|C6_P02-|C6_MVP                                                               370
+C6_P05-AUTOMATIC_CLI                                                                 368
+C4_P05-AUTOMATIC_CLI|C4_LOP_OO|C4_CG_CLI                                             367
+C3_P06-|C3_CT_TECH                                                                   361
+C1_MVP|C1_CG_INSTALLMENT                                                             360
+C5_MVP|C5_CG_INSTALLMENT                                                             359
+C3_P05-CTRL_NO_CLI|C3_CT_TECH|C3_LOP_OO                                              359
+C4_P06-|C4_P02-|C4_MVP                                                               356
+C4_P05-AUTOMATIC_CLI|C4_CT_TECH|C4_LOP_OO                                            356
+C3_CT_TECH|C3_LOP_OO|C3_CG_CLI                                                       354
+C3_P06-|C3_CT_TECH|C3_CG_CLI                                                         353
+C4_P06-|C4_P05-CTRL_NO_CLI|C4_MVP                                                    349
+C1_P04-CTRL_NO_CLI|C1_LOP_OO                                                         348
+C4_P06-|C4_CT_TECH                                                                   348
+C3_CT_TECH                                                                           348
+C1_P06-|C1_P02-|C1_MVP                                                               346
+C5_P05-AUTOMATIC_CLI|C5_CT_TECH|C5_LOP_OO                                            340
+C1_P05-CTRL_NO_CLI|C1_MVP                                                            334
+C1_CLI_Random_test                                                                   328
+C5_P05-AUTOMATIC_CLI|C5_LOP_OO|C5_CG_CLI                                             322
+C6_P06-|C6_P02-|C6_P05-AUTOMATIC_CLI                                                 320
+C1_P05-AUTOMATIC_CLI|C1_LOP_OO|C1_CLI_Random_test                                    318
+C5_CT_TECH                                                                           316
+C4_P02-|C4_CG_CLI                                                                    310
+C4_P05-CTRL_NO_CLI|C4_MVP|C4_CG_CLI                                                  310
+C4_CG_INSTALLMENT|C4_CLI_Random_test                                                 309
+C3_P02-|C3_CG_CLI                                                                    309
+C3_P05-CTRL_NO_CLI|C3_MVP|C3_CG_CLI                                                  308
+C3_P06-|C3_P05-CTRL_NO_CLI|C3_MVP                                                    306
+C6_MVP|C6_CG_INSTALLMENT                                                             304
+C3_P06-|C3_P02-|C3_MVP|C3_CG_CLI                                                     300
+C3_P05-CTRL_NO_CLI                                                                   299
+C5_P05-CTRL_NO_CLI|C5_MVP|C5_CG_CLI                                                  297
+C1_P06-|C1_P02-|C1_CLI_Random_test                                                   297
+C5_P02-|C5_P05-AUTOMATIC_CLI                                                         297
+C5_P05-CTRL_NO_CLI|C5_LOP_OO|C5_CLI_Random_test                                      294
+C3_P06-|C3_P02-|C3_P05-CTRL_NO_CLI                                                   293
+C5_P06-|C5_CG_CLI                                                                    292
+C1_P06-|C1_P05-AUTOMATIC_CLI                                                         292
+C4_CT_TECH                                                                           286
+C6_P06-|C6_CT_TECH                                                                   279
+C6_P05-CTRL_NO_CLI|C6_CT_TECH|C6_LOP_OO|C6_CG_CLI                                    277
+C6_P05-CTRL_NO_CLI|C6_MVP|C6_CG_CLI                                                  276
+C5_CG_INSTALLMENT|C5_CLI_Random_test                                                 275
+C4_P05-CTRL_NO_CLI                                                                   270
+C4_P06-|C4_P02-|C4_CG_CLI                                                            270
+C6_P05-CTRL_NO_CLI                                                                   269
+C4_P05-CTRL_NO_CLI|C4_CT_TECH|C4_LOP_OO                                              267
+C3_P02-|C3_P05-AUTOMATIC_CLI                                                         262
+C3_P05-AUTOMATIC_CLI|C3_CG_INSTALLMENT                                               260
+C6_P06-|C6_P05-CTRL_NO_CLI                                                           258
+C3_P05-CTRL_NO_CLI|C3_CT_TECH|C3_LOP_OO|C3_CG_CLI                                    256
+C5_P05-CTRL_NO_CLI|C5_CT_TECH|C5_LOP_OO                                              256
+C1_P06-|C1_P02-|C1_P05-AUTOMATIC_CLI                                                 256
+C4_CT_TECH|C4_LOP_OO|C4_CG_CLI                                                       254
+C5_CT_TECH|C5_LOP_OO|C5_CG_CLI                                                       246
+C1_CT_TECH|C1_LOP_OO                                                                 242
+C4_P05-CTRL_NO_CLI|C4_LOP_OO|C4_CLI_Random_test                                      242
+C5_P06-|C5_P05-CTRL_NO_CLI                                                           237
+C4_P05-AUTOMATIC_CLI|C4_CG_INSTALLMENT                                               232
+C3_CT_TECH|C3_CG_INSTALLMENT                                                         232
+C4_P06-|C4_MVP|C4_CLI_Random_test                                                    230
+C5_P05-CTRL_NO_CLI                                                                   226
+C3_P06-|C3_P05-CTRL_NO_CLI|C3_CT_TECH                                                226
+C3_P05-CTRL_NO_CLI|C3_CG_INSTALLMENT                                                 224
+C5_CLI_Random_test                                                                   222
+C4_P06-|C4_P05-AUTOMATIC_CLI|C4_CT_TECH                                              221
+C1_P06-|C1_P05-CTRL_NO_CLI                                                           220
+C1_CT_TECH|C1_CG_INSTALLMENT                                                         215
+C4_CLI_Random_test                                                                   214
+C5_P05-AUTOMATIC_CLI|C5_CG_INSTALLMENT                                               213
+C1_P05-AUTOMATIC_CLI|C1_CT_TECH|C1_LOP_OO                                            212
+C5_P04-CTRL_NO_CLI|C5_MVP                                                            212
+C4_P06-|C4_P02-|C4_P05-AUTOMATIC_CLI                                                 212
+C3_P04-CTRL_NO_CLI|C3_MVP                                                            208
+C3_P06-|C3_P05-AUTOMATIC_CLI|C3_CT_TECH                                              207
+C1_P05-CTRL_NO_CLI|C1_P05-AUTOMATIC_CLI|C1_LOP_OO                                    206
+C3_P02-|C3_MVP|C3_CG_CLI                                                             203
+C6_P05-CTRL_NO_CLI|C6_CT_TECH|C6_LOP_OO|C6_CLI_Random_test                           203
+C4_P06-|C4_CT_TECH|C4_CG_CLI                                                         201
+C6_P05-AUTOMATIC_CLI|C6_CG_INSTALLMENT                                               201
+C1_P06-|C1_P02-|C1_CG_CLI                                                            200
+C6_P06-|C6_P05-AUTOMATIC_CLI|C6_CT_TECH                                              200
+C3_P06-|C3_P02-|C3_P05-CTRL_NO_CLI|C3_MVP                                            200
+C4_P04-CTRL_NO_CLI|C4_MVP                                                            200
+C6_P04-CTRL_NO_CLI|C6_MVP                                                            199
+C1_P04-CTRL_NO_CLI                                                                   198
+C4_P06-|C4_P02-|C4_CLI_Random_test                                                   195
+C6_P05-AUTOMATIC_CLI|C6_CT_TECH|C6_LOP_OO|C6_CLI_Random_test                         192
+C6_P06-|C6_CT_TECH|C6_CG_CLI                                                         188
+C6_CT_TECH|C6_CG_INSTALLMENT                                                         186
+C6_P05-CTRL_NO_CLI|C6_P05-AUTOMATIC_CLI|C6_CT_TECH|C6_LOP_OO                         183
+C1_P05-CTRL_NO_CLI|C1_CT_TECH|C1_LOP_OO                                              182
+C4_P05-CTRL_NO_CLI|C4_MVP|C4_CLI_Random_test                                         182
+C1_P05-AUTOMATIC_CLI                                                                 179
+C5_P05-CTRL_NO_CLI|C5_MVP|C5_CLI_Random_test                                         178
+C4_P02-|C4_MVP|C4_CG_CLI                                                             178
+C6_CLI_Random_test                                                                   178
+C1_P06-|C1_CT_TECH|C1_CLI_Random_test                                                177
+C3_MVP|C3_CG_INSTALLMENT|C3_CG_CLI                                                   177
+C3_P06-|C3_P02-|C3_CT_TECH                                                           176
+C4_P02-|C4_CLI_Random_test                                                           175
+C3_P02-|C3_CT_TECH                                                                   175
+C1_P05-CTRL_NO_CLI|C1_MVP|C1_CLI_Random_test                                         174
+C1_CT_TECH                                                                           174
+C3_P02-|C3_P05-CTRL_NO_CLI                                                           172
+C1_CT_TECH|C1_LOP_OO|C1_CG_CLI                                                       172
+C4_P06-|C4_P02-|C4_MVP|C4_CG_CLI                                                     170
+C6_P05-CTRL_NO_CLI|C6_MVP|C6_CLI_Random_test                                         169
+C1_P05-CTRL_NO_CLI|C1_CG_INSTALLMENT                                                 167
+C4_P06-|C4_P05-CTRL_NO_CLI|C4_CT_TECH                                                166
+C1_P05-CTRL_NO_CLI                                                                   165
+C1_P06-|C1_P02-|C1_MVP|C1_CG_CLI                                                     160
+C4_P06-|C4_P02-|C4_P05-CTRL_NO_CLI                                                   158
+C6_P06-|C6_P02-|C6_P05-CTRL_NO_CLI                                                   157
+C4_P02-|C4_P05-AUTOMATIC_CLI                                                         156
+C5_P05-AUTOMATIC_CLI|C5_CT_TECH                                                      156
+C1_P05-CTRL_NO_CLI|C1_MVP|C1_CG_CLI                                                  155
+C3_P05-CTRL_NO_CLI|C3_P05-AUTOMATIC_CLI|C3_CT_TECH|C3_LOP_OO                         154
+C4_P06-|C4_P04-CTRL_NO_CLI                                                           154
+C6_P05-CTRL_NO_CLI|C6_CG_INSTALLMENT                                                 150
+C5_P05-CTRL_NO_CLI|C5_CT_TECH|C5_LOP_OO|C5_CG_CLI                                    150
+C3_P06-|C3_P04-CTRL_NO_CLI                                                           149
+C5_MVP|C5_CG_INSTALLMENT|C5_CLI_Random_test                                          147
+C1_P06-|C1_P02-|C1_MVP|C1_CLI_Random_test                                            146
+C6_P06-|C6_P02-|C6_CG_CLI                                                            145
+C1_P06-|C1_CT_TECH                                                                   143
+C4_MVP|C4_CG_INSTALLMENT|C4_CG_CLI                                                   143
+C5_P06-|C5_CT_TECH                                                                   143
+C4_P05-CTRL_NO_CLI|C4_CT_TECH|C4_LOP_OO|C4_CG_CLI                                    142
+C1_P06-|C1_MVP|C1_CLI_Random_test                                                    142
+C1_P06-|C1_MVP|C1_CG_CLI                                                             142
+C1_P06-|C1_P02-|C1_P05-CTRL_NO_CLI                                                   139
+C1_P05-AUTOMATIC_CLI|C1_CG_INSTALLMENT                                               139
+C5_P02-|C5_P05-CTRL_NO_CLI                                                           139
+C4_P02-|C4_MVP|C4_CLI_Random_test                                                    138
+C1_CT_TECH|C1_CG_INSTALLMENT|C1_CLI_Random_test                                      138
+C1_P05-CTRL_NO_CLI|C1_CT_TECH|C1_LOP_OO|C1_CLI_Random_test                           137
+C1_MVP|C1_CG_INSTALLMENT|C1_CLI_Random_test                                          137
+C6_P05-AUTOMATIC_CLI|C6_CT_TECH                                                      136
+C4_P02-|C4_P05-CTRL_NO_CLI                                                           135
+C5_P02-|C5_CT_TECH                                                                   133
+C1_P05-CTRL_NO_CLI|C1_CT_TECH|C1_LOP_OO|C1_CG_CLI                                    133
+C6_MVP|C6_CG_INSTALLMENT|C6_CLI_Random_test                                          133
+C3_P05-AUTOMATIC_CLI|C3_CT_TECH                                                      132
+C5_MVP|C5_CG_INSTALLMENT|C5_CG_CLI                                                   132
+C4_MVP|C4_CG_INSTALLMENT|C4_CLI_Random_test                                          132
+C1_P06-|C1_CT_TECH|C1_CG_CLI                                                         130
+C6_P05-CTRL_NO_CLI|C6_CT_TECH                                                        129
+C6_P06-|C6_P05-CTRL_NO_CLI|C6_CT_TECH                                                128
+C6_P06-|C6_MVP|C6_CG_CLI                                                             127
+C3_P06-|C3_P02-|C3_P05-CTRL_NO_CLI|C3_CT_TECH                                        127
+C5_P06-|C5_CT_TECH|C5_CG_CLI                                                         127
+C3_P02-|C3_CT_TECH|C3_CG_CLI                                                         126
+C3_P06-|C3_P02-|C3_CT_TECH|C3_CG_CLI                                                 126
+C4_P06-|C4_P02-|C4_MVP|C4_CLI_Random_test                                            126
+C6_MVP|C6_CG_INSTALLMENT|C6_CG_CLI                                                   125
+C1_P06-|C1_P05-CTRL_NO_CLI|C1_MVP                                                    125
+C5_P02-|C5_CG_CLI                                                                    124
+C4_P05-CTRL_NO_CLI|C4_CG_INSTALLMENT                                                 124
+C3_P05-CTRL_NO_CLI|C3_CT_TECH                                                        122
+C3_CT_TECH|C3_CG_CLI                                                                 122
+C6_CT_TECH|C6_CG_INSTALLMENT|C6_CLI_Random_test                                      121
+C3_P05-AUTOMATIC_CLI|C3_CT_TECH|C3_LOP_OO|C3_CG_CLI                                  119
+C4_P05-AUTOMATIC_CLI|C4_CT_TECH                                                      118
+C6_P06-|C6_P05-CTRL_NO_CLI|C6_MVP                                                    117
+C6_P04-CTRL_NO_CLI|C6_LOP_OO|C6_CG_CLI                                               117
+C6_P05-AUTOMATIC_CLI|C6_CT_TECH|C6_LOP_OO|C6_CG_CLI                                  115
+C1_P05-AUTOMATIC_CLI|C1_LOP_OO|C1_CG_CLI                                             115
+C3_P02-|C3_P05-CTRL_NO_CLI|C3_MVP                                                    114
+C3_P06-|C3_P02-|C3_P05-AUTOMATIC_CLI|C3_CT_TECH                                      112
+C3_P04-CTRL_NO_CLI|C3_CG_INSTALLMENT                                                 110
+C5_P06-|C5_P05-AUTOMATIC_CLI|C5_CT_TECH                                              108
+C5_P06-|C5_P05-CTRL_NO_CLI|C5_MVP                                                    107
+C1_CT_TECH|C1_CLI_Random_test                                                        106
+C5_P05-CTRL_NO_CLI|C5_P05-AUTOMATIC_CLI|C5_CT_TECH|C5_LOP_OO                         106
+C3_P02-|C3_P04-CTRL_NO_CLI                                                           105
+C5_P05-CTRL_NO_CLI|C5_CG_INSTALLMENT                                                 104
+C5_P04-CTRL_NO_CLI|C5_LOP_OO|C5_CG_CLI                                               104
+C5_P04-CTRL_NO_CLI|C5_CG_INSTALLMENT                                                 103
+C3_P06-|C3_P02-|C3_P04-CTRL_NO_CLI                                                   103
+C6_P04-CTRL_NO_CLI|C6_CG_INSTALLMENT                                                 103
+C5_P02-|C5_P05-CTRL_NO_CLI|C5_MVP                                                    102
+C3_CT_TECH|C3_CG_INSTALLMENT|C3_CG_CLI                                               102
+C4_P04-CTRL_NO_CLI|C4_CG_INSTALLMENT                                                 102
+C1_P02-|C1_CG_CLI                                                                    102
+C1_MVP|C1_CG_INSTALLMENT|C1_CG_CLI                                                   101
+C4_P05-CTRL_NO_CLI|C4_CT_TECH                                                        101
+C4_P04-CTRL_NO_CLI|C4_LOP_OO|C4_CG_CLI                                               100
+C1_P04-CTRL_NO_CLI|C1_MVP                                                             99
+C4_P02-|C4_P05-CTRL_NO_CLI|C4_MVP                                                     99
+C5_P06-|C5_MVP|C5_CG_CLI                                                              99
+C4_P06-|C4_P02-|C4_P05-CTRL_NO_CLI|C4_MVP                                             98
+C4_P05-CTRL_NO_CLI|C4_P05-AUTOMATIC_CLI|C4_CT_TECH|C4_LOP_OO                          97
+C6_P06-|C6_P02-|C6_P05-CTRL_NO_CLI|C6_MVP                                             96
+C6_P06-|C6_P02-|C6_MVP|C6_CG_CLI                                                      93
+C3_P05-CTRL_NO_CLI|C3_MVP|C3_CG_INSTALLMENT                                           93
+C6_P06-|C6_P04-CTRL_NO_CLI                                                            92
+C5_P06-|C5_P05-CTRL_NO_CLI|C5_CT_TECH                                                 92
+C5_P02-|C5_CT_TECH|C5_CG_CLI                                                          90
+C1_P06-|C1_P02-|C1_P05-CTRL_NO_CLI|C1_MVP                                             90
+C1_P06-|C1_P02-|C1_CT_TECH                                                            88
+C6_P06-|C6_P02-|C6_CT_TECH                                                            88
+C1_P06-|C1_P05-CTRL_NO_CLI|C1_CT_TECH                                                 87
+C3_P06-|C3_P02-|C3_P05-CTRL_NO_CLI|C3_CG_CLI                                          86
+C5_P02-|C5_MVP|C5_CG_CLI                                                              86
+C4_P05-CTRL_NO_CLI|C4_MVP|C4_CG_INSTALLMENT                                           86
+C6_P05-AUTOMATIC_CLI|C6_CT_TECH|C6_CG_INSTALLMENT                                     85
+C4_P06-|C4_P05-AUTOMATIC_CLI|C4_CLI_Random_test                                       84
+C1_P04-CTRL_NO_CLI|C1_CG_INSTALLMENT                                                  84
+C5_P05-CTRL_NO_CLI|C5_MVP|C5_CG_INSTALLMENT                                           83
+C1_P04-CTRL_NO_CLI|C1_LOP_OO|C1_CG_CLI                                                83
+C5_P05-AUTOMATIC_CLI|C5_CT_TECH|C5_LOP_OO|C5_CG_CLI                                   82
+C1_P05-CTRL_NO_CLI|C1_CT_TECH                                                         81
+C3_P05-CTRL_NO_CLI|C3_CT_TECH|C3_CG_INSTALLMENT                                       81
+C4_P06-|C4_P05-CTRL_NO_CLI|C4_CG_CLI                                                  80
+C6_CT_TECH|C6_CG_INSTALLMENT|C6_CG_CLI                                                78
+C3_P05-AUTOMATIC_CLI|C3_CT_TECH|C3_CG_INSTALLMENT                                     76
+C1_P06-|C1_P02-|C1_CT_TECH|C1_CLI_Random_test                                         76
+C1_P05-CTRL_NO_CLI|C1_MVP|C1_CG_INSTALLMENT                                           75
+C1_CT_TECH|C1_CG_INSTALLMENT|C1_CG_CLI                                                74
+C1_P05-AUTOMATIC_CLI|C1_CT_TECH|C1_LOP_OO|C1_CLI_Random_test                          74
+C4_CT_TECH|C4_CG_INSTALLMENT                                                          74
+C3_P06-|C3_P02-|C3_P04-CTRL_NO_CLI|C3_MVP                                             74
+C3_P04-CTRL_NO_CLI|C3_LOP_OO|C3_CG_CLI                                                74
+C5_CT_TECH|C5_CG_INSTALLMENT                                                          73
+C6_P05-CTRL_NO_CLI|C6_MVP|C6_CG_INSTALLMENT                                           73
+C6_P05-CTRL_NO_CLI|C6_CT_TECH|C6_CG_INSTALLMENT                                       73
+C5_P02-|C5_P04-CTRL_NO_CLI                                                            72
+C5_P05-CTRL_NO_CLI|C5_CT_TECH                                                         72
+C6_P06-|C6_P02-|C6_P05-AUTOMATIC_CLI|C6_CT_TECH                                       72
+C4_P02-|C4_P04-CTRL_NO_CLI                                                            72
+C1_P04-CTRL_NO_CLI|C1_CG_CLI                                                          72
+C3_P06-|C3_P02-|C3_P05-CTRL_NO_CLI|C3_P05-AUTOMATIC_CLI                               72
+C4_CT_TECH|C4_CG_CLI                                                                  71
+C4_P05-AUTOMATIC_CLI|C4_CT_TECH|C4_LOP_OO|C4_CG_CLI                                   70
+C1_P05-CTRL_NO_CLI|C1_P05-AUTOMATIC_CLI|C1_CT_TECH|C1_LOP_OO                          69
+C5_P02-|C5_P05-AUTOMATIC_CLI|C5_CT_TECH                                               68
+C5_P06-|C5_P04-CTRL_NO_CLI                                                            68
+C3_P06-|C3_P04-CTRL_NO_CLI|C3_MVP                                                     68
+C3_P02-|C3_P05-CTRL_NO_CLI|C3_CT_TECH                                                 68
+C1_P05-AUTOMATIC_CLI|C1_CT_TECH|C1_CG_INSTALLMENT                                     67
+C4_P06-|C4_P02-|C4_P05-AUTOMATIC_CLI|C4_CLI_Random_test                               67
+C4_CT_TECH|C4_LOP_OO|C4_CLI_Random_test                                               66
+C5_CT_TECH|C5_LOP_OO|C5_CLI_Random_test                                               66
+C1_P05-CTRL_NO_CLI|C1_CT_TECH|C1_CG_INSTALLMENT                                       66
+C1_P06-|C1_P04-CTRL_NO_CLI                                                            65
+C4_P06-|C4_P04-CTRL_NO_CLI|C4_MVP                                                     65
+C6_P04-CTRL_NO_CLI|C6_CG_CLI                                                          63
+C6_P06-|C6_P02-|C6_P05-CTRL_NO_CLI|C6_CT_TECH                                         61
+C1_P06-|C1_P02-|C1_CT_TECH|C1_CG_CLI                                                  60
+C6_P05-AUTOMATIC_CLIC6_LOP_OO                                                         60
+C3_P06-|C3_P02-|C3_P05-CTRL_NO_CLI|C3_CT_TECH|C3_CG_CLI                               60
+C5_CT_TECH|C5_CG_CLI                                                                  59
+C6_P06-|C6_P02-|C6_CT_TECH|C6_CG_CLI                                                  59
+C4_P06-|C4_P02-|C4_P05-CTRL_NO_CLI|C4_CLI_Random_test                                 58
+C1_P02-|C1_MVP                                                                        58
+C6_CT_TECH|C6_CLI_Random_test                                                         58
+C1_P06-|C1_P02-|C1_P05-CTRL_NO_CLI|C1_CT_TECH                                         57
+C3_P06-|C3_P02-|C3_P05-CTRL_NO_CLI|C3_MVP|C3_CG_CLI                                   56
+C4_P06-|C4_P02-|C4_P05-CTRL_NO_CLI|C4_CG_CLI                                          56
+C3_P06-|C3_P05-CTRL_NO_CLI|C3_CT_TECH|C3_CG_CLI                                       56
+C5_P02-|C5_P05-CTRL_NO_CLI|C5_CT_TECH                                                 56
+C4_P06-|C4_P05-CTRL_NO_CLI|C4_CLI_Random_test                                         55
+C1_P06-|C1_P02-|C1_P05-AUTOMATIC_CLI|C1_CLI_Random_test                               55
+C4_P04-CTRL_NO_CLI|C4_CG_CLI                                                          55
+C5_P04-CTRL_NO_CLI|C5_CG_CLI                                                          54
+C6_P02-|C6_CT_TECH                                                                    54
+C1_P06-|C1_P05-AUTOMATIC_CLI|C1_CT_TECH                                               54
+C4_P02-|C4_P05-CTRL_NO_CLI|C4_CLI_Random_test                                         54
+C6_P02-|C6_MVP                                                                        54
+C1_P06-|C1_P02-|C1_P04-CTRL_NO_CLI                                                    54
+C1_CT_TECH|C1_CG_CLI                                                                  52
+C1_P05-AUTOMATIC_CLI|C1_CT_TECH                                                       52
+C3_P04-CTRL_NO_CLI|C3_CG_CLI                                                          51
+C4_P02-|C4_P05-CTRL_NO_CLI|C4_CG_CLI                                                  50
+C4_P06-|C4_CT_TECH|C4_CLI_Random_test                                                 50
+C6_CT_TECH|C6_CG_CLI                                                                  48
+C4_P06-|C4_P02-|C4_P04-CTRL_NO_CLI                                                    48
+C5_P05-AUTOMATIC_CLI|C5_CG_INSTALLMENT|C5_CLI_Random_test                             47
+C6_P06-|C6_P02-|C6_P04-CTRL_NO_CLI                                                    47
+C6_P02-|C6_P05-AUTOMATIC_CLI                                                          44
+C3_P06-|C3_P02-|C3_P05-AUTOMATIC_CLI|C3_CG_CLI                                        43
+C4_P02-|C4_P05-AUTOMATIC_CLI|C4_CLI_Random_test                                       43
+C1_P06-|C1_P02-|C1_P05-AUTOMATIC_CLI|C1_CT_TECH                                       42
+C4_P05-AUTOMATIC_CLI|C4_CG_INSTALLMENT|C4_CLI_Random_test                             42
+C1_P02-|C1_CT_TECH                                                                    42
+C5_CT_TECH|C5_CG_INSTALLMENT|C5_CLI_Random_test                                       42
+C4_CT_TECH|C4_CG_INSTALLMENT|C4_CLI_Random_test                                       41
+C3_P06-|C3_P05-CTRL_NO_CLI|C3_MVP|C3_CG_CLI                                           41
+C4_P06-|C4_P02-|C4_P04-CTRL_NO_CLI|C4_MVP                                             41
+C1_P06-|C1_P02-|C1_P05-CTRL_NO_CLI|C1_CLI_Random_test                                 40
+C3_P02-|C3_P04-CTRL_NO_CLI|C3_MVP                                                     40
+C4_P06-|C4_P05-CTRL_NO_CLI|C4_P05-AUTOMATIC_CLI                                       40
+C5_P02-|C5_P04-CTRL_NO_CLI|C5_MVP                                                     40
+C1_P02-|C1_CLI_Random_test                                                            39
+C1_P06-|C1_P05-AUTOMATIC_CLI|C1_CLI_Random_test                                       39
+C3_P02-|C3_P05-AUTOMATIC_CLI|C3_CT_TECH                                               38
+C6_P06-|C6_P02-|C6_P05-CTRL_NO_CLI|C6_P05-AUTOMATIC_CLI                               38
+C4_P06-|C4_P02-|C4_P05-CTRL_NO_CLI|C4_MVP|C4_CLI_Random_test                          38
+C4_P06-|C4_P02-|C4_P05-CTRL_NO_CLI|C4_P05-AUTOMATIC_CLI                               38
+C4_P02-|C4_P05-CTRL_NO_CLI|C4_MVP|C4_CG_CLI                                           38
+C3_P06-|C3_P05-CTRL_NO_CLI|C3_P05-AUTOMATIC_CLI                                       37
+C4_P05-CTRL_NO_CLI|C4_CG_INSTALLMENT|C4_CLI_Random_test                               36
+C3_P05-CTRL_NO_CLI|C3_P05-AUTOMATIC_CLI|C3_CG_INSTALLMENT                             36
+C5_P06-|C5_P05-CTRL_NO_CLI|C5_P05-AUTOMATIC_CLI                                       36
+C5_P05-CTRL_NO_CLI|C5_CG_INSTALLMENT|C5_CG_CLI                                        36
+C5_P05-CTRL_NO_CLI|C5_CG_INSTALLMENT|C5_CLI_Random_test                               36
+C4_P05-CTRL_NO_CLI|C4_CG_INSTALLMENT|C4_CG_CLI                                        35
+C4_P05-CTRL_NO_CLI|C4_CT_TECH|C4_LOP_OO|C4_CLI_Random_test                            35
+C1_P06-|C1_P02-|C1_P05-CTRL_NO_CLI|C1_CG_CLI                                          35
+C5_P02-|C5_P05-CTRL_NO_CLI|C5_CG_CLI                                                  35
+C6_P06-|C6_P02-|C6_P04-CTRL_NO_CLI|C6_MVP                                             35
+C5_P02-|C5_P05-CTRL_NO_CLI|C5_P05-AUTOMATIC_CLI                                       34
+C4_P02-|C4_P04-CTRL_NO_CLI|C4_MVP                                                     34
+C5_P05-AUTOMATIC_CLI|C5_CT_TECH|C5_LOP_OO|C5_CLI_Random_test                          34
+C4_P06-|C4_P02-|C4_P05-AUTOMATIC_CLI|C4_CG_CLI                                        34
+C4_P05-CTRL_NO_CLI|C4_P05-AUTOMATIC_CLI|C4_CG_INSTALLMENT                             34
+C3_P05-CTRL_NO_CLI|C3_CG_INSTALLMENT|C3_CG_CLI                                        33
+C1_P02-|C1_P04-CTRL_NO_CLI                                                            33
+C3_P04-CTRL_NO_CLI|C3_MVP|C3_CG_CLI                                                   32
+C1_P06-|C1_P05-CTRL_NO_CLI|C1_CLI_Random_test                                         32
+C6_P02-|C6_P04-CTRL_NO_CLI                                                            32
+C6_P06-|C6_P05-CTRL_NO_CLI|C6_CG_CLI                                                  32
+C1_P05-CTRL_NO_CLI|C1_CG_INSTALLMENT|C1_CLI_Random_test                               31
+C3_P02-|C3_P05-CTRL_NO_CLI|C3_CG_CLI                                                  31
+C1_P06-|C1_P02-|C1_P05-CTRL_NO_CLI|C1_CT_TECH|C1_CLI_Random_test                      31
+C6_P06-|C6_P02-|C6_P05-CTRL_NO_CLI|C6_CT_TECH|C6_CG_CLI                               31
+C6_P06-|C6_P05-CTRL_NO_CLI|C6_P05-AUTOMATIC_CLI                                       31
+C3_P06-|C3_P05-CTRL_NO_CLI|C3_CG_CLI                                                  31
+C4_CT_TECH|C4_CLI_Random_test                                                         30
+C1_P02-|C1_P05-AUTOMATIC_CLI                                                          30
+C3_P02-|C3_P05-CTRL_NO_CLI|C3_P05-AUTOMATIC_CLI                                       30
+C5_P04-CTRL_NO_CLI|C5_MVP|C5_CG_CLI                                                   30
+C4_P04-CTRL_NO_CLI|C4_MVP|C4_CG_CLI                                                   29
+C5_P05-CTRL_NO_CLI|C5_P05-AUTOMATIC_CLI|C5_LOP_OO|C5_CLI_Random_test                  29
+C6_P05-CTRL_NO_CLI|C6_CG_INSTALLMENT|C6_CLI_Random_test                               29
+C1_P06-|C1_P02-|C1_P04-CTRL_NO_CLI|C1_MVP                                             28
+C4_P05-AUTOMATIC_CLI|C4_CT_TECH|C4_LOP_OO|C4_CLI_Random_test                          28
+C1_P05-CTRL_NO_CLI|C1_CG_INSTALLMENT|C1_CG_CLI                                        28
+C5_P06-|C5_P04-CTRL_NO_CLI|C5_MVP                                                     27
+C6_P02-|C6_P05-CTRL_NO_CLI                                                            27
+C6_P04-CTRL_NO_CLI|C6_MVP|C6_CG_CLI                                                   27
+C6_P05-CTRL_NO_CLI|C6_CG_INSTALLMENT|C6_CG_CLI                                        26
+C6_P06-|C6_P02-|C6_P05-CTRL_NO_CLI|C6_CG_CLI                                          26
+C4_CT_TECH|C4_CG_INSTALLMENT|C4_CG_CLI                                                26
+C5_P05-CTRL_NO_CLI|C5_P05-AUTOMATIC_CLI|C5_CG_INSTALLMENT                             26
+C4_P02-|C4_P05-CTRL_NO_CLI|C4_MVP|C4_CLI_Random_test                                  26
+C5_P06-|C5_P05-AUTOMATIC_CLI|C5_CG_CLI                                                26
+C4_P06-|C4_P05-CTRL_NO_CLI|C4_CT_TECH|C4_CG_CLI                                       26
+C1_P05-CTRL_NO_CLI|C1_CT_TECH|C1_CG_INSTALLMENT|C1_CLI_Random_test                    25
+C1_P06-|C1_P02-|C1_P05-CTRL_NO_CLI|C1_CT_TECH|C1_CG_CLI                               25
+C3_P06-|C3_P05-AUTOMATIC_CLI|C3_CG_CLI                                                25
+C1_P05-AUTOMATIC_CLI|C1_CT_TECH|C1_LOP_OO|C1_CG_CLI                                   25
+C6_P05-CTRL_NO_CLI|C6_P05-AUTOMATIC_CLI|C6_CG_INSTALLMENT                             25
+C6_P05-AUTOMATIC_CLI|C6_CG_INSTALLMENT|C6_CLI_Random_test                             25
+C3_P02-|C3_P05-CTRL_NO_CLI|C3_CT_TECH|C3_CG_CLI                                       24
+C5_P05-CTRL_NO_CLI|C5_P05-AUTOMATIC_CLI|C5_LOP_OO|C5_CG_CLI                           24
+C5_P02-|C5_P05-AUTOMATIC_CLI|C5_CG_CLI                                                24
+C6_P05-CTRL_NO_CLI|C6_P05-AUTOMATIC_CLI|C6_LOP_OO|C6_CLI_Random_test                  23
+C5_P05-CTRL_NO_CLI|C5_CT_TECH|C5_LOP_OO|C5_CLI_Random_test                            23
+C5_CT_TECH|C5_CG_INSTALLMENT|C5_CG_CLI                                                23
+C4_P05-CTRL_NO_CLI|C4_P05-AUTOMATIC_CLI|C4_LOP_OO|C4_CLI_Random_test                  23
+C6_P06-|C6_P02-|C6_P05-AUTOMATIC_CLI|C6_CG_CLI                                        23
+C1_P06-|C1_P02-|C1_P05-CTRL_NO_CLI|C1_MVP|C1_CLI_Random_test                          22
+C3_P06-|C3_P02-|C3_P05-CTRL_NO_CLI|C3_P05-AUTOMATIC_CLI|C3_CT_TECH                    22
+C3_P04-CTRL_NO_CLI|C3_MVP|C3_CG_INSTALLMENT                                           22
+C1_P06-|C1_P02-|C1_P05-CTRL_NO_CLI|C1_P05-AUTOMATIC_CLI                               22
+C4_P05-CTRL_NO_CLI|C4_CT_TECH|C4_CG_INSTALLMENT                                       22
+C5_P05-AUTOMATIC_CLI|C5_CG_INSTALLMENT|C5_CG_CLI                                      21
+C3_P02-|C3_P05-CTRL_NO_CLI|C3_MVP|C3_CG_CLI                                           21
+C6_P06-|C6_P05-AUTOMATIC_CLI|C6_CG_CLI                                                21
+C5_P05-CTRL_NO_CLI|C5_MVP|C5_CG_INSTALLMENT|C5_CLI_Random_test                        21
+C5_P05-CTRL_NO_CLI|C5_CT_TECH|C5_CG_INSTALLMENT                                       21
+C4_P05-CTRL_NO_CLI|C4_P05-AUTOMATIC_CLI|C4_CT_TEC                                     21
+C4_P05-AUTOMATIC_CLI|C4_CT_TECH|C4_CG_INSTALLMENT                                     21
+C5_P05-AUTOMATIC_CLI|C5_CT_TECH|C5_CG_INSTALLMENT                                     20
+C1_P06-|C1_P05-CTRL_NO_CLI|C1_CT_TECH|C1_CLI_Random_test                              20
+C4_P05-CTRL_NO_CLI|C4_MVP|C4_CG_INSTALLMENT|C4_CLI_Random_test                        20
+C4_P02-|C4_P05-AUTOMATIC_CLI|C4_CG_CLI                                                19
+C4_P05-CTRL_NO_CLI|C4_P05-AUTOMATIC_CLI|C4_LOP_OO|C4_CG_CLI                           19
+C3_P05-CTRL_NO_CLI|C3_CT_TECH|C3_CG_INSTALLMENT|C3_CG_CLI                             19
+C4_P06-|C4_P05-AUTOMATIC_CLI|C4_CG_CLI                                                18
+C4_P05-CTRL_NO_CLI|C4_MVP|C4_CG_INSTALLMENT|C4_CG_CLI                                 18
+C1_P06-|C1_P02-|C1_P05-CTRL_NO_CLI|C1_MVP|C1_CG_CLI                                   18
+C4_P06-|C4_P02-|C4_P05-CTRL_NO_CLI|C4_MVP|C4_CG_CLI                                   18
+C6_P06-|C6_P05-CTRL_NO_CLI|C6_P05-AUTOMATIC_CLI|C6_CT_TECH                            18
+C6_P06-|C6_P02-|C6_P05-CTRL_NO_CLI|C6_MVP|C6_CG_CLI                                   18
+C1_P02-|C1_P04-CTRL_NO_CLI|C1_CG_CLI                                                  18
+C1_P06-|C1_P04-CTRL_NO_CLI|C1_MVP                                                     18
+C5_CT_TECH|C5_CLI_Random_test                                                         18
+C4_P02-|C4_P05-CTRL_NO_CLI|C4_P05-AUTOMATIC_CLI                                       17
+C3_P02-|C3_P04-CTRL_NO_CLI|C3_CG_CLI                                                  17
+C6_P06-|C6_P04-CTRL_NO_CLI|C6_MVP                                                     17
+C5_P06-|C5_P05-CTRL_NO_CLI|C5_CT_TECH|C5_CG_CLI                                       17
+C1_P02-|C1_P05-CTRL_NO_CLI                                                            16
+C1_P05-CTRL_NO_CLI|C1_CLI_Random_test                                                 16
+C3_P02-|C3_P05-AUTOMATIC_CLI|C3_CG_CLI                                                16
+C3_P06-|C3_P04-CTRL_NO_CLI|C3_CG_CLI                                                  16
+C4_P02-|C4_P04-CTRL_NO_CLI|C4_CG_CLI                                                  16
+C3_P05-CTRL_NO_CLI|C3_P05-AUTOMATIC_CLI|C3_LOP_OO|C3_CG_CLI                           16
+C1_P02-|C1_P05-CTRL_NO_CLI|C1_MVP                                                     15
+C4_P06-|C4_P05-CTRL_NO_CLI|C4_MVP|C4_CG_CLI                                           15
+C4_P05-AUTOMATIC_CLI|C4_CG_INSTALLMENT|C4_CG_CLI                                      15
+C5_P05-AUTOMATIC_CLI|C5_CLI_Random_test                                               15
+C5_P02-|C5_P05-CTRL_NO_CLI|C5_CT_TECH|C5_CG_CLI                                       15
+C6_P05-CTRL_NO_CLI|C6_CT_TECH|C6_CG_INSTALLMENT|C6_CLI_Random_test                    15
+C6_P05-CTRL_NO_CLI|C6_CT_TECH|C6_CG_INSTALLMENT|C6_CG_CLI                             15
+C5_P05-CTRL_NO_CLI|C5_CLI_Random_test                                                 14
+C6_P05-CTRL_NO_CLI|C6_P05-AUTOMATIC_CLI|C6_LOP_OO|C6_CG_CLI                           14
+C5_P04-CTRL_NO_CLI|C5_MVP|C5_CG_INSTALLMENT                                           13
+C1_P04-CTRL_NO_CLI|C1_MVP|C1_CG_INSTALLMENT                                           13
+C6_P06-|C6_P02-|C6_P05-AUTOMATIC_CLI|C6_CT_TECH|C6_CG_CLI                             13
+C1_P06-|C1_P02-|C1_P05-AUTOMATIC_CLI|C1_CG_CLI                                        12
+C4_P05-CTRL_NO_CLI|C4_CG_CLI                                                          12
+C1_P05-CTRL_NO_CLI|C1_P05-AUTOMATIC_CLI|C1_CT_TECH|C1_CG_INSTALLMENT                  12
+C5_P06-|C5_P05-CTRL_NO_CLI|C5_CG_CLI                                                  12
+C5_P02-|C5_P05-CTRL_NO_CLI|C5_MVP|C5_CG_CLI                                           12
+C3_P05-CTRL_NO_CLI|C3_MVP|C3_CG_INSTALLMENT|C3_CG_CLI                                 12
+C1_P02-|C1_MVP|C1_CLI_Random_test                                                     12
+C1_P06-|C1_P05-CTRL_NO_CLI|C1_CT_TECH|C1_CG_CLI                                       11
+C6_P05-AUTOMATIC_CLI|C6_CT_TECH|C6_CG_INSTALLMENT|C6_CLI_Random_test                  11
+C4_P04-CTRL_NO_CLI|C4_MVP|C4_CG_INSTALLMENT                                           11
+C1_P06-|C1_P05-CTRL_NO_CLI|C1_CG_CLI                                                  11
+C1_P05-CTRL_NO_CLI|C1_CT_TECH|C1_CG_INSTALLMENT|C1_CG_CLI                             11
+C6_P05-CTRL_NO_CLI|C6_P05-AUTOMATIC_CLI|C6_CT_TECH|C6_LOP_OO|C6_CG_CLI                11
+C6_P05-AUTOMATIC_CLI|C6_CG_INSTALLMENT|C6_CG_CLI                                      10
+C6_P06-|C6_P05-CTRL_NO_CLI|C6_MVP|C6_CG_CLI                                           10
+C1_P05-CTRL_NO_CLI|C1_P05-AUTOMATIC_CLI|C1_LOP_OO|C1_CLI_Random_test                  10
+C1_P06-|C1_P02-|C1_P04-CTRL_NO_CLI|C1_CG_CLI                                          10
+C1_P04-CTRL_NO_CLI|C1_MVP|C1_CG_CLI                                                   10
+C5_P02-|C5_P05-CTRL_NO_CLI|C5_P05-AUTOMATIC_CLI|C5_CT_TECH                            10
+C1_P05-CTRL_NO_CLI|C1_CG_CLI                                                           9
+C3_P05-AUTOMATIC_CLI|C3_CG_INSTALLMENT|C3_CG_CLI                                       9
+C6_P04-CTRL_NO_CLI|C6_MVP|C6_CG_INSTALLMENT                                            9
+C1_P05-AUTOMATIC_CLI|C1_CLI_Random_test                                                9
+C1_P05-AUTOMATIC_CLI|C1_CG_INSTALLMENT|C1_CLI_Random_test                              9
+C1_P05-CTRL_NO_CLI|C1_MVP|C1_CG_INSTALLMENT|C1_CG_CLI                                  9
+C1_P02-|C1_P05-CTRL_NO_CLI|C1_CT_TECH                                                  9
+C6_P02-|C6_CG_CLI                                                                      9
+C1_P05-CTRL_NO_CLI|C1_MVP|C1_CG_INSTALLMENT|C1_CLI_Random_test                         9
+C1_P06-|C1_P05-CTRL_NO_CLI|C1_P05-AUTOMATIC_CLI                                        9
+C4_P05-CTRL_NO_CLI|C4_P05-AUTOMATIC_CLI                                                9
+C6_P05-CTRL_NO_CLI|C6_CLI_Random_test                                                  8
+C6_P02-|C6_P05-AUTOMATIC_CLI|C6_CT_TECH                                                8
+C3_P05-AUTOMATIC_CLI|C3_CG_CLI                                                         8
+C5_P05-CTRL_NO_CLI|C5_P05-AUTOMATIC_CLI                                                8
+C1_P05-CTRL_NO_CLI|C1_P05-AUTOMATIC_CLI|C1_CG_INSTALLMENT                              8
+C3_P05-CTRL_NO_CLI|C3_CG_CLI                                                           8
+C5_P04-CTRL_NO_CLI|C5_CG_INSTALLMENT|C5_CG_CLI                                         7
+C3_P06-|C3_P02-|C3_P05-AUTOMATIC_CLI|C3_CT_TECH|C3_CG_CLI                              7
+C6_P06-|C6_P02-|C6_P05-CTRL_NO_CLI|C6_P05-AUTOMATIC_CLI|C6_CT_TECH                     7
+C1_P06-|C1_P05-CTRL_NO_CLI|C1_MVP|C1_CLI_Random_test                                   7
+C4_P05-AUTOMATIC_CLI|C4_CLI_Random_test                                                7
+C1_P05-AUTOMATIC_CLI|C1_CG_INSTALLMENT|C1_CG_CLI                                       7
+C4_P05-CTRL_NO_CLI|C4_CT_TECH|C4_CG_INSTALLMENT|C4_CLI_Random_test                     7
+C1_P06-|C1_P05-CTRL_NO_CLI|C1_MVP|C1_CG_CLI                                            7
+C1_P05-CTRL_NO_CLI|C1_P05-AUTOMATIC_CLI|C1_CT_TECH|C1_LOP_OO|C1_CLI_Random_test        7
+C6_P05-CTRL_NO_CLI|C6_MVP|C6_CG_INSTALLMENT|C6_CG_CLI                                  7
+C3_P05-CTRL_NO_CLI|C3_P05-AUTOMATIC_CLI                                                6
+C4_P06-|C4_P05-CTRL_NO_CLI|C4_P05-AUTOMATIC_CLI|C                                      6
+C6_P05-CTRL_NO_CLI|C6_P05-AUTOMATIC_CLI|C6_CT_TECH|C6_LOP_OO|C6_CLI_Random_test        6
+C1_P02-|C1_CT_TECH|C1_CLI_Random_test                                                  6
+C5_P02-|C5_P05-AUTOMATIC_CLI|C5_CT_TECH|C5_CG_CLI                                      6
+C3_P02-|C3_P05-AUTOMATIC_CLI|C3_CT_TECH|C3_CG_CLI                                      6
+C6_P06-|C6_P05-CTRL_NO_CLI|C6_CT_TECH|C6_CG_CLI                                        6
+C6_P05-AUTOMATIC_CLI|C6_CT_TECH|C6_CG_INSTALLMENT|C6_CG_CLI                            6
+C4_P04-CTRL_NO_CLI|C4_CG_INSTALLMENT|C4_CG_CLI                                         6
+C6_P02-|C6_P05-CTRL_NO_CLI|C6_MVP                                                      5
+C6_P02-|C6_CT_TECH|C6_CG_CLI                                                           5
+C1_P04-CTRL_NO_CLI|C1_CG_INSTALLMENT|C1_CG_CLI                                         5
+C1_P05-CTRL_NO_CLI|C1_CT_TECH|C1_CLI_Random_test                                       5
+C1_P06-|C1_P05-AUTOMATIC_CLI|C1_CG_CLI                                                 5
+C1_P02-|C1_MVP|C1_CG_CLI                                                               5
+C5_P05-CTRL_NO_CLI|C5_CG_CLI                                                           5
+C6_P05-CTRL_NO_CLI|C6_P05-AUTOMATIC_CLI|C6_CT_TECH|C6_CG_INSTALLMENT                   5
+C5_P05-AUTOMATIC_CLI|C5_CT_TECH|C5_CG_INSTALLMENT|C5_CLI_Random_test                   5
+C4_P05-CTRL_NO_CLI|C4_CLI_Random_test                                                  5
+C4_P05-AUTOMATIC_CLI|C4_CT_TECH|C4_CG_INSTALLMENT|C4_CLI_Random_test                   5
+C6_P04-CTRL_NO_CLI|C6_CG_INSTALLMENT|C6_CG_CLI                                         5
+C4_P06-|C4_P05-CTRL_NO_CLI|C4_P05-AUTOMATIC_CLI|C4_CT_TECH                             5
+C4_P06-|C4_P02-|C4_P04-CTRL_NO_CLI|C4_CG_CLI                                           5
+C6_P05-AUTOMATIC_CLI|C6_CLI_Random_test                                                5
+C4_P06-|C4_P05-CTRL_NO_CLI|C4_MVP|C4_CLI_Random_test                                   5
+C6_P02-|C6_MVP|C6_CG_CLI                                                               5
+C3_P05-AUTOMATIC_CLI|C3_CT_TECH|C3_CG_CLI                                              5
+C6_P02-|C6_P05-CTRL_NO_CLI|C6_CT_TECH                                                  5
+C3_P06-|C3_P05-CTRL_NO_CLI|C3_P05-AUTOMATIC_CLI|C3_CT_TECH                             5
+C3_P05-CTRL_NO_CLI|C3_P05-AUTOMATIC_CLI|C3_CT_TECH|C3_CG_INSTALLMENT                   4
+C5_P05-CTRL_NO_CLI|C5_P05-AUTOMATIC_CLI|C5_CT_TECH|C5_CG_INSTALLMENT                   4
+C3_P04-CTRL_NO_CLI|C3_CG_INSTALLMENT|C3_CG_CLI                                         4
+C4_P05-AUTOMATIC_CLI|C4_CT_TECH|C4_CG_INSTALLMENT|C4_CG_CLI                            4
+C5_P05-CTRL_NO_CLI|C5_CT_TECH|C5_CG_INSTALLMENT|C5_CG_CLI                              4
+C6_P05-CTRL_NO_CLI|C6_P05-AUTOMATIC_CLI|C6_CG_INSTALLMENT|C6_CLI_Random_test           3
+C6_P05-CTRL_NO_CLI|C6_CG_CLI                                                           3
+C5_P05-AUTOMATIC_CLI|C5_CG_CLI                                                         3
+C5_P05-CTRL_NO_CLI|C5_MVP|C5_CG_INSTALLMENT|C5_CG_CLI                                  3
+C1_P06-|C1_P04-CTRL_NO_CLI|C1_CG_CLI                                                   3
+C3_P05-CTRL_NO_CLI|C3_P05-AUTOMATIC_CLI|C3_CT_TECH                                     3
+C1_P05-CTRL_NO_CLI|C1_P05-AUTOMATIC_CLI|C1_CG_INSTALLMENT|C1_CLI_Random_test           2
+
+
+ESCENARIO
+--------------------------------------------------------------------------------
+Definition: Business strategy or rule under which product offers were defined
+Total unique values: 5
+Missing values: 0 (0.00%)
+
+Value distribution:
+escenario
+4.NPV               81669
+3.Test              53155
+5.Reglas_Negocio    52731
+1.MVP               38149
+2.CT_TECH           22604
+
+
+CAMPANIA
+--------------------------------------------------------------------------------
+Definition: Campaign indicator
+Total unique values: 9
+Missing values: 0 (0.00%)
+
+Value distribution:
+campania
+C1-2025    35201
+C3-2024    34021
+C4-2024    31170
+C6-2024    29187
+C6-2025    26263
+C5-2025    24443
+C4-2025    23991
+C3-2025    23198
+C5-2024    20834
+
+
+FLAG_DECLINADO
+--------------------------------------------------------------------------------
+Definition: Binary indicator showing whether the product was offered to the customer or not
+Total unique values: 2
+Missing values: 0 (0.00%)
+
+Value distribution:
+flag_declinado
+0    193672
+1     54636
+
+
+CAUSA_NO_ASIGNACION
+--------------------------------------------------------------------------------
+Definition: Description specifying why the product offer was not made to the customer (e.g., payment capacity)
+Total unique values: 10
+Missing values: 87482 (35.23%)
+
+Value distribution:
+causa_no_asignacion
+NaN                                     87482
+Payment capacity                        74847
+Business Rules assigned to revolving    27404
+Prioritization of CLI CG                12868
+CLI CG for random lines                  9340
+Prioritization of LOP RS                 9204
+Prioritization of PIL and LOP RS         6639
+Reglas Negocio                           6578
+Prioritization of PIL RS                 6461
+Assigned to Top Ups                      4792
+CLI CG for low utilization               2693
+
+================================================================================
+DATA QUALITY ANALYSIS
+================================================================================
+Total rows: 248,308
+Total columns: 15
+Duplicate rows: 0
+
+Missing values by column:
+             Column  Missing Count  Missing %
+causa_no_asignacion          87482      35.23
+         ds_testlab          23392       9.42
+       rentabilidad          20655       8.32
+                 rr          16974       6.84
+             toques          13547       5.46
+     linea_ofrecida              3       0.00
+
+================================================================================
+SUMMARY INSIGHTS
+================================================================================
+
+1. CUSTOMER SEGMENTATION:
+etiqueta_grupo
+elegibles    151472
+mailbase      96836
+
+2. PRODUCT DISTRIBUTION:
+producto
+DC     77264
+AAC    45721
+CLI    42501
+CPC    33575
+CNC    24600
+CPT     8372
+CNT     8307
+TCC     7968
+
+3. CAMPAIGN ANALYSIS:
+campania
+C1-2025    35201
+C3-2024    34021
+C4-2024    31170
+C6-2024    29187
+C6-2025    26263
+C5-2025    24443
+C4-2025    23991
+C3-2025    23198
+C5-2024    20834
+
+4. DECLINED OFFERS:
+flag_declinado
+0    193672
+1     54636
+
+Declined rate: 22.00%
+
+5. TOP DECLINE REASONS:
+causa_no_asignacion
+Payment capacity                        74847
+Business Rules assigned to revolving    27404
+Prioritization of CLI CG                12868
+CLI CG for random lines                  9340
+Prioritization of LOP RS                 9204
+Prioritization of PIL and LOP RS         6639
+Reglas Negocio                           6578
+Prioritization of PIL RS                 6461
+Assigned to Top Ups                      4792
+CLI CG for low utilization               2693
+
+6. BUSINESS METRICS SUMMARY:
+  conteo: Total=336,868,072.00, Average=1,356.65
+  linea_ofrecida: Total=31,589,570,821,678.00, Average=127,220,840.59
+  npv: Total=76,662,564,077.88, Average=308,739.81
+  rentabilidad: Total=4,188,518,150,982.47, Average=18,398,695.17
+  rr: Total=10,931,427.12, Average=47.25
+
+================================================================================
+ANALYSIS COMPLETE
+================================================================================
+
+This analysis provides insights into the nature of the data for future
+chatbot query design. Key areas to consider:
+  • Customer segmentation (etiqueta_grupo)
+  • Product performance (producto, npv, rentabilidad)
+  • Campaign effectiveness (campania, flag_declinado)
+  • Decline analysis (causa_no_asignacion)
+  • Test scenarios (ds_testlab, escenario)

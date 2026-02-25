@@ -1,0 +1,44 @@
+SAMPLE QUESTION:
+6. ¿Cuál es el porcentaje de asignación overall?
+
+SAMPLE ANSWER:
+El porcentaje de asignación overall del portafolio completo de productos en las últimas tres campañas ha sido el siguiente:
+Evolución de la Asignación Overall:
+C3-2025: 92.8% de asignación overall
+Total elegibles: 12,252,558
+Total asignadas: 11,372,040
+Brecha: 880,518 ofertas no asignadas (7.2%)
+C4-2025: 91.6% de asignación overall
+Total elegibles: 12,172,643
+Total asignadas: 11,145,496
+Brecha: 1,027,147 ofertas no asignadas (8.4%)
+C5-2025: 91.6% de asignación overall
+Total elegibles: 12,294,461
+Total asignadas: 11,260,860
+Brecha: 1,033,601 ofertas no asignadas (8.4%)
+Análisis de la Tendencia:
+Se observa un deterioro de 1.2 puntos porcentuales entre C3 y C4, con estabilización en C5. Aunque la eficiencia se mantuvo en C5, el volumen absoluto de ofertas no asignadas se incrementó ligeramente debido al crecimiento en el universo de elegibles.
+Distribución de la Brecha de Asignación por Producto (C5-2025):
+De las 1,033,601 ofertas no asignadas en C5, la distribución es la siguiente:
+AAC: 435,667 ofertas no asignadas (42.2% de la brecha total)
+Principal causa: Límites de exposición crediticia (66% de los casos)
+CPC: 226,942 ofertas no asignadas (22.0% de la brecha total)
+Principal causa: Business Rules assigned to revolving (100% de los casos)
+TCC: 208,000 ofertas no asignadas (20.1% de la brecha total)
+Principal causa: Priorización de tarjetas premium (60% de los casos)
+DC: 91,130 ofertas no asignadas (8.8% de la brecha total)
+Principal causa: Cliente ya tiene producto activo (57.4% de los casos)
+CNC: 71,862 ofertas no asignadas (7.0% de la brecha total)
+Principal causa: Nómina no domiciliada (60% de los casos)
+Comparativo de Eficiencia por Producto (C5-2025):
+DC: 95.3% (mejor desempeño)
+CNC: 94.5%
+CPC: 92.0%
+TCC: 91.2%
+AAC: 88.7% (menor desempeño)
+Implicaciones Estratégicas:
+Oportunidad de Mejora: Si se lograra llevar la eficiencia overall de 91.6% a 93.5% (nivel cercano al de C3), se capturarían aproximadamente 230,000 ofertas adicionales, equivalentes a $650-750 millones en NPV adicional.
+Concentración del Problema: El 64.2% de la brecha de asignación se concentra en solo dos productos (AAC y CPC), lo que permite focalizar esfuerzos de mejora.
+Naturaleza de los Problemas: La mayoría de las ofertas no asignadas no se deben a problemas de calidad crediticia del cliente, sino a conflictos internos de reglas de negocio, límites de política, o saturación de producto.
+Benchmark Interno: DC y CNC demuestran que es posible operar con eficiencias superiores al 94%, lo que sugiere que el 91.6% overall está por debajo del potencial alcanzable.
+
