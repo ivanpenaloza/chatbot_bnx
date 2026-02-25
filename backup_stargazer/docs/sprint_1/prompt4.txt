@@ -1,9 +1,0 @@
-Excellent work. Everything is working so far. I would like you to help me to find a lighther model
-
-than gemma3 if possible. I need the response much faster. So in the right hand side I should be able 
-to pick the models available to answer the questions. In addition to that remove the logo of the robot above
-stargazer databot.
-
-No model can be loaded online. All models must be offline. And every time I switch from one model to another 
-the icon should indicate processing and then turn green indicated that the model choosed is loaded. When this happen
-you discard the others from memory so you do not consume too much resources
