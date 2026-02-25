@@ -1,0 +1,17 @@
+Structure the backend and frontend in such a way that 
+
+1) 'The quick questions' will now be the 'The top  9 questions'
+2) Each one of those questions will be taken from /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/docs/context so question 1, 
+should be the one that appear at /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/docs/context/question_1_npv.txt an so on until
+question 9 that should be the question that appear at /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/docs/context/question_9_npv.txt
+3) If you see each one of the files /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/docs/context/question_NUMBER_npv.txt
+has the question and a sample answer. So, the idea is to update the backend endpoints and the frontend urls in such a way that the endpoints
+of the top 9 questions should use the question and the sample answer from the corresponding /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/docs/context/question_NUMBER_npv.txt
+and the information of /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/static/data/cubo_datos_v2.csv
+and the information /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/docs/data_schema_summary.md
+and the information of the output of /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/analyze_data.py to provide an answer. So
+since you MUST use python 3.9.20, you must re-designed the architecture so it is not so cumbersome the logic, try to be modular and 
+even consider create different routes for each one of those complex top 9 questions since each on of them are very complex. 
+4) Finally use /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/analyze_data.py, its outputs, and the data at 
+/home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/static/data/cubo_datos_v2.csv to update the endpoint of the chat in 'free mode' 
+where users ask whatever they want to know related to the data in question.
