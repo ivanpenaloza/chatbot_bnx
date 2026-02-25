@@ -1,0 +1,60 @@
+SAMPLE QUESTION:
+5. ¿Cuál ha sido el desempeño de las últimas tres campañas?
+
+SAMPLE ANSWER:
+El desempeño del portafolio completo en las últimas tres campañas (C3 a C5 de 2025) muestra tendencias diferenciadas por producto, con un panorama general de redistribución de valor hacia productos de mayor rentabilidad, pero con desafíos operativos que limitan el potencial total.
+Desempeño Consolidado del Portafolio:
+Campaña C3-2025:
+Total de ofertas elegibles: 12,252,558
+Total de ofertas asignadas: 11,372,040
+Eficiencia de asignación overall: 92.8%
+NPV total proyectado: $31,847 millones
+Campaña C4-2025:
+Total de ofertas elegibles: 12,172,643
+Total de ofertas asignadas: 11,145,496
+Eficiencia de asignación overall: 91.6%
+NPV total proyectado: $31,234 millones
+Campaña C5-2025:
+Total de ofertas elegibles: 12,294,461
+Total de ofertas asignadas: 11,260,860
+Eficiencia de asignación overall: 91.6%
+NPV total proyectado: $31,589 millones
+Análisis por Producto:
+CPC- Declive Significativo:
+C3: 3,056,920 asignadas (93.8% eficiencia)
+C4: 2,655,836 asignadas (91.5% eficiencia)
+C5: 2,600,405 asignadas (92.0% eficiencia)
+Tendencia: Caída del 14.9% en volumen, deterioro de 1.8pp en eficiencia
+Causa principal: Conflicto con reglas de productos revolventes
+DC - Crecimiento Estable:
+C3: 1,756,890 asignadas (95.2% eficiencia)
+C4: 1,834,560 asignadas (95.4% eficiencia)
+C5: 1,847,320 asignadas (95.3% eficiencia)
+Tendencia: Crecimiento del 5.1%, eficiencia consistente >95%
+Diagnóstico: Producto maduro con desempeño óptimo
+AAC - Expansión con Fricciones:
+C3: 3,145,670 asignadas (91.0% eficiencia)
+C4: 3,267,890 asignadas (88.8% eficiencia)
+C5: 3,421,567 asignadas (88.7% eficiencia)
+Tendencia: Crecimiento del 8.8% en volumen, deterioro de 2.3pp en eficiencia
+Causa: Límites de exposición crediticia cada vez más restrictivos
+TCC - Contracción Gradual:
+C3: 2,245,670 asignadas (91.4% eficiencia)
+C4: 2,178,450 asignadas (91.2% eficiencia)
+C5: 2,156,890 asignadas (91.2% eficiencia)
+Tendencia: Caída del 4.0% en volumen, eficiencia estable
+Causa: Migración hacia productos premium
+CNC - Crecimiento Sostenido:
+C3: 1,167,890 asignadas (94.6% eficiencia)
+C4: 1,208,760 asignadas (94.6% eficiencia)
+C5: 1,234,678 asignadas (94.5% eficiencia)
+Tendencia: Crecimiento del 5.8%, eficiencia consistente ~94.5%
+Diagnóstico: Crecimiento orgánico limitado por universo de nóminas
+Hallazgos Clave del Período:
+Redistribución de Valor: Los productos de mayor NPV unitario (CNC, AAC) están creciendo, mientras que productos tradicionales (CPC, TCC) están en contracción.
+Deterioro en Eficiencia Overall: Se perdieron 1.2 puntos porcentuales de eficiencia de C3 a C4, estabilizándose en C5. Esto representa más de 140,000 ofertas no capitalizadas.
+Conflictos Internos: Los problemas de asignación no son principalmente de calidad crediticia, sino de conflictos entre reglas de priorización de productos.
+Volumen Total Estancado: A pesar de tener 12.29M de elegibles en C5, solo se asignaron 11.26M, dejando más de 1 millón de ofertas sin capitalizar.
+NPV Total Resiliente: A pesar de la caída en volumen, el NPV total se ha mantenido relativamente estable ($31.2-31.8B) debido a la migración hacia productos de mayor valor unitario.
+Conclusión: El portafolio está en un punto de inflexión. Existe crecimiento en productos de alto valor pero con límites operativos que frenan su potencial. Los productos tradicionales requieren intervención estratégica urgente. La brecha de asignación del 8.4% representa una oportunidad de captura de valor de aproximadamente $2,800 millones en NPV adicional.
+

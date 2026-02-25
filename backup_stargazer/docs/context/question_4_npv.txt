@@ -1,0 +1,21 @@
+SAMPLE QUESTION:
+4. ¿Cuál es el NPV promedio de CPC? (Esta pregunta aplica para todos los productos, pero el formato de respuesta es el mismo)
+
+SAMPLE ANSWER:
+Con base en los análisis , el NPV (Net Present Value o Valor Presente Neto) promedio para CPC es de $2,847 por cliente.
+Este valor se encuentra en el rango medio del portafolio de productos de crédito al consumo. El NPV de CPC presenta las siguientes características:
+Rango de valores:
+NPV mínimo: $1,200
+NPV promedio: $2,847
+NPV máximo: $8,500
+Desviación estándar: $1,456
+Contexto comparativo con otros productos:
+El NPV de CPC se posiciona como un producto de valor intermedio. Para contextualizar:
+CNC (Crédito Nómina Citi) tiene el NPV unitario más alto del portafolio con $4,567, debido a la menor tasa de morosidad y mayor estabilidad de ingresos de clientes con nómina domiciliada
+AAC (Add a Card) registra un NPV de $3,456, superior a CPC debido a los menores costos de adquisición al tratarse de clientes existentes
+TCC (Tarjeta de Crédito Citi) presenta un NPV de $2,145, ligeramente inferior a CPC
+DC (Disponible) tiene el NPV más bajo con $1,234, reflejando márgenes más ajustados
+NPV Total proyectado para CPC:
+Considerando el volumen de 2,600,405 ofertas asignadas en C5-2025, el NPV total proyectado para CPC es de aproximadamente $7,403 millones, lo que lo posiciona como el segundo producto en contribución de valor total al portafolio, después de AAC.
+
+

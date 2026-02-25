@@ -1,0 +1,14 @@
+fastapi==0.103.2
+pyarrow==18.1.0
+pandas==1.3.5
+numpy==1.22.4
+pyspark==3.3.2
+uvicorn==0.22.0
+Jinja2==3.1.2
+python-multipart==0.0.6
+ffmpeg-python==0.2.0
+# Chatbot - Offline Gemma 3 dependencies (Python 3.9 compatible)
+transformers>=4.49.0
+torch>=2.1.0,<2.5.0
+huggingface_hub>=0.25.0
+accelerate>=0.25.0

@@ -1,0 +1,36 @@
+7. Preguntas de contexto
+
+SAMPLE QUESTION:
+7.1 ¿Qué es NPV?
+
+SAMPLE ANSWER:
+NPV es el acrónimo de Net Present Value o Valor Presente Neto. Es una métrica financiera que calcula el valor que un cliente genera para la institución a lo largo del tiempo, expresado en términos de valor presente.
+El concepto funciona de la siguiente manera: cuando se otorga un préstamo de $100,000 pesos, el cliente realizará pagos durante un período determinado (por ejemplo, 24 meses) que incluyen capital e intereses. Supongamos que el total a recibir es de $120,000. Sin embargo, estos $120,000 no se reciben en el momento inicial, sino gradualmente durante dos años.
+Adicionalmente, existen costos asociados:
+Costo de fondeo (la institución también paga intereses por el capital que utiliza)
+Costos operativos de administración del crédito
+Pérdida esperada (riesgo de incumplimiento)
+El NPV toma todos estos flujos futuros (ingresos menos costos) y los descuenta a valor presente utilizando una tasa que refleja el costo de capital de la institución. El resultado es un valor que indica: "este cliente genera $X en términos de valor presente".
+Esta métrica se utiliza para evaluar la rentabilidad de clientes individuales y para comparar el valor relativo de diferentes productos o segmentos.
+
+SAMPLE QUESTION:
+7.2 ¿Qué es CNC?
+
+SAMPLE ANSWER:
+CPC es el acrónimo de Crédito Personal. Se trata de un préstamo personal de monto fijo que se otorga al cliente para financiar necesidades específicas.
+A diferencia de una tarjeta de crédito, que es un producto revolvente donde el cliente puede usar el crédito, pagar y volver a utilizarlo repetidamente, el CPC es un monto único que se entrega en una sola exhibición y se amortiza en cuotas fijas durante un plazo determinado. Por ejemplo, un préstamo de $100,000 pesos se pagaría en 24 mensualidades de aproximadamente $4,800 pesos (el monto exacto depende de la tasa de interés aplicable).
+
+SAMPLE QUESTION:
+7.3 ¿Qué es X test? Ej. ¿Qué significa "Business Rules assigned to revolving"?
+
+SAMPLE ANSWER:
+Esta es la causa principal de las ofertas no asignadas en CPC, por lo que es fundamental comprenderla adecuadamente.
+"Business Rules assigned to revolving" es una regla de negocio interna que prioriza productos revolventes (como tarjetas de crédito) sobre productos no revolventes (como CPC).
+Un producto "revolvente" es aquel en el que el cliente puede utilizar el crédito, realizar pagos y volver a utilizar el crédito disponible de manera repetida. Las tarjetas de crédito son el ejemplo más común: con un límite de $50,000, el cliente puede gastar $20,000, pagar $10,000, quedando con $40,000 disponibles, y así sucesivamente.
+El proceso actual funciona de la siguiente manera: cuando un cliente califica tanto para CPC como para un producto revolvente, el sistema automáticamente lo asigna al producto revolvente y lo excluye del universo de CPC.
+Desde una perspectiva de negocio, esta priorización puede tener justificación en ciertos casos, ya que los productos revolventes pueden generar ingresos recurrentes más sostenidos porque el cliente puede continuar utilizando el crédito indefinidamente. Sin embargo, el problema radica en que esta regla se está aplicando de manera muy amplia, bloqueando más de 200,000 ofertas de CPC por campaña.
+El conflicto fundamental es que esta priorización ocurre DESPUÉS de que el cliente ya ha sido identificado como elegible para CPC, no antes. Esto genera un desperdicio de recursos al procesar clientes que nunca recibirán la oferta de CPC.
+
+
+
+

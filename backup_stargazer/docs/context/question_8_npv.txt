@@ -1,0 +1,6 @@
+SAMPLE QUESTION:
+8. ¿Cuál es la tendencia de las últimas N campañas?
+
+SAMPLE ANSWER:
+El portafolio está en un punto de inflexión crítico. Existe una redistribución natural hacia productos de mayor valor (CNC, AAC), pero esta migración está siendo frenada por límites operativos y conflictos de reglas de negocio. Los productos tradicionales (CPC, TCC) están en declive, pero este declive es en parte artificial (causado por problemas internos) y en parte estructural (cambios de mercado).
+La tendencia actual es de estancamiento con redistribución. Sin intervenciones, el portafolio crecerá marginalmente (~1% anual) pero dejará más de $2,500 millones en NPV sobre la mesa. Con intervenciones focalizadas en los tres problemas principales (conflicto CPC-revolving, límites AAC, canibalización TCC), el portafolio podría crecer 7% anual y capturar $2,100 millones adicionales en NPV.

@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stargazer DataBot - AI Data Analyst</title>
+    <style>
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a3e;
+            --bg-chat: #12122b;
+            --bg-message-user: #2d5aa0;
+            --bg-message-bot: #1e1e4a;
+            --bg-input: #1a1a3e;
+            --text-primary: #e8e8f0;
+            --text-secondary: #9d9db8;
+            --text-muted: #6b6b8d;
+            --accent: #4f8ef7;
+            --accent-hover: #3a7be0;
+            --accent-glow: rgba(79,142,247,0.3);
+            --border: #2a2a5e;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        body { font-family:var(--font-main); background:var(--bg-primary); color:var(--text-primary); height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+
+        /* HEADER */
+        .header { background:var(--bg-secondary); border-bottom:1px solid var(--border); padding:12px 24px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; z-index:10; }
+        .header-left { display:flex; align-items:center; gap:12px; }
+        .logo { width:40px; height:40px; background:linear-gradient(135deg,var(--accent),#7c4dff); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; color:white; }
+        .header-title { font-size:1.2rem; font-weight:600; }
+        .header-subtitle { font-size:0.75rem; color:var(--text-muted); margin-top:2px; }
+        .status-badge { display:flex; align-items:center; gap:6px; padding:6px 14px; background:rgba(76,175,80,0.15); border:1px solid rgba(76,175,80,0.3); border-radius:20px; font-size:0.75rem; color:var(--success); }
+        .status-badge.offline { background:rgba(244,67,54,0.15); border-color:rgba(244,67,54,0.3); color:var(--error); }
+        .status-badge.loading { background:rgba(255,152,0,0.15); border-color:rgba(255,152,0,0.3); color:var(--warning); }
+        .status-dot { width:8px; height:8px; border-radius:50%; background:currentColor; animation:pulse-dot 2s infinite; }
+        @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        /* MAIN LAYOUT */
+        .main-container { display:flex; flex:1; overflow:hidden; }
+
+        /* SIDEBAR */
+        .sidebar { width:340px; background:var(--bg-secondary); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; overflow:hidden; }
+        .sidebar-section { padding:14px 16px; border-bottom:1px solid var(--border); }
+        .sidebar-section.scrollable { flex:1; overflow-y:auto; padding-bottom:20px; }
+        .sidebar-section-title { font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); margin-bottom:10px; }
+        .sidebar::-webkit-scrollbar, .sidebar-section.scrollable::-webkit-scrollbar { width:4px; }
+        .sidebar::-webkit-scrollbar-thumb, .sidebar-section.scrollable::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+        /* MODEL ACCORDION */
+        .model-accordion { border:1px solid rgba(79,142,247,0.2); border-radius:var(--radius); overflow:hidden; background:rgba(79,142,247,0.04); }
+        .model-accordion.open { border-color:var(--accent); }
+        .model-header { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; user-select:none; }
+        .model-header:hover { background:rgba(79,142,247,0.08); }
+        .model-header-dot { width:10px; height:10px; border-radius:50%; background:var(--success); flex-shrink:0; }
+        .model-header-dot.offline { background:var(--text-muted); }
+        .model-header-dot.loading { background:var(--warning); animation:pulse-dot 0.8s infinite; }
+        .model-header-info { flex:1; min-width:0; }
+        .model-header-name { font-size:0.82rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .model-header-meta { font-size:0.65rem; color:var(--text-muted); }
+        .model-header-chevron { width:16px; height:16px; color:var(--text-muted); transition:transform 0.3s; flex-shrink:0; }
+        .model-accordion.open .model-header-chevron { transform:rotate(180deg); }
+        .model-dropdown { max-height:0; overflow:hidden; transition:max-height 0.35s ease, opacity 0.25s ease; opacity:0; }
+        .model-accordion.open .model-dropdown { max-height:300px; opacity:1; }
+        .model-dropdown-inner { padding:4px 8px 8px; }
+        .model-option { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:var(--radius-sm); cursor:pointer; transition:var(--transition); }
+        .model-option:hover { background:rgba(79,142,247,0.1); }
+        .model-option.active { background:rgba(76,175,80,0.08); }
+        .model-option.unavailable { opacity:0.35; cursor:not-allowed; }
+        .model-option-dot { width:8px; height:8px; border-radius:50%; background:var(--text-muted); opacity:0.4; }
+        .model-option.active .model-option-dot { background:var(--success); opacity:1; }
+        .model-option-name { font-size:0.78rem; font-weight:600; flex:1; }
+        .model-option-size { font-size:0.62rem; color:var(--text-muted); padding:2px 6px; background:rgba(79,142,247,0.08); border-radius:10px; }
+
+        /* STATS */
+        .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+        .stat-card { background:rgba(79,142,247,0.08); border:1px solid rgba(79,142,247,0.15); border-radius:var(--radius-sm); padding:10px; }
+        .stat-label { font-size:0.68rem; color:var(--text-muted); margin-bottom:2px; }
+        .stat-value { font-size:0.95rem; font-weight:600; color:var(--accent); }
+
+        /* QUESTION ACCORDION */
+        .q-accordion { border:1px solid rgba(79,142,247,0.15); border-radius:var(--radius-sm); margin-bottom:6px; overflow:hidden; transition:var(--transition); }
+        .q-accordion:hover { border-color:rgba(79,142,247,0.35); }
+        .q-accordion.open { border-color:var(--accent); background:rgba(79,142,247,0.04); }
+        .q-header { display:flex; align-items:flex-start; gap:8px; padding:10px 12px; cursor:pointer; user-select:none; transition:var(--transition); }
+        .q-header:hover { background:rgba(79,142,247,0.08); }
+        .q-number { font-size:0.7rem; font-weight:700; color:var(--accent); background:rgba(79,142,247,0.15); border-radius:4px; padding:2px 6px; flex-shrink:0; margin-top:1px; }
+        .q-title { font-size:0.78rem; color:var(--text-secondary); line-height:1.4; flex:1; }
+        .q-chevron { width:14px; height:14px; color:var(--text-muted); transition:transform 0.3s; flex-shrink:0; margin-top:2px; }
+        .q-accordion.open .q-chevron { transform:rotate(180deg); }
+        .q-body { max-height:0; overflow:hidden; transition:max-height 0.35s ease, opacity 0.25s ease; opacity:0; }
+        .q-accordion.open .q-body { max-height:300px; opacity:1; }
+        .q-body-inner { padding:8px 12px 12px; }
+        .q-param-label { font-size:0.7rem; color:var(--text-muted); margin-bottom:4px; display:block; }
+        .q-param-select { width:100%; padding:7px 10px; background:var(--bg-primary); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); font-size:0.8rem; font-family:var(--font-main); margin-bottom:8px; outline:none; }
+        .q-param-select:focus { border-color:var(--accent); }
+        .q-ask-btn { width:100%; padding:8px; background:var(--accent); border:none; border-radius:var(--radius-sm); color:white; font-size:0.8rem; font-weight:600; cursor:pointer; font-family:var(--font-main); transition:var(--transition); }
+        .q-ask-btn:hover { background:var(--accent-hover); }
+        .q-ask-btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+        /* CHAT AREA */
+        .chat-container { flex:1; display:flex; flex-direction:column; min-width:0; }
+        .chat-messages { flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:16px; scroll-behavior:smooth; }
+        .chat-messages::-webkit-scrollbar { width:6px; }
+        .chat-messages::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+        /* MESSAGES */
+        .message { display:flex; gap:12px; max-width:85%; animation:msg-in 0.35s ease-out; }
+        @keyframes msg-in { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+        .message.user { align-self:flex-end; flex-direction:row-reverse; }
+        .message.bot { align-self:flex-start; }
+        .message-avatar { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; font-weight:600; }
+        .message.user .message-avatar { background:linear-gradient(135deg,#2d5aa0,#1a3d72); color:white; }
+        .message.bot .message-avatar { background:linear-gradient(135deg,#7c4dff,#4f8ef7); color:white; }
+        .message-content { padding:14px 18px; border-radius:var(--radius); line-height:1.6; font-size:0.9rem; }
+        .message.user .message-content { background:var(--bg-message-user); border-bottom-right-radius:4px; color:#e8ecf4; }
+        .message.bot .message-content { background:var(--bg-message-bot); border:1px solid var(--border); border-bottom-left-radius:4px; }
+        .message-content p { margin-bottom:8px; }
+        .message-content p:last-child { margin-bottom:0; }
+        .message-content ul,.message-content ol { margin:8px 0; padding-left:20px; }
+        .message-content li { margin-bottom:4px; }
+        .message-content strong { color:var(--accent); font-weight:600; }
+        .message-content code { background:rgba(79,142,247,0.15); padding:2px 6px; border-radius:4px; font-family:var(--font-mono); font-size:0.85em; }
+        .message-content pre { background:rgba(0,0,0,0.3); padding:12px; border-radius:var(--radius-sm); overflow-x:auto; margin:8px 0; font-family:var(--font-mono); font-size:0.82em; }
+        .message-content h1,.message-content h2,.message-content h3,.message-content h4 { color:var(--accent); margin:14px 0 6px; line-height:1.3; }
+        .message-content h1 { font-size:1.2em; }
+        .message-content h2 { font-size:1.1em; }
+        .message-content h3 { font-size:1.0em; }
+        .message-content h4 { font-size:0.95em; }
+        .message-content hr { border:none; border-top:1px solid var(--border); margin:12px 0; }
+        .message-content blockquote { border-left:3px solid var(--accent); padding:4px 12px; margin:8px 0; color:var(--text-secondary); background:rgba(79,142,247,0.05); border-radius:0 var(--radius-sm) var(--radius-sm) 0; }
+        .message-content table { width:100%; border-collapse:collapse; margin:8px 0; font-size:0.85em; }
+        .message-content th,.message-content td { border:1px solid var(--border); padding:6px 10px; text-align:left; }
+        .message-content th { background:rgba(79,142,247,0.12); color:var(--accent); font-weight:600; }
+        .message-content tr:nth-child(even) { background:rgba(79,142,247,0.04); }
+        .message-content ol { list-style:decimal; margin:8px 0; padding-left:24px; }
+        .message-content ol li { margin-bottom:4px; }
+        .message-meta { font-size:0.65rem; color:var(--text-muted); margin-top:6px; display:flex; gap:10px; }
+        .message.user .message-meta { justify-content:flex-end; }
+        .meta-model { color:var(--accent); font-weight:500; }
+
+        /* TYPING */
+        .typing-indicator { display:none; align-self:flex-start; gap:12px; }
+        .typing-indicator.visible { display:flex; }
+        .typing-dots { display:flex; gap:5px; padding:16px 20px; background:var(--bg-message-bot); border:1px solid var(--border); border-radius:var(--radius); border-bottom-left-radius:4px; }
+        .typing-dot { width:8px; height:8px; background:var(--text-muted); border-radius:50%; animation:typing-bounce 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1){animation-delay:-0.32s} .typing-dot:nth-child(2){animation-delay:-0.16s}
+        @keyframes typing-bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+
+        /* WELCOME */
+        .welcome-container { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center; padding:40px; gap:20px; }
+        .welcome-title { font-size:1.6rem; font-weight:700; background:linear-gradient(135deg,var(--accent),#7c4dff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .welcome-desc { color:var(--text-secondary); font-size:0.95rem; max-width:500px; line-height:1.6; }
+        .welcome-features { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:12px; width:100%; max-width:500px; }
+        .welcome-feature { background:rgba(79,142,247,0.08); border:1px solid rgba(79,142,247,0.15); border-radius:var(--radius-sm); padding:14px; text-align:left; cursor:pointer; transition:var(--transition); }
+        .welcome-feature:hover { border-color:var(--accent); transform:translateY(-2px); }
+        .welcome-feature-icon { font-size:1.2rem; margin-bottom:6px; }
+        .welcome-feature-text { font-size:0.8rem; color:var(--text-secondary); line-height:1.4; }
+
+        /* INPUT */
+        .input-container { padding:16px 24px 20px; background:var(--bg-primary); border-top:1px solid var(--border); flex-shrink:0; }
+        .input-wrapper { display:flex; align-items:flex-end; gap:10px; background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; transition:var(--transition); }
+        .input-wrapper:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+        #messageInput { flex:1; background:transparent; border:none; outline:none; color:var(--text-primary); font-family:var(--font-main); font-size:0.92rem; resize:none; max-height:120px; min-height:24px; line-height:1.5; padding:6px 0; }
+        #messageInput::placeholder { color:var(--text-muted); }
+        .send-btn { width:40px; height:40px; border:none; border-radius:10px; background:var(--accent); color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:var(--transition); flex-shrink:0; }
+        .send-btn:hover:not(:disabled) { background:var(--accent-hover); transform:scale(1.05); }
+        .send-btn:disabled { opacity:0.4; cursor:not-allowed; }
+        .send-btn svg { width:18px; height:18px; }
+        .input-hint { font-size:0.68rem; color:var(--text-muted); margin-top:8px; text-align:center; }
+        .input-hint .active-model-name { color:var(--accent); font-weight:500; }
+
+        /* MODE TABS */
+        .mode-tabs { display:flex; gap:4px; margin-bottom:10px; }
+        .mode-tab { flex:1; padding:7px; text-align:center; font-size:0.72rem; font-weight:600; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; color:var(--text-muted); background:transparent; font-family:var(--font-main); transition:var(--transition); }
+        .mode-tab.active { background:rgba(79,142,247,0.15); border-color:var(--accent); color:var(--accent); }
+        .mode-tab:hover { border-color:rgba(79,142,247,0.4); }
+
+        @media (max-width:768px) {
+            .sidebar { display:none; }
+            .chat-messages { padding:16px; }
+            .message { max-width:95%; }
+            .welcome-features { grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">S</div>
+            <div>
+                <div class="header-title">Stargazer DataBot</div>
+                <div class="header-subtitle" id="headerSubtitle">AI-Powered Data Analyst &bull; Loading...</div>
+            </div>
+        </div>
+        <div class="status-badge loading" id="statusBadge">
+            <div class="status-dot"></div>
+            <span id="statusText">Connecting...</span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar" id="sidebar">
+            <!-- Model Selector -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Modelo</div>
+                <div class="model-accordion" id="modelAccordion">
+                    <div class="model-header" id="modelHeader" onclick="toggleModelDropdown()">
+                        <div class="model-header-dot offline" id="modelHeaderDot"></div>
+                        <div class="model-header-info">
+                            <div class="model-header-name" id="modelHeaderName">Loading...</div>
+                            <div class="model-header-meta" id="modelHeaderMeta">Initializing</div>
+                        </div>
+                        <svg class="model-header-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="model-dropdown" id="modelDropdown">
+                        <div style="height:1px;background:var(--border);margin:0 14px 8px"></div>
+                        <div class="model-dropdown-inner" id="modelSelector"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Dataset</div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-label">Registros</div><div class="stat-value" id="statRecords">--</div></div>
+                    <div class="stat-card"><div class="stat-label">Productos</div><div class="stat-value" id="statProducts">--</div></div>
+                    <div class="stat-card"><div class="stat-label">Tasa Declive</div><div class="stat-value" id="statDecline">--</div></div>
+                    <div class="stat-card"><div class="stat-label">NPV Total</div><div class="stat-value" id="statNPV">--</div></div>
+                </div>
+            </div>
+
+            <!-- Mode Tabs + Questions -->
+            <div class="sidebar-section scrollable">
+                <div class="sidebar-section-title">Preguntas</div>
+                <div class="mode-tabs">
+                    <div class="mode-tab active" id="tabGuided" onclick="setMode('guided')">Top 9 Preguntas</div>
+                    <div class="mode-tab" id="tabFree" onclick="setMode('free')">Modo Libre</div>
+                </div>
+                <div id="guidedQuestions"></div>
+                <div id="freeInfo" style="display:none">
+                    <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.5;margin-top:8px;">
+                        Escribe cualquier pregunta en el chat. El modelo responderá usando el dataset completo como contexto.
+                    </p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-container" id="welcomeScreen">
+                    <h1 class="welcome-title">Stargazer DataBot</h1>
+                    <p class="welcome-desc">Analista de datos con IA. Selecciona una de las Top 9 preguntas en la barra lateral o escribe tu propia pregunta sobre campañas y productos de crédito NPV.</p>
+                    <div class="welcome-features">
+                        <div class="welcome-feature" onclick="askQuestionById(1)"><div class="welcome-feature-icon">📊</div><div class="welcome-feature-text">Resultados de campaña</div></div>
+                        <div class="welcome-feature" onclick="askQuestionById(5)"><div class="welcome-feature-icon">📈</div><div class="welcome-feature-text">Desempeño últimas campañas</div></div>
+                        <div class="welcome-feature" onclick="askQuestionById(4)"><div class="welcome-feature-icon">💰</div><div class="welcome-feature-text">NPV promedio por producto</div></div>
+                        <div class="welcome-feature" onclick="askQuestionById(9)"><div class="welcome-feature-icon">🔄</div><div class="welcome-feature-text">Estrategias de Overlap</div></div>
+                    </div>
+                </div>
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="message-avatar" style="background:linear-gradient(135deg,#7c4dff,#4f8ef7);color:white;">S</div>
+                    <div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
+                </div>
+            </div>
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea id="messageInput" placeholder="Escribe tu pregunta sobre los datos..." rows="1" onkeydown="handleKeyDown(event)"></textarea>
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </div>
+                <div class="input-hint">
+                    <strong>Enter</strong> para enviar &bull; <strong>Shift+Enter</strong> nueva línea &bull;
+                    Modelo: <span class="active-model-name" id="hintModelName">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // ── Question definitions ──────────────────────────────────
+        const QUESTIONS = [
+            {
+                id: 1, endpoint: '/api/v1/questions/q1/ask', paramsEndpoint: '/api/v1/questions/q1/params',
+                title: '¿Cómo va la campaña? / Resultados de la campaña',
+                icon: '📊',
+                params: [{ key: 'campania', label: 'Campaña', type: 'select' }]
+            },
+            {
+                id: 2, endpoint: '/api/v1/questions/q2/ask', paramsEndpoint: '/api/v1/questions/q2/params',
+                title: '¿Qué porcentaje de ofertas se asignó para [producto]?',
+                icon: '📈',
+                params: [{ key: 'producto', label: 'Producto', type: 'select' }]
+            },
+            {
+                id: 3, endpoint: '/api/v1/questions/q3/ask', paramsEndpoint: '/api/v1/questions/q3/params',
+                title: '¿Por qué no se asignaron el 100% de las ofertas de [producto]?',
+                icon: '❓',
+                params: [{ key: 'producto', label: 'Producto', type: 'select' }]
+            },
+            {
+                id: 4, endpoint: '/api/v1/questions/q4/ask', paramsEndpoint: '/api/v1/questions/q4/params',
+                title: '¿Cuál es el NPV promedio de [producto]?',
+                icon: '💰',
+                params: [{ key: 'producto', label: 'Producto', type: 'select' }]
+            },
+            {
+                id: 5, endpoint: '/api/v1/questions/q5/ask', paramsEndpoint: '/api/v1/questions/q5/params',
+                title: '¿Cuál ha sido el desempeño de las últimas tres campañas?',
+                icon: '📋',
+                params: []
+            },
+            {
+                id: 6, endpoint: '/api/v1/questions/q6/ask', paramsEndpoint: '/api/v1/questions/q6/params',
+                title: '¿Cuál es el porcentaje de asignación overall?',
+                icon: '🎯',
+                params: [{ key: 'campania', label: 'Campaña (foco)', type: 'select' }]
+            },
+            {
+                id: 7, endpoint: '/api/v1/questions/q7/ask', paramsEndpoint: '/api/v1/questions/q7/params',
+                title: 'Preguntas de contexto (¿Qué es NPV?, ¿Qué es CPC?, etc.)',
+                icon: '📖',
+                params: [{ key: 'subtopic', label: 'Tema', type: 'select' }]
+            },
+            {
+                id: 8, endpoint: '/api/v1/questions/q8/ask', paramsEndpoint: '/api/v1/questions/q8/params',
+                title: '¿Cuál es la tendencia de las últimas N campañas?',
+                icon: '📉',
+                params: [{ key: 'n_campanias', label: 'Número de campañas', type: 'select' }]
+            },
+            {
+                id: 9, endpoint: '/api/v1/questions/q9/ask', paramsEndpoint: '/api/v1/questions/q9/params',
+                title: '¿Cuáles son las principales estrategias de Overlap?',
+                icon: '🔄',
+                params: [{ key: 'campania', label: 'Campaña', type: 'select' }]
+            }
+        ];
+
+        // ── DOM ───────────────────────────────────────────────────
+        const chatMessages    = document.getElementById('chatMessages');
+        const messageInput    = document.getElementById('messageInput');
+        const sendBtn         = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const welcomeScreen   = document.getElementById('welcomeScreen');
+        const statusBadge     = document.getElementById('statusBadge');
+        const statusText      = document.getElementById('statusText');
+        const headerSubtitle  = document.getElementById('headerSubtitle');
+        const hintModelName   = document.getElementById('hintModelName');
+        const modelSelector   = document.getElementById('modelSelector');
+        const modelAccordion  = document.getElementById('modelAccordion');
+        const modelHeaderDot  = document.getElementById('modelHeaderDot');
+        const modelHeaderName = document.getElementById('modelHeaderName');
+        const modelHeaderMeta = document.getElementById('modelHeaderMeta');
+        const guidedQuestions = document.getElementById('guidedQuestions');
+
+        let isProcessing = false;
+        let isSwitchingModel = false;
+        let currentModelKey = null;
+        let currentMode = 'guided';
+        let questionParamsCache = {};
+
+        // ── Mode switching ────────────────────────────────────────
+        window.setMode = function(mode) {
+            currentMode = mode;
+            document.getElementById('tabGuided').classList.toggle('active', mode === 'guided');
+            document.getElementById('tabFree').classList.toggle('active', mode === 'free');
+            document.getElementById('guidedQuestions').style.display = mode === 'guided' ? 'block' : 'none';
+            document.getElementById('freeInfo').style.display = mode === 'free' ? 'block' : 'none';
+        };
+
+        // ── Build question accordions ─────────────────────────────
+        function buildQuestionAccordions() {
+            guidedQuestions.innerHTML = '';
+            QUESTIONS.forEach(function(q) {
+                var acc = document.createElement('div');
+                acc.className = 'q-accordion';
+                acc.id = 'qacc-' + q.id;
+                var chevronSvg = '<svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+                var headerHtml = '<div class="q-header" onclick="toggleQuestion(' + q.id + ')">'
+                    + '<span class="q-number">' + q.icon + ' Q' + q.id + '</span>'
+                    + '<span class="q-title">' + q.title + '</span>'
+                    + chevronSvg
+                    + '</div>';
+                var bodyHtml = '<div class="q-body"><div class="q-body-inner" id="qbody-' + q.id + '">'
+                    + '<div style="font-size:0.75rem;color:var(--text-muted)">Cargando parámetros...</div>'
+                    + '</div></div>';
+                acc.innerHTML = headerHtml + bodyHtml;
+                guidedQuestions.appendChild(acc);
+            });
+        }
+
+        window.toggleQuestion = function(qId) {
+            var acc = document.getElementById('qacc-' + qId);
+            var wasOpen = acc.classList.contains('open');
+            // Close all
+            document.querySelectorAll('.q-accordion').forEach(function(a) { a.classList.remove('open'); });
+            if (!wasOpen) {
+                acc.classList.add('open');
+                loadQuestionParams(qId);
+            }
+        };
+
+        async function loadQuestionParams(qId) {
+            var q = QUESTIONS.find(function(x) { return x.id === qId; });
+            if (!q) return;
+            var body = document.getElementById('qbody-' + qId);
+
+            if (questionParamsCache[qId]) {
+                renderQuestionBody(q, body, questionParamsCache[qId]);
+                return;
+            }
+
+            try {
+                var res = await fetch(q.paramsEndpoint);
+                var data = await res.json();
+                questionParamsCache[qId] = data;
+                renderQuestionBody(q, body, data);
+            } catch (err) {
+                body.innerHTML = '<div style="font-size:0.75rem;color:var(--error)">Error cargando parámetros</div>';
+            }
+        }
+
+        function renderQuestionBody(q, body, paramValues) {
+            var html = '';
+            q.params.forEach(function(p) {
+                var values = paramValues[p.key] || [];
+                html += '<label class="q-param-label">' + p.label + '</label>';
+                html += '<select class="q-param-select" id="qparam-' + q.id + '-' + p.key + '">';
+                values.forEach(function(v) {
+                    html += '<option value="' + v + '">' + v + '</option>';
+                });
+                html += '</select>';
+            });
+            html += '<button class="q-ask-btn" id="qbtn-' + q.id + '" onclick="askStructuredQuestion(' + q.id + ')">Preguntar</button>';
+            body.innerHTML = html;
+        }
+
+        // ── Ask structured question ───────────────────────────────
+        window.askStructuredQuestion = async function(qId) {
+            if (isProcessing) return;
+            var q = QUESTIONS.find(function(x) { return x.id === qId; });
+            if (!q) return;
+
+            var payload = {};
+            var displayParts = [];
+            q.params.forEach(function(p) {
+                var sel = document.getElementById('qparam-' + q.id + '-' + p.key);
+                if (sel) {
+                    payload[p.key] = sel.value;
+                    displayParts.push(p.label + ': ' + sel.value);
+                }
+            });
+
+            var userMsg = 'Q' + q.id + ': ' + q.title;
+            if (displayParts.length > 0) {
+                userMsg += ' (' + displayParts.join(', ') + ')';
+            }
+
+            isProcessing = true;
+            disableAllButtons(true);
+            hideWelcome();
+            addMessage(userMsg, 'user');
+            showTyping();
+
+            try {
+                var res = await fetch(q.endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                hideTyping();
+                if (!res.ok) {
+                    var err = {};
+                    try { err = await res.json(); } catch(e) {}
+                    addMessage('Error: ' + (err.detail || 'Error del servidor'), 'bot');
+                } else {
+                    var data = await res.json();
+                    addMessage(data.response, 'bot', { time: data.inference_time });
+                }
+            } catch (err) {
+                hideTyping();
+                addMessage('Error de conexión. Verifica el servidor.', 'bot');
+            }
+            isProcessing = false;
+            disableAllButtons(false);
+            messageInput.focus();
+        };
+
+        window.askQuestionById = function(qId) {
+            window.toggleQuestion(qId);
+            setTimeout(function() { askStructuredQuestion(qId); }, 200);
+        };
+
+        function disableAllButtons(disabled) {
+            sendBtn.disabled = disabled;
+            document.querySelectorAll('.q-ask-btn').forEach(function(b) { b.disabled = disabled; });
+        }
+
+        // ── Free mode: send to /chatbot/ask ───────────────────────
+        window.sendMessage = async function() {
+            var text = messageInput.value.trim();
+            if (!text || isProcessing) return;
+            isProcessing = true;
+            sendBtn.disabled = true;
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            hideWelcome();
+            addMessage(text, 'user');
+            showTyping();
+
+            try {
+                var res = await fetch('/api/v1/chatbot/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                hideTyping();
+                if (!res.ok) {
+                    var err = {};
+                    try { err = await res.json(); } catch(e) {}
+                    addMessage('Error: ' + (err.detail || 'Error del servidor'), 'bot');
+                } else {
+                    var data = await res.json();
+                    addMessage(data.response, 'bot', { model: data.model_used, time: data.inference_time });
+                }
+            } catch (err) {
+                hideTyping();
+                addMessage('Error de conexión. Verifica el servidor.', 'bot');
+            }
+            isProcessing = false;
+            sendBtn.disabled = false;
+            messageInput.focus();
+        };
+
+        // ── Textarea ──────────────────────────────────────────────
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            sendBtn.disabled = !this.value.trim();
+        });
+        window.handleKeyDown = function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+        };
+
+        // ── Model management ──────────────────────────────────────
+        window.toggleModelDropdown = function() { modelAccordion.classList.toggle('open'); };
+
+        async function loadModels() {
+            try {
+                var res = await fetch('/api/v1/chatbot/models');
+                var data = await res.json();
+                currentModelKey = data.active_model;
+                renderModelSelector(data.models || []);
+                updateModelHeader(data.models || []);
+                updateModelDisplay(data);
+            } catch (err) { console.warn('Models:', err); }
+        }
+
+        function updateModelHeader(models) {
+            var active = models.find(function(m) { return m.active; });
+            if (isSwitchingModel) {
+                modelHeaderDot.className = 'model-header-dot loading';
+                modelHeaderName.textContent = 'Cambiando...';
+                modelHeaderMeta.textContent = 'Cargando modelo';
+            } else if (active) {
+                modelHeaderDot.className = 'model-header-dot';
+                modelHeaderName.textContent = active.display_name;
+                modelHeaderMeta.textContent = active.size + ' \u2022 ' + active.description;
+            } else {
+                modelHeaderDot.className = 'model-header-dot offline';
+                modelHeaderName.textContent = 'Sin modelo';
+                modelHeaderMeta.textContent = 'Click para seleccionar';
+            }
+        }
+
+        function renderModelSelector(models) {
+            modelSelector.innerHTML = '';
+            models.forEach(function(m) {
+                var opt = document.createElement('div');
+                opt.className = 'model-option' + (m.active ? ' active' : '') + (!m.available ? ' unavailable' : '');
+                opt.dataset.key = m.key;
+                opt.innerHTML = '<div class="model-option-dot"></div><div class="model-option-name">' + m.display_name + '</div><div class="model-option-size">' + m.size + '</div>';
+                if (m.available) opt.addEventListener('click', function(e) { e.stopPropagation(); switchModel(m.key); modelAccordion.classList.remove('open'); });
+                modelSelector.appendChild(opt);
+            });
+        }
+
+        function updateModelDisplay(data) {
+            var active = data.models ? data.models.find(function(m) { return m.active; }) : null;
+            var name = active ? active.display_name : 'Sin modelo';
+            headerSubtitle.textContent = 'AI Data Analyst \u2022 ' + name + ' (Offline)';
+            hintModelName.textContent = name;
+            if (data.is_ready) { statusBadge.className = 'status-badge'; statusText.textContent = 'Online (' + name + ')'; }
+            else if (data.is_loading) { statusBadge.className = 'status-badge loading'; statusText.textContent = 'Cargando modelo...'; }
+            else { statusBadge.className = 'status-badge offline'; statusText.textContent = 'Sin modelo'; }
+        }
+
+        async function switchModel(modelKey) {
+            if (isSwitchingModel || modelKey === currentModelKey) return;
+            isSwitchingModel = true;
+            modelHeaderDot.className = 'model-header-dot loading';
+            modelHeaderName.textContent = 'Cambiando...';
+            statusBadge.className = 'status-badge loading';
+            statusText.textContent = 'Cambiando modelo...';
+            try {
+                var res = await fetch('/api/v1/chatbot/models/switch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model_key: modelKey }) });
+                if (!res.ok) throw new Error('Switch failed');
+                var result = await res.json();
+                currentModelKey = modelKey;
+                isSwitchingModel = false;
+                await loadModels();
+                addSystemMessage('Modelo cambiado a <strong>' + result.display_name + '</strong>');
+            } catch (err) {
+                isSwitchingModel = false;
+                statusBadge.className = 'status-badge offline';
+                statusText.textContent = 'Error al cambiar';
+                addSystemMessage('Error al cambiar modelo: ' + err.message);
+                await loadModels();
+            }
+        }
+
+        // ── Chat helpers ──────────────────────────────────────────
+        function hideWelcome() { if (welcomeScreen) welcomeScreen.style.display = 'none'; }
+
+        function addSystemMessage(html) {
+            hideWelcome();
+            var div = document.createElement('div');
+            div.style.cssText = 'text-align:center;font-size:0.75rem;color:var(--text-muted);padding:8px 16px;animation:msg-in 0.35s ease-out;';
+            div.innerHTML = html;
+            chatMessages.insertBefore(div, typingIndicator);
+            scrollToBottom();
+        }
+
+        function addMessage(content, role, meta) {
+            hideWelcome();
+            var msgDiv = document.createElement('div');
+            msgDiv.className = 'message ' + role;
+            var avatar = role === 'user' ? 'U' : 'S';
+            var formatted = role === 'bot' ? formatResponse(content) : '<p>' + content.replace(/\n/g, '<br>') + '</p>';
+            var metaHtml = '<span class="meta-time">' + getTime() + '</span>';
+            if (role === 'bot' && meta) {
+                if (meta.model) metaHtml += '<span class="meta-model">' + meta.model + '</span>';
+                if (meta.time) metaHtml += '<span>' + meta.time + 's</span>';
+            }
+            msgDiv.innerHTML = '<div class="message-avatar">' + avatar + '</div><div><div class="message-content">' + formatted + '</div><div class="message-meta">' + metaHtml + '</div></div>';
+            chatMessages.insertBefore(msgDiv, typingIndicator);
+            scrollToBottom();
+        }
+
+        function formatResponse(text) {
+            // Normalize literal \n sequences that LLMs sometimes produce
+            var raw = text.replace(/\\n/g, '\n');
+
+            // Escape HTML entities
+            raw = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            // Fenced code blocks (preserve content as-is)
+            var codeBlocks = [];
+            raw = raw.replace(/```(\w*)\n?([\s\S]*?)```/g, function(_, lang, code) {
+                var idx = codeBlocks.length;
+                codeBlocks.push('<pre><code>' + code.trim() + '</code></pre>');
+                return '\n%%CODEBLOCK_' + idx + '%%\n';
+            });
+
+            // Split into lines for line-by-line processing
+            var lines = raw.split('\n');
+            var html = '';
+            var inUl = false;
+            var inOl = false;
+            var inTable = false;
+            var tableHasHeader = false;
+
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                var trimmed = line.trim();
+
+                // Code block placeholder
+                var cbMatch = trimmed.match(/^%%CODEBLOCK_(\d+)%%$/);
+                if (cbMatch) {
+                    if (inUl) { html += '</ul>'; inUl = false; }
+                    if (inOl) { html += '</ol>'; inOl = false; }
+                    if (inTable) { html += '</tbody></table>'; inTable = false; }
+                    html += codeBlocks[parseInt(cbMatch[1])];
+                    continue;
+                }
+
+                // Horizontal rule
+                if (/^[-*_]{3,}$/.test(trimmed)) {
+                    if (inUl) { html += '</ul>'; inUl = false; }
+                    if (inOl) { html += '</ol>'; inOl = false; }
+                    if (inTable) { html += '</tbody></table>'; inTable = false; }
+                    html += '<hr>';
+                    continue;
+                }
+
+                // Headers (### before ## before #)
+                var headerMatch = trimmed.match(/^(#{1,4})\s+(.+)$/);
+                if (headerMatch) {
+                    if (inUl) { html += '</ul>'; inUl = false; }
+                    if (inOl) { html += '</ol>'; inOl = false; }
+                    if (inTable) { html += '</tbody></table>'; inTable = false; }
+                    var level = headerMatch[1].length;
+                    html += '<h' + level + '>' + inlineFormat(headerMatch[2]) + '</h' + level + '>';
+                    continue;
+                }
+
+                // Table rows (lines containing |)
+                if (trimmed.indexOf('|') !== -1 && trimmed.split('|').length >= 3) {
+                    // Check if it's a separator row (---|---|---)
+                    var isSeparator = /^[\s|:-]+$/.test(trimmed);
+                    if (isSeparator) {
+                        tableHasHeader = true;
+                        continue;
+                    }
+                    var cells = trimmed.replace(/^\||\|$/g, '').split('|').map(function(c) { return c.trim(); });
+                    if (!inTable) {
+                        if (inUl) { html += '</ul>'; inUl = false; }
+                        if (inOl) { html += '</ol>'; inOl = false; }
+                        html += '<table><thead><tr>';
+                        cells.forEach(function(c) { html += '<th>' + inlineFormat(c) + '</th>'; });
+                        html += '</tr></thead><tbody>';
+                        inTable = true;
+                        tableHasHeader = false;
+                    } else {
+                        html += '<tr>';
+                        cells.forEach(function(c) { html += '<td>' + inlineFormat(c) + '</td>'; });
+                        html += '</tr>';
+                    }
+                    continue;
+                } else if (inTable) {
+                    html += '</tbody></table>';
+                    inTable = false;
+                    tableHasHeader = false;
+                }
+
+                // Unordered list items
+                if (/^[-*•]\s+/.test(trimmed)) {
+                    if (inOl) { html += '</ol>'; inOl = false; }
+                    if (!inUl) { html += '<ul>'; inUl = true; }
+                    html += '<li>' + inlineFormat(trimmed.replace(/^[-*•]\s+/, '')) + '</li>';
+                    continue;
+                } else if (inUl) {
+                    html += '</ul>';
+                    inUl = false;
+                }
+
+                // Ordered list items
+                if (/^\d+[.)]\s+/.test(trimmed)) {
+                    if (inUl) { html += '</ul>'; inUl = false; }
+                    if (!inOl) { html += '<ol>'; inOl = true; }
+                    html += '<li>' + inlineFormat(trimmed.replace(/^\d+[.)]\s+/, '')) + '</li>';
+                    continue;
+                } else if (inOl) {
+                    html += '</ol>';
+                    inOl = false;
+                }
+
+                // Blockquote
+                if (/^&gt;\s*/.test(trimmed)) {
+                    html += '<blockquote>' + inlineFormat(trimmed.replace(/^&gt;\s*/, '')) + '</blockquote>';
+                    continue;
+                }
+
+                // Empty line = paragraph break
+                if (trimmed === '') {
+                    html += '<br>';
+                    continue;
+                }
+
+                // Regular paragraph line
+                html += '<p>' + inlineFormat(trimmed) + '</p>';
+            }
+
+            // Close any open lists/tables
+            if (inUl) html += '</ul>';
+            if (inOl) html += '</ol>';
+            if (inTable) html += '</tbody></table>';
+
+            // Clean up consecutive <br>
+            html = html.replace(/(<br>\s*){3,}/g, '<br><br>');
+            // Remove empty paragraphs
+            html = html.replace(/<p>\s*<\/p>/g, '');
+
+            return html;
+        }
+
+        function inlineFormat(text) {
+            // Inline code
+            text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+            // Bold
+            text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            // Italic
+            text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            // Underline (sometimes used by LLMs)
+            text = text.replace(/__(.+?)__/g, '<u>$1</u>');
+            return text;
+        }
+
+        function getTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+        function scrollToBottom() { requestAnimationFrame(function() { chatMessages.scrollTop = chatMessages.scrollHeight; }); }
+        function showTyping() { typingIndicator.classList.add('visible'); scrollToBottom(); }
+        function hideTyping() { typingIndicator.classList.remove('visible'); }
+
+        // ── Stats ─────────────────────────────────────────────────
+        async function loadStats() {
+            try {
+                var res = await fetch('/api/v1/chatbot/quick-stats');
+                var data = await res.json();
+                document.getElementById('statRecords').textContent = (data.total_records || 0).toLocaleString();
+                document.getElementById('statProducts').textContent = data.unique_products || '--';
+                document.getElementById('statDecline').textContent = data.decline_rate != null ? data.decline_rate + '%' : '--';
+                document.getElementById('statNPV').textContent = data.total_npv != null ? '$' + Number(data.total_npv).toLocaleString(undefined, { maximumFractionDigits: 0 }) : '--';
+            } catch (err) { console.warn('Stats:', err); }
+        }
+
+        async function checkHealth() {
+            try {
+                var res = await fetch('/api/v1/chatbot/health');
+                var data = await res.json();
+                if (data.model_ready) {
+                    statusBadge.className = 'status-badge';
+                    statusText.textContent = 'Online (' + (data.model_display_name || 'Model') + ')';
+                    headerSubtitle.textContent = 'AI Data Analyst \u2022 ' + (data.model_display_name || '') + ' (Offline)';
+                    hintModelName.textContent = data.model_display_name || '--';
+                } else if (data.model_loading) {
+                    statusBadge.className = 'status-badge loading';
+                    statusText.textContent = 'Cargando modelo...';
+                } else {
+                    statusBadge.className = 'status-badge offline';
+                    statusText.textContent = 'Sin modelo';
+                }
+            } catch (err) {
+                statusBadge.className = 'status-badge offline';
+                statusText.textContent = 'Desconectado';
+            }
+        }
+
+        // ── Init ──────────────────────────────────────────────────
+        buildQuestionAccordions();
+        loadModels();
+        loadStats();
+        checkHealth();
+        messageInput.focus();
+        setInterval(checkHealth, 30000);
+    })();
+    </script>
+</body>
+</html>

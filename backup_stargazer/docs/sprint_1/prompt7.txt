@@ -1,0 +1,50 @@
+Our goal in to create a chatbot that answer questions about the NPV (net present value) of credit card products. The information that the chatbot 
+is using to provide such answer come from the source: /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/static/data/cubo_datos_v2.csv
+
+However, the results are poor. So, we need to redesigned the chatbot to provide the answers that are expected.
+
+1) Create 9 routers files of the form llm_router_question_NUMBER.py to provide the backend logic to answer the question 
+/home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/docs/context/question_1_npv.txt
+2) Each one of those routers must include the: sample question and the sample answer as a context that should use the llm model 
+to provide an answer. For instance for question_1_npv.txt you will see 
+
+"""
+SAMPLE QUESTION:
+1. ¿Cómo va la campaña? / ¿Cuáles fueron los resultados de la campaña?
+
+SAMPLE ANSWER:
+Los resultados de la campaña C5-2025 muestran un panorama mixto dependiendo del producto que se analice.
+En términos generales, se lograron asignar 11.26 millones de ofertas con una eficiencia del 91.6%, lo cual es aceptable. Aquí hay un poco más de detalle por producto:
+CPC tuvo un desempeño complicado. Se asignaron 2.6 millones de ofertas con una tasa del 92%, lo cual representa una ligera recuperación respecto a la campaña anterior, pero se sigue viendo viendo una tendencia a la baja en volumen. El problema principal aquí es que se están perdiendo más de 226 mil ofertas porque entran en conflicto con las reglas de productos revolventes. Es decir, existen clientes que califican perfectamente para CPC, pero el sistema los está desviando automáticamente a otros productos.
+DC es el mejor producto en términos de eficiencia. Se logró un 95.3% de asignación con casi 1.85 millones de ofertas. Este producto tiene muy poca fricción en las reglas de negocio y está funcionando muy bien.
+AAC es interesante porque es el producto con mayor volumen - se asignaron 3.42 millones de ofertas - pero tiene la eficiencia más baja del portafolio, apenas 88.7%. Aquí el problema es que está chocando con límites de exposición crediticia. Existen muchos clientes a los que se quiere aumentarles el crédito, pero las políticas de riesgo nos están frenando.
+TCC está en un punto medio con 2.16 millones de ofertas asignadas y 91.2% de eficiencia. Aquí se ve un fenómeno de migración - muchos clientes que podrían tener una tarjeta clásica están siendo desviados a productos premium, lo cual no es necesariamente malo, pero está contrayendo este segmento.
+CNC es el producto más eficiente después de DC, con 94.5% de asignación y 1.23 millones de ofertas. El desafío aquí es que está limitado por su naturaleza - solo se puede ofrecer a clientes con nómina domiciliada, así que el universo es más pequeño pero muy bien calificado.
+En resumen: hay productos que funcionan muy bien (DC, CNC), uno con gran volumen pero desafíos operativos (AAC), y otros que necesitan atención estratégica urgente (CPC, TCC).
+"""
+
+so make sure to include that info as context, since those are the type of questions and answer that a user ask and expect to get answer to
+
+3) Each one of the llm_router_question_NUMBER.py must also make use of 
+the data: /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/static/data/cubo_datos_v2.csv 
+the info:  /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/docs/data_schema_summary.md
+the output of: /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/analyze_data.py 
+
+in order to have more context since answer directly from /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/static/data/cubo_datos_v2.csv  
+can be difficult for the LLM. 
+
+4) Each one of the llm_router_question_NUMBER.py must have as part of its logic a pre-defined sql queries that let them query the 
+huge /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/static/data/cubo_datos_v2.csv in order to get the info they need to answer their corresponding 
+sample question.
+
+5) Update /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/routers/llm_routes.py so it is only use for answering questions in free mode 
+
+6) The left side bar must show the list of the top 9 questions. Since there are too many questions, make sure that there is an accordion or scroll bar 
+
+7) Keep in mind that there are categorical variables: producto, campania, causa_no_asignacion, etc. So be aware that the top 9 question like 
+"2. ¿Qué porcentaje de las ofertas se asignó para CPC? (Esta pregunta aplica para todos los productos, pero el formato de respuesta es el mismo)" refers to 
+producto, so the question that appear in the frontend should be let me choose the type of producto.
+
+8) Remember that you have to update backend and frontend. The solution must be state-of-the-art and modular. For that reason router file per top question.
+
+9) Never forget that you MUST ALWAYS USE python 3.9.20 that is the current python version.
