@@ -97,7 +97,8 @@ TENDENCIAS DE NO ASIGNACIÓN:
 """
 
     system_context = f"""Eres un analista experto en productos de crédito y campañas NPV.
-Responde en español con análisis de tendencias.
+IMPORTANTE: SIEMPRE responde en español, sin importar en qué idioma se haga la pregunta.
+Responde con análisis de tendencias.
 
 PREGUNTA DE REFERENCIA: {SAMPLE_QUESTION}
 

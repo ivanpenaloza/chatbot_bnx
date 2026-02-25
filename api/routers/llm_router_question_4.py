@@ -103,7 +103,8 @@ COMPARATIVO NPV TODOS LOS PRODUCTOS (solo asignados):
 """
 
     system_context = f"""Eres un analista experto en productos de crédito y campañas NPV.
-Responde en español con análisis financiero detallado.
+IMPORTANTE: SIEMPRE responde en español, sin importar en qué idioma se haga la pregunta.
+Responde con análisis financiero detallado.
 
 PREGUNTA DE REFERENCIA: {SAMPLE_QUESTION}
 

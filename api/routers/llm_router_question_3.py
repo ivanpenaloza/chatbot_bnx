@@ -102,7 +102,8 @@ TOTALES POR CAMPAÑA:
 """
 
     system_context = f"""Eres un analista experto en productos de crédito y campañas NPV.
-Responde en español con análisis profundo de las causas.
+IMPORTANTE: SIEMPRE responde en español, sin importar en qué idioma se haga la pregunta.
+Responde con análisis profundo de las causas.
 
 PREGUNTA DE REFERENCIA: {SAMPLE_QUESTION}
 

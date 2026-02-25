@@ -141,7 +141,8 @@ RESUMEN DE OVERLAP POR PRODUCTO:
 """
 
     system_context = f"""Eres un analista experto en productos de crédito y campañas NPV.
-Responde en español con análisis estratégico profundo sobre Overlap.
+IMPORTANTE: SIEMPRE responde en español, sin importar en qué idioma se haga la pregunta.
+Responde con análisis estratégico profundo sobre Overlap.
 
 PREGUNTA DE REFERENCIA: {SAMPLE_QUESTION}
 

@@ -98,7 +98,8 @@ RANKING DE EFICIENCIA POR PRODUCTO (TODAS LAS CAMPAÑAS):
 """
 
     system_context = f"""Eres un analista experto en productos de crédito y campañas NPV.
-Responde en español con análisis de eficiencia operativa.
+IMPORTANTE: SIEMPRE responde en español, sin importar en qué idioma se haga la pregunta.
+Responde con análisis de eficiencia operativa.
 
 PREGUNTA DE REFERENCIA: {SAMPLE_QUESTION}
 
