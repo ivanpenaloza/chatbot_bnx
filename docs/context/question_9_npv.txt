@@ -1,5 +1,7 @@
+SAMPLE QUESTION:
 9. ¿Cuáles son las principales estrategias que mueven los resultados de Overlap?
 
+SAMPLE ANSWER:
 El análisis de Overlap (superposición de ofertas entre productos) es fundamental para comprender la dinámica de asignación del portafolio y optimizar la captura de valor. Las estrategias de gestión de Overlap han tenido un impacto significativo en los resultados de las campañas C3 a C5.
 Definición de Overlap en el Contexto del Portafolio:
 Overlap se refiere a clientes que califican simultáneamente para múltiples productos. En el portafolio analizado, se identifican tres tipos principales de Overlap:

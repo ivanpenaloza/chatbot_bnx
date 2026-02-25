@@ -1,5 +1,7 @@
+SAMPLE QUESTION:
 6. ¿Cuál es el porcentaje de asignación overall?
 
+SAMPLE ANSWER:
 El porcentaje de asignación overall del portafolio completo de productos en las últimas tres campañas ha sido el siguiente:
 Evolución de la Asignación Overall:
 C3-2025: 92.8% de asignación overall

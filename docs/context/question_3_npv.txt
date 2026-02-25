@@ -1,6 +1,7 @@
+SAMPLE QUESTION:
 3. ¿Por qué no se asignaron el 100% de las ofertas de CPC?  (Esta pregunta aplica para todos los productos, pero el formato de respuesta es el mismo)
 
-
+SAMPLE ANSWER:
 Esta es una pregunta fundamental, y la respuesta resulta particularmente relevante porque el problema es de naturaleza completamente interna.
 En la campaña C5-2025, no se asignaron 226,942 ofertas de CPC. El hallazgo más significativo es que el 100% de estas ofertas no asignadas se perdieron por una única causa: "Business Rules assigned to revolving".
 Las implicaciones de esto son las siguientes. Existen clientes que:

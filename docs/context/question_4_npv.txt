@@ -1,5 +1,7 @@
+SAMPLE QUESTION:
 4. ¿Cuál es el NPV promedio de CPC? (Esta pregunta aplica para todos los productos, pero el formato de respuesta es el mismo)
 
+SAMPLE ANSWER:
 Con base en los análisis , el NPV (Net Present Value o Valor Presente Neto) promedio para CPC es de $2,847 por cliente.
 Este valor se encuentra en el rango medio del portafolio de productos de crédito al consumo. El NPV de CPC presenta las siguientes características:
 Rango de valores:

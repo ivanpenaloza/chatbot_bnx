@@ -1,5 +1,7 @@
+SAMPLE QUESTION:
 5. ¿Cuál ha sido el desempeño de las últimas tres campañas?
 
+SAMPLE ANSWER:
 El desempeño del portafolio completo en las últimas tres campañas (C3 a C5 de 2025) muestra tendencias diferenciadas por producto, con un panorama general de redistribución de valor hacia productos de mayor rentabilidad, pero con desafíos operativos que limitan el potencial total.
 Desempeño Consolidado del Portafolio:
 Campaña C3-2025:

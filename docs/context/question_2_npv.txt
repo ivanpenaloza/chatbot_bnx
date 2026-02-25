@@ -1,6 +1,7 @@
+SAMPLE QUESTION:
 2. ¿Qué porcentaje de las ofertas se asignó para CPC? (Esta pregunta aplica para todos los productos, pero el formato de respuesta es el mismo)
 
-
+SAMPLE ANSWER:
 En la campaña C5-2025, el porcentaje de asignación para CPC fue del 92.0%.
 Esto indica que de cada 100 clientes identificados como elegibles para recibir una oferta de CPC, se logró asignar la oferta a 92 de ellos. Los 8 restantes no recibieron la asignación por diversas razones.
 Para contextualizar la evolución de este indicador:
