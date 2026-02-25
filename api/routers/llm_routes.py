@@ -492,6 +492,69 @@ class MultiModelManager:
             self.is_loading = False
             return False
 
+    def _build_prompt_text(
+        self,
+        system_prompt: str,
+        user_message: str,
+        data_context: str,
+    ) -> str:
+        """
+        Build the final prompt string using the model's chat template
+        when available, with proper system/user role separation.
+        Falls back to a manual template for models without one.
+        """
+        # Separate system and user roles so each model can format
+        # them according to its own chat template conventions.
+        system_content = (
+            f"{system_prompt}\n\n"
+            f"CONTEXTO DE DATOS:\n{data_context}"
+        )
+        user_content = (
+            f"{user_message}\n\n"
+            f"Responde de forma detallada y precisa en español, "
+            f"basándote en los datos proporcionados."
+        )
+
+        # Try system+user roles first (Qwen, Gemma support this)
+        conversation_with_system = [
+            {"role": "system", "content": system_content},
+            {"role": "user", "content": user_content},
+        ]
+        # Fallback: single user role (TinyLlama sometimes lacks system)
+        conversation_single = [
+            {"role": "user", "content": (
+                f"{system_content}\n\n"
+                f"PREGUNTA DEL USUARIO: {user_content}"
+            )},
+        ]
+
+        if hasattr(self.tokenizer, 'apply_chat_template'):
+            # First try with system role
+            try:
+                return self.tokenizer.apply_chat_template(
+                    conversation_with_system,
+                    tokenize=False,
+                    add_generation_prompt=True,
+                )
+            except Exception:
+                pass
+            # Fallback to single user role
+            try:
+                return self.tokenizer.apply_chat_template(
+                    conversation_single,
+                    tokenize=False,
+                    add_generation_prompt=True,
+                )
+            except Exception:
+                pass
+
+        # Manual fallback for models without chat template
+        return (
+            f"### Sistema:\n{system_content}\n\n"
+            f"### Usuario:\n{user_content}\n\n"
+            f"### Asistente:\n"
+        )
+
     def generate_response(
         self,
         user_message: str,
@@ -504,59 +567,43 @@ class MultiModelManager:
         """
         if not self.is_ready:
             return (
-                "No model is loaded. Please select a model "
-                "from the sidebar.",
+                "No hay modelo cargado. Selecciona un modelo "
+                "en la barra lateral.",
                 0.0
             )
 
         import torch
 
-        # Build context
+        # Merge contexts
         context = data_context
         if dynamic_context:
             context += "\n\n" + dynamic_context
 
-        # Construct conversation
-        conversation = [
-            {"role": "user", "content": (
-                f"{CHATBOT_SYSTEM_PROMPT}\n\n"
-                f"DATA CONTEXT:\n{context}\n\n"
-                f"USER QUESTION: {user_message}\n\n"
-                f"Please provide a detailed and accurate answer "
-                f"based on the data above."
-            )}
-        ]
-
         try:
-            # Apply chat template if available
-            if hasattr(self.tokenizer, 'apply_chat_template'):
-                input_text = self.tokenizer.apply_chat_template(
-                    conversation,
-                    tokenize=False,
-                    add_generation_prompt=True
-                )
-            else:
-                input_text = (
-                    f"{CHATBOT_SYSTEM_PROMPT}\n\n"
-                    f"DATA CONTEXT:\n{context}\n\n"
-                    f"USER: {user_message}\n\n"
-                    f"ASSISTANT:"
-                )
+            input_text = self._build_prompt_text(
+                system_prompt=CHATBOT_SYSTEM_PROMPT,
+                user_message=user_message,
+                data_context=context,
+            )
 
-            # Tokenize
+            # Use a larger max_length so the full context + sample
+            # answers are not truncated before the actual question.
             inputs = self.tokenizer(
                 input_text,
                 return_tensors="pt",
                 truncation=True,
-                max_length=2048
+                max_length=4096,
             ).to(self.device)
 
-            # Generate with timing
+            # Allow longer answers (the sample answers are 300-600
+            # tokens in Spanish).
+            max_tokens = max(CHATBOT_MAX_NEW_TOKENS, 1024)
+
             t0 = time.time()
             with torch.no_grad():
                 outputs = self.model.generate(
                     **inputs,
-                    max_new_tokens=CHATBOT_MAX_NEW_TOKENS,
+                    max_new_tokens=max_tokens,
                     temperature=CHATBOT_TEMPERATURE,
                     top_p=CHATBOT_TOP_P,
                     top_k=CHATBOT_TOP_K,
@@ -574,8 +621,8 @@ class MultiModelManager:
 
             if not response:
                 response = (
-                    "I apologize, but I couldn't generate a meaningful "
-                    "response. Could you please rephrase your question?"
+                    "No fue posible generar una respuesta. "
+                    "¿Podrías reformular tu pregunta?"
                 )
 
             return (response, inference_time)
@@ -583,7 +630,10 @@ class MultiModelManager:
         except Exception as e:
             logger.error(f"Error generating response: {e}")
             traceback.print_exc()
-            return (f"Error generating response: {str(e)}", 0.0)
+            return (
+                f"Error al generar respuesta: {str(e)}",
+                0.0
+            )
 
     def get_status(self) -> Dict[str, Any]:
         """Return the current model manager status."""
