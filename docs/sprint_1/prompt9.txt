@@ -1,0 +1,10 @@
+I want you to 
+
+1) Update /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/config/chatbot_settings.py
+2) The answers must be in English
+3) The colors must be state of the art black and white like openAI, no green or something like that 
+4) All the UI must be in English
+5) Each one of the top 3 documents used to answer the question must who a preliminar view, like OpenEvidence does
+to show what part was used to answer the question. 
+6) You can have also free mode chat, in which you answer any question the pre-trained model can answer without the use 
+of the rag 

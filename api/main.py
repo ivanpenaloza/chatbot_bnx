@@ -25,15 +25,7 @@ import pandas as pd
 import re
 # 0.3 getting routes
 from routers import llm_routes
-from routers import llm_router_question_1
-from routers import llm_router_question_2
-from routers import llm_router_question_3
-from routers import llm_router_question_4
-from routers import llm_router_question_5
-from routers import llm_router_question_6
-from routers import llm_router_question_7
-from routers import llm_router_question_8
-from routers import llm_router_question_9
+from routers import rag_routes
 
 # Set JAVA_HOME and HADOOP_HOME as before
 os.environ['JAVA_HOME'] = JAVA_HOME
@@ -129,10 +121,10 @@ def read_parquet_to_pandas(path, filesystem):
 
 @asynccontextmanager
 async def lifespan(app):
-    """Startup: load data + chatbot model. Shutdown: cleanup."""
+    """Startup: load data + chatbot model + RAG embeddings. Shutdown: cleanup."""
     global app_data
 
-    # 2) Load Chatbot (dataset + default model)
+    # 1) Load Chatbot (dataset + default model)
     from routers.llm_routes import data_analyzer, model_manager
 
     logging.info("Loading chatbot dataset...")
@@ -142,28 +134,33 @@ async def lifespan(app):
     model_manager.load_model()
     logging.info("Chatbot initialization complete.")
 
+    # 2) Initialize RAG: ingest .docx files if not already done
+    from routers.rag_routes import get_all_docx_files, ingest_docx_file, get_embedding_fn
+    logging.info("Initializing RAG embedding model...")
+    get_embedding_fn()  # warm up
+    docx_files = get_all_docx_files()
+    for fpath in docx_files:
+        try:
+            result = ingest_docx_file(fpath)
+            logging.info("RAG ingest: %s → %s (%d chunks)", result["filename"], result["status"], result["chunks"])
+        except Exception as e:
+            logging.warning("RAG ingest failed for %s: %s", fpath, e)
+    logging.info("RAG initialization complete.")
+
     yield  # app is running
 
     logging.info("Shutting down...")
 
 
 app = FastAPI(
-    title="Stargazer API",
-    description="ATM Location Intelligence HUB API",
-    version="1.0.0",
+    title="Satriani API",
+    description="RAG Document Chat powered by offline LLMs",
+    version="2.0.0",
     lifespan=lifespan,
 )
 
 app.include_router(llm_routes.router)
-app.include_router(llm_router_question_1.router)
-app.include_router(llm_router_question_2.router)
-app.include_router(llm_router_question_3.router)
-app.include_router(llm_router_question_4.router)
-app.include_router(llm_router_question_5.router)
-app.include_router(llm_router_question_6.router)
-app.include_router(llm_router_question_7.router)
-app.include_router(llm_router_question_8.router)
-app.include_router(llm_router_question_9.router)
+app.include_router(rag_routes.router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory='templates')
@@ -178,8 +175,8 @@ async def favicon():
 
 @app.get('/', response_class=HTMLResponse)
 async def root(request: Request):
-    """Redirect root to chatbot page"""
-    return RedirectResponse(url='/api/v1/chatbot')
+    """Redirect root to Satriani RAG chat page"""
+    return RedirectResponse(url='/api/v1/rag/chat')
 
 @app.get('/api/health')
 async def health_check():

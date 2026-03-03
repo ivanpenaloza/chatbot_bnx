@@ -507,12 +507,12 @@ class MultiModelManager:
         # them according to its own chat template conventions.
         system_content = (
             f"{system_prompt}\n\n"
-            f"CONTEXTO DE DATOS:\n{data_context}"
+            f"DATA CONTEXT:\n{data_context}"
         )
         user_content = (
             f"{user_message}\n\n"
-            f"Responde de forma detallada y precisa en español, "
-            f"basándote en los datos proporcionados."
+            f"Provide a detailed and accurate answer in English "
+            f"based on the data provided."
         )
 
         # Try system+user roles first (Qwen, Gemma support this)
@@ -524,7 +524,7 @@ class MultiModelManager:
         conversation_single = [
             {"role": "user", "content": (
                 f"{system_content}\n\n"
-                f"PREGUNTA DEL USUARIO: {user_content}"
+                f"USER QUESTION: {user_content}"
             )},
         ]
 
@@ -550,9 +550,9 @@ class MultiModelManager:
 
         # Manual fallback for models without chat template
         return (
-            f"### Sistema:\n{system_content}\n\n"
-            f"### Usuario:\n{user_content}\n\n"
-            f"### Asistente:\n"
+            f"### System:\n{system_content}\n\n"
+            f"### User:\n{user_content}\n\n"
+            f"### Assistant:\n"
         )
 
     def generate_response(
@@ -621,8 +621,8 @@ class MultiModelManager:
 
             if not response:
                 response = (
-                    "No fue posible generar una respuesta. "
-                    "¿Podrías reformular tu pregunta?"
+                    "I was unable to generate a response. "
+                    "Could you please rephrase your question?"
                 )
 
             return (response, inference_time)
@@ -631,7 +631,7 @@ class MultiModelManager:
             logger.error(f"Error generating response: {e}")
             traceback.print_exc()
             return (
-                f"Error al generar respuesta: {str(e)}",
+                f"Error generating response: {str(e)}",
                 0.0
             )
 
