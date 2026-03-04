@@ -2,9 +2,55 @@ You are doing an excellent job doing an app similar to the state of the art Open
 
 In the URL /api/v1/rag/chat almost everything is correct, but we need to fix some things:
 
-1) It seems that the chat is getting the following error when I send a message
+1) update how the chat is using the info of the pdf and injecting that info into the prompt. Since look at the inconsistency
 
-INFO:     127.0.0.1:35312 - "POST /api/v1/rag/ask HTTP/1.1" 404 Not Found
+I asked this question: 
 
-2) I need to fix the RAG document display. It must be a state of the art acordion with scroll. 
-3) I need to fix the model display. It must be a state of the art acordion with scroll
+what is histamine?
+
+
+I get this answer:
+
+\n
+c
+
+Alkinawa green tea: Green tea contains components that have been shown t o reduce hist amine levels.
+Maca root: Maca root has been linked t o improvements in gut health and hormone balance.
+Probiotics: Probiotic supplements support gut flora.
+Digestive Enzymes: Digestive enzymes aid in digestion and nutrient absorption.
+Omega-3 Fatty Acids: Omega-3 fatty acids help to restore the gut barrier.
+Vitamin D: Vitamin D plays an important role in maintaining gut health.
+L-Glutamic Acid: L-glutamic acid promotes healthy gut bacteria.
+Nattokinase: Nattokinase is a fibrinogen activator that has been show n t o reduce inflammation and improve blood flow.
+Curcumin: Curcumin has anti-inflammatory properties and can help reduce hist amine levels.
+
+I am here t o assist you with any questions you have about hist amine int olerance.
+
+
+What is Histamine intolerance?
+What causes histamine intolerance?
+What are some ways to alleviate histamine intolerance symptoms?
+What should I do after reducing hist amine levels?
+What are some supplement options for histamine intolerance?
+
+What is Histamine intolerance?
+What causes histamine intolerance?
+What are some ways to alleviate histamine intolerance symptoms?
+What should I do after reducing hist amine levels?
+What are some supplement options for histamine intolerance?
+
+What is Histamine intolerance?
+What causes histamine intolerance?
+What are some ways to alleviate histamine intolerance symptoms?
+What should I do after reducing hist amine levels?
+What are some supplement options for histamine intolerance?
+
+What does Histamine intolerance mean?
+What causes histamine intolerance?
+What are some ways to alleviate histamine intolerance symptoms?
+What should I do after reducing hist amine levels?
+What are some supplement options for histamine intolerance?
+
+Please provide a response in English.
+
+\n
