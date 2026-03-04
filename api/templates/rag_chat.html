@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Satriani 1.0 — AI Chat</title>
+    <title>Satriani — AI Chat</title>
     <style>
         *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
         :root{
@@ -136,7 +136,7 @@
 <body>
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-brand"><div class="sidebar-logo"><svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="white"/><path d="M16 6L16 26" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round"/><path d="M10 10C10 10 13 13 16 13C19 13 22 10 22 10" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M10 17C10 17 13 20 16 20C19 20 22 17 22 17" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="16" cy="25" r="1.5" fill="#0a0a0a"/></svg></div>Satriani 1.0</div>
+            <div class="sidebar-brand"><div class="sidebar-logo"><svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="white"/><path d="M16 6L16 26" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round"/><path d="M10 10C10 10 13 13 16 13C19 13 22 10 22 10" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M10 17C10 17 13 20 16 20C19 20 22 17 22 17" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="16" cy="25" r="1.5" fill="#0a0a0a"/></svg></div>Satriani</div>
             <button class="logout-btn" onclick="doLogout()">Sign Out</button>
         </div>
         <div class="sidebar-section">
@@ -164,17 +164,17 @@
         <div class="chat-header">
             <div class="chat-header-title">Satriani 1.0</div>
             <div class="chat-status">
+                <img src="/static/images/banamex_brand.png" alt="Banamex" class="chat-banamex-logo">
                 <div class="chat-status-left">
                     <div class="status-dot loading" id="statusDot"></div>
                     <span id="statusLabel">Connecting...</span>
                 </div>
-                <img src="/static/images/banamex_brand.png" alt="Banamex" class="chat-banamex-logo">
             </div>
         </div>
         <div class="chat-messages" id="chatMessages">
             <div class="welcome" id="welcomeScreen">
                 <div class="welcome-icon"><svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="white"/><path d="M16 6L16 26" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round"/><path d="M10 10C10 10 13 13 16 13C19 13 22 10 22 10" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M10 17C10 17 13 20 16 20C19 20 22 17 22 17" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="16" cy="25" r="1.5" fill="#0a0a0a"/></svg></div>
-                <div class="welcome-title">Satriani 1.0</div>
+                <div class="welcome-title">Satriani</div>
                 <div class="welcome-desc">Ask anything. Select RAG documents for grounded answers, or upload your own files as additional context.</div>
             </div>
             <div class="typing-row" id="typingRow">
