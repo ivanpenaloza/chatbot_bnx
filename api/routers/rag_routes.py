@@ -48,7 +48,7 @@ _embedding_fns: Dict[str, Any] = {}  # cache per embedding key
 
 # ─── Pydantic Models ─────────────────────────────────────────────────────────
 
-class ChatMessage(BaseModel):
+class RagChatMessage(BaseModel):
     message: str
     collections: Optional[List[str]] = None
     use_rag: Optional[bool] = True
@@ -449,7 +449,7 @@ async def upload_context_document(file: UploadFile = File(...)):
 
 
 @router.post("/rag/ask")
-async def rag_ask(chat: ChatMessage):
+async def rag_ask(chat: RagChatMessage):
     """Unified chat: RAG context + uploaded context documents + chat history.
     Always returns top-3 RAG sources and uploaded document references."""
     if not chat.message.strip():

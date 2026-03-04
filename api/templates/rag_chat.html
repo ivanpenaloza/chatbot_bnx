@@ -23,19 +23,50 @@
         .sidebar-logo{width:28px;height:28px;display:flex;align-items:center;justify-content:center}
         .logout-btn{padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);font-size:.7rem;cursor:pointer;font-family:var(--font)}
         .logout-btn:hover{color:var(--text)}
-        .sidebar-section{padding:12px 12px 6px}
-        .sidebar-label{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px;padding:0 4px}
         .sidebar-body{flex:1;overflow-y:auto;padding:0 0 12px;display:flex;flex-direction:column}
         .sidebar-body::-webkit-scrollbar{width:4px}
         .sidebar-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-        .sidebar-scroll{padding:0 12px}
-        .sidebar-scroll::-webkit-scrollbar{width:4px}
-        .sidebar-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-        .model-select{width:100%;padding:7px 10px;background:var(--input);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:.8rem;outline:none;cursor:pointer;appearance:auto}
-        .model-select:focus{border-color:rgba(255,255,255,.3)}
-        .model-select option{background:var(--input);color:var(--text)}
-        .model-select option:disabled{color:var(--muted);font-style:italic}
+        /* ACCORDION */
+        .accordion{margin:0 8px 4px;border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-sm);overflow:hidden;background:rgba(255,255,255,.02)}
+        .accordion-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:none;border:none;color:var(--text);cursor:pointer;font-family:var(--font);font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px;transition:background .15s}
+        .accordion-trigger:hover{background:rgba(255,255,255,.04)}
+        .accordion-trigger svg{width:12px;height:12px;color:var(--muted);transition:transform .25s ease;flex-shrink:0}
+        .accordion.open .accordion-trigger svg{transform:rotate(180deg)}
+        .accordion-icon{display:flex;align-items:center;gap:6px}
+        .accordion-icon>svg:first-child{width:14px;height:14px;color:var(--muted)}
+        .accordion-badge{font-size:.6rem;background:rgba(255,255,255,.08);color:var(--muted);padding:1px 6px;border-radius:10px;font-weight:500;letter-spacing:0;text-transform:none}
+        .accordion-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+        .accordion.open .accordion-body{max-height:600px}
+        .accordion-scroll{max-height:220px;overflow-y:auto;padding:4px 8px 8px}
+        .accordion-scroll::-webkit-scrollbar{width:3px}
+        .accordion-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+        /* MODEL CARDS */
+        .model-card{background:var(--hover);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:4px;cursor:pointer;transition:all .15s;position:relative}
+        .model-card:last-child{margin-bottom:0}
+        .model-card:hover{border-color:rgba(255,255,255,.15)}
+        .model-card.active{border-color:rgba(99,102,241,.5);background:rgba(99,102,241,.08)}
+        .model-card.disabled{opacity:.45;cursor:not-allowed}
+        .model-card-name{font-size:.75rem;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
+        .model-card-name .model-active-dot{width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0}
+        .model-card-meta{font-size:.6rem;color:var(--muted);margin-top:2px}
+        .model-card-desc{font-size:.58rem;color:var(--muted);margin-top:3px;line-height:1.4;opacity:.8}
+        .model-card-badge{display:inline-block;font-size:.55rem;padding:1px 5px;border-radius:3px;margin-top:3px;font-weight:600}
+        .model-card-badge.available{background:rgba(34,197,94,.12);color:#4ade80}
+        .model-card-badge.unavailable{background:rgba(239,68,68,.12);color:#f87171}
+        .model-card-badge.loading{background:rgba(245,158,11,.12);color:#fbbf24}
+
+        /* DOC CARDS */
+        .doc-card{background:var(--hover);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:4px;cursor:pointer;transition:all .15s;position:relative}
+        .doc-card:last-child{margin-bottom:0}
+        .doc-card:hover{border-color:rgba(255,255,255,.15)}
+        .doc-card.selected{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.06)}
+        .doc-card .doc-check{position:absolute;top:8px;right:8px;width:16px;height:16px;border:1.5px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;transition:all .15s}
+        .doc-card.selected .doc-check{border-color:var(--success);color:var(--success);background:rgba(34,197,94,.1)}
+        .doc-name{font-size:.75rem;font-weight:600;color:var(--text);padding-right:20px;word-break:break-all}
+        .doc-meta{font-size:.6rem;color:var(--muted);margin-top:2px}
+        .doc-embed-badge{display:inline-block;background:rgba(99,102,241,.15);color:#818cf8;font-size:.55rem;padding:1px 5px;border-radius:3px;margin-top:3px;font-weight:600}
 
         /* CHAT HISTORY */
         .chat-history-section{padding:8px 12px}
@@ -51,16 +82,6 @@
         .chat-history-item:hover .chat-delete{opacity:1}
         .chat-history-item .chat-delete:hover{color:var(--danger)}
         .chat-count-label{font-size:.6rem;color:var(--muted);text-align:center;margin-top:4px}
-
-        /* DOC CARDS */
-        .doc-card{background:var(--hover);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:5px;cursor:pointer;transition:all .15s;position:relative}
-        .doc-card:hover{border-color:rgba(255,255,255,.15)}
-        .doc-card.selected{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.06)}
-        .doc-card .doc-check{position:absolute;top:8px;right:8px;width:16px;height:16px;border:1.5px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;transition:all .15s}
-        .doc-card.selected .doc-check{border-color:var(--success);color:var(--success);background:rgba(34,197,94,.1)}
-        .doc-name{font-size:.75rem;font-weight:600;color:var(--text);padding-right:20px;word-break:break-all}
-        .doc-meta{font-size:.6rem;color:var(--muted);margin-top:2px}
-        .doc-embed-badge{display:inline-block;background:rgba(99,102,241,.15);color:#818cf8;font-size:.55rem;padding:1px 5px;border-radius:3px;margin-top:3px;font-weight:600}
 
         /* CHAT AREA */
         .chat-area{flex:1;display:flex;flex-direction:column;min-width:0}
@@ -78,105 +99,7 @@
         .chat-messages{flex:1;overflow-y:auto;padding:24px 0;display:flex;flex-direction:column}
         .chat-messages::-webkit-scrollbar{width:6px}
         .chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-
-        /* MESSAGES */
-        .msg-row{padding:14px 24px;display:flex;gap:14px;max-width:768px;margin:0 auto;width:100%}
-        .msg-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
-        .user-avatar{background:#2f2f2f;color:var(--secondary)}
-        .bot-avatar{background:transparent;color:#171717;padding:0;overflow:hidden}
-        .msg-body{flex:1;min-width:0;line-height:1.7;font-size:.88rem}
-        .msg-body p{margin-bottom:8px}.msg-body p:last-child{margin-bottom:0}
-        .msg-body ul,.msg-body ol{margin:8px 0;padding-left:20px}
-        .msg-body li{margin-bottom:4px}
-        .msg-body strong{color:var(--white);font-weight:600}
-        .msg-body code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:.85em}
-        .msg-body pre{background:#1a1a1a;padding:12px;border-radius:var(--radius-sm);overflow-x:auto;margin:8px 0;font-family:var(--mono);font-size:.82em}
-        .msg-body h1,.msg-body h2,.msg-body h3,.msg-body h4{color:var(--white);margin:12px 0 6px}
-        .msg-body h1{font-size:1.15em}.msg-body h2{font-size:1.05em}.msg-body h3{font-size:.95em}
-        .msg-body hr{border:none;border-top:1px solid var(--border);margin:12px 0}
-        .msg-body blockquote{border-left:3px solid var(--secondary);padding:4px 12px;margin:8px 0;color:var(--secondary);background:rgba(255,255,255,.03);border-radius:0 var(--radius-sm) var(--radius-sm) 0}
-        .msg-body table{width:100%;border-collapse:collapse;margin:8px 0;font-size:.85em}
-        .msg-body th,.msg-body td{border:1px solid var(--border);padding:6px 10px;text-align:left}
-        .msg-body th{background:rgba(255,255,255,.06);color:var(--white);font-weight:600}
-        .msg-meta{font-size:.62rem;color:var(--muted);margin-top:6px}
-
-        /* SOURCE CARDS */
-        .source-cards{margin-top:12px;display:flex;flex-direction:column;gap:6px}
-        .source-cards-label{font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
-        .source-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-sm);overflow:hidden;transition:all .15s}
-        .source-card:hover{border-color:rgba(255,255,255,.2)}
-        .source-card-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;user-select:none}
-        .source-card-left{display:flex;align-items:center;gap:8px;min-width:0}
-        .source-card-num{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:var(--secondary);flex-shrink:0}
-        .source-card-info{min-width:0}
-        .source-card-file{font-size:.75rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .source-card-score{font-size:.62rem;color:var(--muted)}
-        .source-card-origin{font-size:.58rem;color:#818cf8;margin-top:1px}
-        .source-card-chevron{color:var(--muted);transition:transform .2s;flex-shrink:0}
-        .source-card.open .source-card-chevron{transform:rotate(180deg)}
-        .source-card-body{padding:0 12px 10px;display:none;font-size:.78rem;color:var(--secondary);line-height:1.6;border-top:1px solid rgba(255,255,255,.06)}
-        .source-card.open .source-card-body{display:block;padding-top:8px}
-        .source-card-text{white-space:pre-wrap;word-break:break-word}
-
-        /* TYPING */
-        .typing-row{display:none;padding:14px 24px;max-width:768px;margin:0 auto;width:100%}
-        .typing-row.visible{display:flex;gap:14px}
-        .typing-dots{display:flex;gap:4px;padding:12px 16px}
-        .typing-dot{width:6px;height:6px;background:var(--muted);border-radius:50%;animation:bounce 1.4s infinite ease-in-out both}
-        .typing-dot:nth-child(1){animation-delay:-.32s}.typing-dot:nth-child(2){animation-delay:-.16s}
-        @keyframes bounce{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
-
-        /* WELCOME */
-        .welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:40px;gap:14px}
-        .welcome-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
-        .welcome-title{font-size:1.3rem;font-weight:700}
-        .welcome-desc{color:var(--secondary);font-size:.88rem;max-width:480px;line-height:1.6}
-
-        /* INPUT */
-        .input-area{padding:14px 24px 18px;flex-shrink:0}
-        .input-box{max-width:768px;margin:0 auto;display:flex;align-items:flex-end;gap:8px;background:var(--input);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;transition:all .2s;position:relative}
-        .input-box:focus-within{border-color:rgba(255,255,255,.3)}
-        #msgInput{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--font);font-size:.88rem;resize:none;max-height:120px;min-height:24px;line-height:1.5;padding:4px 0}
-        #msgInput::placeholder{color:var(--muted)}
-        .send-btn{width:34px;height:34px;border:none;border-radius:8px;background:var(--white);color:#171717;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
-        .send-btn:hover:not(:disabled){background:#e5e5e5}
-        .send-btn:disabled{opacity:.3;cursor:not-allowed}
-        .send-btn svg{width:15px;height:15px}
-        .input-hint{font-size:.62rem;color:var(--muted);text-align:center;margin-top:5px;max-width:768px;margin-left:auto;margin-right:auto}
-
-        /* PLUS BUTTON & MENU */
-        .plus-btn{width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
-        .plus-btn:hover{background:rgba(255,255,255,.08);color:var(--text)}
-        .plus-btn svg{width:18px;height:18px}
-        .plus-menu{position:absolute;bottom:calc(100% + 8px);left:0;background:var(--sidebar);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px;min-width:200px;display:none;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.4)}
-        .plus-menu.open{display:block}
-        .plus-menu-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:.78rem;color:var(--text);transition:background .12s;border:none;background:none;width:100%;text-align:left;font-family:var(--font)}
-        .plus-menu-item:hover{background:rgba(255,255,255,.08)}
-        .plus-menu-item svg{width:16px;height:16px;color:var(--muted);flex-shrink:0}
-
-        /* DRAG & DROP OVERLAY */
-        .dnd-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-        .dnd-overlay.open{display:flex}
-        .dnd-box{background:var(--sidebar);border:2px dashed var(--border);border-radius:16px;padding:48px 64px;text-align:center;max-width:480px;width:90%;transition:border-color .2s}
-        .dnd-box.dragover{border-color:var(--success)}
-        .dnd-box-icon{margin-bottom:16px}
-        .dnd-box-icon svg{width:48px;height:48px;color:var(--muted)}
-        .dnd-box-title{font-size:1.1rem;font-weight:700;margin-bottom:6px}
-        .dnd-box-desc{font-size:.82rem;color:var(--muted);margin-bottom:16px}
-        .dnd-browse-btn{padding:8px 20px;background:var(--white);color:#171717;border:none;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:background .15s}
-        .dnd-browse-btn:hover{background:#e5e5e5}
-        .dnd-close-btn{position:absolute;top:20px;right:24px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.4rem}
-        .dnd-close-btn:hover{color:var(--text)}
-
-        /* UPLOADED FILES IN INPUT */
-        .input-attachments{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0;max-width:768px;margin:0 auto}
-        .input-attachment{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:3px 8px;font-size:.7rem;color:var(--secondary)}
-        .input-attachment svg{width:12px;height:12px;color:var(--muted)}
-        .input-attachment-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.75rem;padding:0 2px;margin-left:2px}
-        .input-attachment-remove:hover{color:var(--danger)}
-
-        @media(max-width:768px){.sidebar{display:none}.msg-row{padding:12px 16px}}
-    </style>
+</style>
 </head>
 <body>
     <aside class="sidebar">
@@ -186,14 +109,40 @@
         </div>
 
         <div class="sidebar-body">
-            <div class="sidebar-section">
-                <div class="sidebar-label">LLM Model</div>
-                <select class="model-select" id="modelSelect" onchange="switchModel(this.value)"></select>
+            <!-- MODEL ACCORDION -->
+            <div style="padding:8px 0 0"></div>
+            <div class="accordion open" id="modelAccordion">
+                <button class="accordion-trigger" onclick="toggleAccordion('modelAccordion')">
+                    <span class="accordion-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                        LLM Models
+                    </span>
+                    <span style="display:flex;align-items:center;gap:6px">
+                        <span class="accordion-badge" id="modelBadge">0</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </span>
+                </button>
+                <div class="accordion-body">
+                    <div class="accordion-scroll" id="modelList"></div>
+                </div>
             </div>
-            <div class="sidebar-section">
-                <div class="sidebar-label">RAG Documents (click to select)</div>
+
+            <!-- DOCUMENTS ACCORDION -->
+            <div class="accordion open" id="docAccordion">
+                <button class="accordion-trigger" onclick="toggleAccordion('docAccordion')">
+                    <span class="accordion-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        RAG Documents
+                    </span>
+                    <span style="display:flex;align-items:center;gap:6px">
+                        <span class="accordion-badge" id="docBadge">0</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </span>
+                </button>
+                <div class="accordion-body">
+                    <div class="accordion-scroll" id="docList"></div>
+                </div>
             </div>
-            <div class="sidebar-scroll" id="docList"></div>
 
             <!-- Chat History -->
             <div class="chat-history-section">
@@ -258,9 +207,108 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 </button>
             </div>
-            <div class="input-hint">Select documents in the sidebar for RAG context, or attach your own files.</div>
+
         </div>
     </div>
+
+    <style>
+        /* MESSAGES */
+        .msg-row{padding:14px 24px;display:flex;gap:14px;max-width:768px;margin:0 auto;width:100%}
+        .msg-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
+        .user-avatar{background:#2f2f2f;color:var(--secondary)}
+        .bot-avatar{background:transparent;color:#171717;padding:0;overflow:hidden}
+        .msg-body{flex:1;min-width:0;line-height:1.7;font-size:.88rem}
+        .msg-body p{margin-bottom:8px}.msg-body p:last-child{margin-bottom:0}
+        .msg-body ul,.msg-body ol{margin:8px 0;padding-left:20px}
+        .msg-body li{margin-bottom:4px}
+        .msg-body strong{color:var(--white);font-weight:600}
+        .msg-body code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:.85em}
+        .msg-body pre{background:#1a1a1a;padding:12px;border-radius:var(--radius-sm);overflow-x:auto;margin:8px 0;font-family:var(--mono);font-size:.82em}
+        .msg-body h1,.msg-body h2,.msg-body h3,.msg-body h4{color:var(--white);margin:12px 0 6px}
+        .msg-body h1{font-size:1.15em}.msg-body h2{font-size:1.05em}.msg-body h3{font-size:.95em}
+        .msg-body hr{border:none;border-top:1px solid var(--border);margin:12px 0}
+        .msg-body blockquote{border-left:3px solid var(--secondary);padding:4px 12px;margin:8px 0;color:var(--secondary);background:rgba(255,255,255,.03);border-radius:0 var(--radius-sm) var(--radius-sm) 0}
+        .msg-body table{width:100%;border-collapse:collapse;margin:8px 0;font-size:.85em}
+        .msg-body th,.msg-body td{border:1px solid var(--border);padding:6px 10px;text-align:left}
+        .msg-body th{background:rgba(255,255,255,.06);color:var(--white);font-weight:600}
+        .msg-meta{font-size:.62rem;color:var(--muted);margin-top:6px}
+
+        /* SOURCE CARDS */
+        .source-cards{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+        .source-cards-label{font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+        .source-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-sm);overflow:hidden;transition:all .15s}
+        .source-card:hover{border-color:rgba(255,255,255,.2)}
+        .source-card-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;user-select:none}
+        .source-card-left{display:flex;align-items:center;gap:8px;min-width:0}
+        .source-card-num{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:var(--secondary);flex-shrink:0}
+        .source-card-info{min-width:0}
+        .source-card-file{font-size:.75rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .source-card-score{font-size:.62rem;color:var(--muted)}
+        .source-card-origin{font-size:.58rem;color:#818cf8;margin-top:1px}
+        .source-card-chevron{color:var(--muted);transition:transform .2s;flex-shrink:0}
+        .source-card.open .source-card-chevron{transform:rotate(180deg)}
+        .source-card-body{padding:0 12px 10px;display:none;font-size:.78rem;color:var(--secondary);line-height:1.6;border-top:1px solid rgba(255,255,255,.06)}
+        .source-card.open .source-card-body{display:block;padding-top:8px}
+        .source-card-text{white-space:pre-wrap;word-break:break-word}
+
+        /* TYPING */
+        .typing-row{display:none;padding:14px 24px;max-width:768px;margin:0 auto;width:100%}
+        .typing-row.visible{display:flex;gap:14px}
+        .typing-dots{display:flex;gap:4px;padding:12px 16px}
+        .typing-dot{width:6px;height:6px;background:var(--muted);border-radius:50%;animation:bounce 1.4s infinite ease-in-out both}
+        .typing-dot:nth-child(1){animation-delay:-.32s}.typing-dot:nth-child(2){animation-delay:-.16s}
+        @keyframes bounce{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+        /* WELCOME */
+        .welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:40px;gap:14px}
+        .welcome-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+        .welcome-title{font-size:1.3rem;font-weight:700}
+        .welcome-desc{color:var(--secondary);font-size:.88rem;max-width:480px;line-height:1.6}
+
+        /* INPUT */
+        .input-area{padding:14px 24px 18px;flex-shrink:0}
+        .input-box{max-width:768px;margin:0 auto;display:flex;align-items:flex-end;gap:8px;background:var(--input);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;transition:all .2s;position:relative}
+        .input-box:focus-within{border-color:rgba(255,255,255,.3)}
+        #msgInput{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--font);font-size:.88rem;resize:none;max-height:120px;min-height:24px;line-height:1.5;padding:4px 0}
+        #msgInput::placeholder{color:var(--muted)}
+        .send-btn{width:34px;height:34px;border:none;border-radius:8px;background:var(--white);color:#171717;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+        .send-btn:hover:not(:disabled){background:#e5e5e5}
+        .send-btn:disabled{opacity:.3;cursor:not-allowed}
+        .send-btn svg{width:15px;height:15px}
+
+        /* PLUS BUTTON & MENU */
+        .plus-btn{width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+        .plus-btn:hover{background:rgba(255,255,255,.08);color:var(--text)}
+        .plus-btn svg{width:18px;height:18px}
+        .plus-menu{position:absolute;bottom:calc(100% + 8px);left:0;background:var(--sidebar);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px;min-width:200px;display:none;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+        .plus-menu.open{display:block}
+        .plus-menu-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:.78rem;color:var(--text);transition:background .12s;border:none;background:none;width:100%;text-align:left;font-family:var(--font)}
+        .plus-menu-item:hover{background:rgba(255,255,255,.08)}
+        .plus-menu-item svg{width:16px;height:16px;color:var(--muted);flex-shrink:0}
+
+        /* DRAG & DROP OVERLAY */
+        .dnd-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+        .dnd-overlay.open{display:flex}
+        .dnd-box{background:var(--sidebar);border:2px dashed var(--border);border-radius:16px;padding:48px 64px;text-align:center;max-width:480px;width:90%;transition:border-color .2s}
+        .dnd-box.dragover{border-color:var(--success)}
+        .dnd-box-icon{margin-bottom:16px}
+        .dnd-box-icon svg{width:48px;height:48px;color:var(--muted)}
+        .dnd-box-title{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+        .dnd-box-desc{font-size:.82rem;color:var(--muted);margin-bottom:16px}
+        .dnd-browse-btn{padding:8px 20px;background:var(--white);color:#171717;border:none;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:background .15s}
+        .dnd-browse-btn:hover{background:#e5e5e5}
+        .dnd-close-btn{position:absolute;top:20px;right:24px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.4rem}
+        .dnd-close-btn:hover{color:var(--text)}
+
+        /* UPLOADED FILES IN INPUT */
+        .input-attachments{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0;max-width:768px;margin:0 auto}
+        .input-attachment{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:3px 8px;font-size:.7rem;color:var(--secondary)}
+        .input-attachment svg{width:12px;height:12px;color:var(--muted)}
+        .input-attachment-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.75rem;padding:0 2px;margin-left:2px}
+        .input-attachment-remove:hover{color:var(--danger)}
+
+        @media(max-width:768px){.sidebar{display:none}.msg-row{padding:12px 16px}}
+    </style>
 
     <script>
     (function(){
@@ -275,14 +323,21 @@
         var welcomeScreen=document.getElementById('welcomeScreen');
         var statusDot=document.getElementById('statusDot');
         var statusLabel=document.getElementById('statusLabel');
-        var modelSelect=document.getElementById('modelSelect');
+        var modelList=document.getElementById('modelList');
         var docList=document.getElementById('docList');
         var plusMenu=document.getElementById('plusMenu');
         var dndOverlay=document.getElementById('dndOverlay');
         var dndBox=document.getElementById('dndBox');
         var isProcessing=false;
         var selectedCollections=[];
-        var uploadedContextTexts=[];  // [{filename, text}]
+        var uploadedContextTexts=[];
+        var currentActiveModelKey=null;
+
+        // ── Accordion toggle ──
+        window.toggleAccordion=function(id){
+            var el=document.getElementById(id);
+            if(el)el.classList.toggle('open');
+        };
 
         // ── Chat History State ──
         var MAX_CHATS=10;
@@ -291,10 +346,7 @@
         var activeChatId=null;
 
         function generateId(){return 'chat_'+Date.now()+'_'+Math.random().toString(36).substr(2,6);}
-
-        function saveChats(){
-            localStorage.setItem('satriani_chats',JSON.stringify(chats));
-        }
+        function saveChats(){localStorage.setItem('satriani_chats',JSON.stringify(chats));}
 
         function getChatTitle(chat){
             if(chat.messages&&chat.messages.length>0){
@@ -352,38 +404,27 @@
             }else{
                 welcomeScreen.style.display='none';
                 chat.messages.forEach(function(m){
-                    if(m.role==='user'){
-                        addMsgToDOM(m.content,'user');
-                    }else if(m.role==='bot'){
-                        addMsgToDOM(m.content,'bot',m.ragSources||[],m.uploadedSources||[],m.time);
-                    }
+                    if(m.role==='user') addMsgToDOM(m.content,'user');
+                    else if(m.role==='bot') addMsgToDOM(m.content,'bot',m.ragSources||[],m.uploadedSources||[],m.time);
                 });
             }
             renderChatHistory();
         }
 
         function clearChatUI(){
-            // Remove all msg-row and system messages, keep welcome + typing
             var children=Array.from(chatMessages.children);
             children.forEach(function(el){
-                if(el!==welcomeScreen&&el!==typingRow){
-                    chatMessages.removeChild(el);
-                }
+                if(el!==welcomeScreen&&el!==typingRow) chatMessages.removeChild(el);
             });
             welcomeScreen.style.display='';
         }
 
-        function getActiveChat(){
-            return chats.find(function(c){return c.id===activeChatId;});
-        }
+        function getActiveChat(){return chats.find(function(c){return c.id===activeChatId;});}
 
         function addMessageToChat(role,content,ragSources,uploadedSources,time){
             var chat=getActiveChat();
             if(!chat)return false;
-            if(chat.messages.length>=MAX_MESSAGES_PER_CHAT*2){
-                // 5 user + 5 bot = 10 message entries max
-                return false;
-            }
+            if(chat.messages.length>=MAX_MESSAGES_PER_CHAT*2) return false;
             var msg={role:role,content:content};
             if(ragSources)msg.ragSources=ragSources;
             if(uploadedSources)msg.uploadedSources=uploadedSources;
@@ -409,25 +450,16 @@
         window.handleKey=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}};
 
         // ── Plus Menu ──
-        window.togglePlusMenu=function(e){
-            e.stopPropagation();
-            plusMenu.classList.toggle('open');
-        };
+        window.togglePlusMenu=function(e){e.stopPropagation();plusMenu.classList.toggle('open');};
         document.addEventListener('click',function(){plusMenu.classList.remove('open');});
 
         // ── Drag & Drop ──
-        window.openDnd=function(){
-            plusMenu.classList.remove('open');
-            dndOverlay.classList.add('open');
-        };
-        window.closeDnd=function(){
-            dndOverlay.classList.remove('open');
-        };
+        window.openDnd=function(){plusMenu.classList.remove('open');dndOverlay.classList.add('open');};
+        window.closeDnd=function(){dndOverlay.classList.remove('open');};
         dndBox.addEventListener('dragover',function(e){e.preventDefault();dndBox.classList.add('dragover');});
         dndBox.addEventListener('dragleave',function(){dndBox.classList.remove('dragover');});
         dndBox.addEventListener('drop',function(e){
-            e.preventDefault();
-            dndBox.classList.remove('dragover');
+            e.preventDefault();dndBox.classList.remove('dragover');
             if(e.dataTransfer.files.length>0)handleDndFiles(e.dataTransfer.files);
         });
         dndOverlay.addEventListener('click',function(e){if(e.target===dndOverlay)closeDnd();});
@@ -462,84 +494,82 @@
                 el.appendChild(div);
             });
         }
-        window.removeAttachment=function(idx){
-            uploadedContextTexts.splice(idx,1);
-            renderAttachments();
-        };
+        window.removeAttachment=function(idx){uploadedContextTexts.splice(idx,1);renderAttachments();};
 
-        // ── Models ──
+        // ── Models (Accordion) ──
         async function loadModels(){
             try{
                 var res=await fetch('/api/v1/chatbot/models');
                 var data=await res.json();
-                modelSelect.innerHTML='';
-                (data.models||[]).forEach(function(m){
-                    var opt=document.createElement('option');
-                    opt.value=m.key;
-                    opt.textContent=m.display_name+' ('+m.size+')';
-                    if(!m.available){
-                        opt.disabled=true;
-                        opt.textContent+=' [not downloaded]';
+                modelList.innerHTML='';
+                var models=data.models||[];
+                document.getElementById('modelBadge').textContent=models.length;
+                models.forEach(function(m){
+                    var card=document.createElement('div');
+                    card.className='model-card'+(m.active?' active':'')+((!m.available)?' disabled':'');
+                    card.dataset.key=m.key;
+                    var dotHtml=m.active?'<span class="model-active-dot"></span>':'';
+                    var badgeClass=m.active?'loading':m.available?'available':'unavailable';
+                    var badgeText=m.active?'Active':m.available?'Ready':'Not downloaded';
+                    if(m.active) currentActiveModelKey=m.key;
+                    card.innerHTML='<div class="model-card-name">'+dotHtml+escHtml(m.display_name)+'</div>'
+                        +'<div class="model-card-meta">'+escHtml(m.size)+' · '+escHtml(m.key)+'</div>'
+                        +'<div class="model-card-desc">'+escHtml(m.description||'')+'</div>'
+                        +'<span class="model-card-badge '+badgeClass+'">'+badgeText+'</span>';
+                    if(m.available&&!m.active){
+                        card.onclick=function(){switchModel(m.key);};
                     }
-                    if(m.active)opt.selected=true;
-                    modelSelect.appendChild(opt);
+                    modelList.appendChild(card);
                 });
                 updateStatus(data);
             }catch(e){statusDot.className='status-dot off';statusLabel.textContent='Disconnected';}
         }
+
         function updateStatus(data){
             if(data.is_ready){statusDot.className='status-dot online';statusLabel.textContent='Online';}
             else if(data.is_loading){statusDot.className='status-dot loading';statusLabel.textContent='Loading...';}
             else{statusDot.className='status-dot off';statusLabel.textContent='No model';}
         }
-        function setStatusInference(){
-            statusDot.className='status-dot online';
-            statusLabel.textContent='Generating...';
-        }
-        function restoreStatusAfterInference(){
-            statusDot.className='status-dot online';
-            statusLabel.textContent='Online';
-        }
+        function setStatusInference(){statusDot.className='status-dot online';statusLabel.textContent='Generating...';}
+        function restoreStatusAfterInference(){statusDot.className='status-dot online';statusLabel.textContent='Online';}
+
         window.switchModel=async function(key){
             statusDot.className='status-dot loading';statusLabel.textContent='Switching...';
             try{
                 var res=await fetch('/api/v1/chatbot/models/switch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model_key:key})});
                 if(!res.ok)throw new Error('fail');
                 await loadModels();
-                addSystem('Model switched to <strong>'+key+'</strong>');
+                addSystem('Model switched to <strong>'+escHtml(key)+'</strong>');
             }catch(e){statusDot.className='status-dot off';statusLabel.textContent='Error';addSystem('Error switching model');}
         };
 
-        // ── Documents ──
+        // ── Documents (Accordion) ──
         async function loadDocuments(){
             try{
                 var res=await fetch('/api/v1/rag/documents');
                 var data=await res.json();
                 docList.innerHTML='';
-                (data.documents||[]).forEach(function(d){
-                    if(!d.ingested)return;
+                var docs=data.documents||[];
+                var ingestedDocs=docs.filter(function(d){return d.ingested;});
+                document.getElementById('docBadge').textContent=ingestedDocs.length;
+                ingestedDocs.forEach(function(d){
                     var card=document.createElement('div');
                     card.className='doc-card';
                     card.dataset.collection=d.collection;
                     var embLabel=d.embedding_model?' · '+d.embedding_model:'';
                     var embAlgo=d.embedding_algorithm||'cosine';
                     card.innerHTML='<div class="doc-check">✓</div>'
-                        +'<div class="doc-name">'+d.filename+'</div>'
+                        +'<div class="doc-name">'+escHtml(d.filename)+'</div>'
                         +'<div class="doc-meta">'+d.chunks+' chunks'+embLabel+' · '+d.size_kb+' KB</div>'
                         +'<div class="doc-embed-badge">'+escHtml(embAlgo).toUpperCase()+' embedding</div>';
-                    card.onclick=function(){
-                        card.classList.toggle('selected');
-                        rebuildSelected();
-                    };
+                    card.onclick=function(){card.classList.toggle('selected');rebuildSelected();};
                     docList.appendChild(card);
                 });
             }catch(e){docList.innerHTML='<div style="font-size:.72rem;color:var(--muted);padding:4px">Error loading documents</div>';}
         }
         function rebuildSelected(){
             selectedCollections=[];
-            document.querySelectorAll('.doc-card.selected').forEach(function(c){
-                selectedCollections.push(c.dataset.collection);
-            });
+            document.querySelectorAll('.doc-card.selected').forEach(function(c){selectedCollections.push(c.dataset.collection);});
         }
 
         // ── Send message ──
@@ -547,7 +577,6 @@
             var text=msgInput.value.trim();
             if(!text||isProcessing)return;
 
-            // Ensure we have an active chat
             if(!activeChatId){
                 if(chats.length>=MAX_CHATS){
                     addSystem('Maximum '+MAX_CHATS+' chats reached. Delete one first.');
@@ -556,7 +585,6 @@
                 createNewChat();
             }
 
-            // Check message limit
             if(getMessageCount()>=MAX_MESSAGES_PER_CHAT){
                 addSystem('This chat has reached the '+MAX_MESSAGES_PER_CHAT+' message limit. Start a new chat.');
                 return;
@@ -566,20 +594,15 @@
             msgInput.value='';msgInput.style.height='auto';
             hideWelcome();addMsgToDOM(text,'user');showTyping();
             addMessageToChat('user',text);
-
-            // Set status to active inference
             setStatusInference();
 
-            // Build request body
             var body={message:text,use_rag:selectedCollections.length>0};
             if(selectedCollections.length>0)body.collections=selectedCollections;
 
-            // Build chat history for context (previous messages in this chat)
             var chat=getActiveChat();
             if(chat&&chat.messages.length>1){
                 var history=[];
-                // Send up to last 8 messages (4 pairs) as history, excluding the current one
-                var msgs=chat.messages.slice(0,-1); // exclude the just-added user msg
+                var msgs=chat.messages.slice(0,-1);
                 var start=Math.max(0,msgs.length-8);
                 for(var i=start;i<msgs.length;i++){
                     history.push({role:msgs[i].role==='user'?'user':'assistant',content:msgs[i].content});
@@ -598,7 +621,7 @@
                 hideTyping();
                 if(!res.ok){
                     var err={};try{err=await res.json();}catch(x){}
-                    var errMsg='Error: '+(err.detail||'Server error');
+                    var errMsg='Error: '+(err.detail||'Server error ('+res.status+')');
                     addMsgToDOM(errMsg,'bot');
                     addMessageToChat('bot',errMsg);
                 }else{
@@ -655,9 +678,8 @@
 
             var sourcesHtml='';
             if(role==='bot'){
-                // RAG Sources (top 3)
                 if(ragSources&&ragSources.length>0){
-                    sourcesHtml+='<div class="source-cards"><div class="source-cards-label">📚 RAG References ('+ragSources.length+')</div>';
+                    sourcesHtml+='<div class="source-cards"><div class="source-cards-label"><svg style="display:inline-block;vertical-align:middle;margin-right:4px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><line x1="6" y1="8" x2="12" y2="16"/><line x1="18" y1="8" x2="12" y2="16"/><line x1="8" y1="6" x2="16" y2="6"/></svg>RAG References ('+ragSources.length+')</div>';
                     ragSources.forEach(function(s,idx){
                         var rel=Math.round((s.relevance||0)*100);
                         var cardId='rag_'+Date.now()+'_'+idx;
@@ -668,7 +690,6 @@
                     });
                     sourcesHtml+='</div>';
                 }
-                // Uploaded Document Sources
                 if(uploadedSources&&uploadedSources.length>0){
                     sourcesHtml+='<div class="source-cards" style="margin-top:8px"><div class="source-cards-label">📎 Uploaded Document References ('+uploadedSources.length+')</div>';
                     uploadedSources.forEach(function(s,idx){
@@ -692,10 +713,7 @@
             chatMessages.insertBefore(row,typingRow);scrollBottom();
         }
 
-        window.toggleSource=function(id){
-            var card=document.getElementById(id);
-            if(card)card.classList.toggle('open');
-        };
+        window.toggleSource=function(id){var card=document.getElementById(id);if(card)card.classList.toggle('open');};
 
         function escHtml(t){if(!t)return '';return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
         function getTime(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
@@ -744,7 +762,7 @@
 
         // ── Health ──
         async function checkHealth(){
-            if(isProcessing)return; // don't override inference status
+            if(isProcessing)return;
             try{
                 var res=await fetch('/api/v1/chatbot/health');
                 var data=await res.json();
@@ -764,7 +782,6 @@
         loadModels();
         loadDocuments();
         checkHealth();
-        // Load first chat or create one
         if(chats.length>0){loadChat(chats[0].id);}
         else{createNewChat();}
         msgInput.focus();
