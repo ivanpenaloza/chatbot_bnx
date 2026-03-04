@@ -448,6 +448,7 @@ async def upload_context_document(file: UploadFile = File(...)):
     })
 
 
+@router.post("/rag/ask")
 async def rag_ask(chat: ChatMessage):
     """Unified chat: RAG context + uploaded context documents + chat history.
     Always returns top-3 RAG sources and uploaded document references."""

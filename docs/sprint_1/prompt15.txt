@@ -6,5 +6,5 @@ In the URL /api/v1/rag/chat almost everything is correct, but we need to fix som
 
 INFO:     127.0.0.1:35312 - "POST /api/v1/rag/ask HTTP/1.1" 404 Not Found
 
-2) I need to fix the RAG document display. It must be a state of the art acordion. 
-3) I need to fix the model display. It must be a state of the art acordion
+2) I need to fix the RAG document display. It must be a state of the art acordion with scroll. 
+3) I need to fix the model display. It must be a state of the art acordion with scroll
