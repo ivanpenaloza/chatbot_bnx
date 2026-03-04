@@ -21,6 +21,7 @@ answering.
 embedding model used for those embeddings. 
 11) Now the list of offline models from huggingface that we will use will be gemma3 1b, and the following ones
 
+Type	Model	Context Size
 Chat	Meta-Llama-3.1-8B-Instruct	32,000
 Chat	Mistral-7B-Instruct-v0.3	32,000
 Embedding	gte-large-en-v1.5	8,192
