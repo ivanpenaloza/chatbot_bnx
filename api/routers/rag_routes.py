@@ -19,7 +19,7 @@ import traceback
 import tempfile
 from typing import Optional, List, Dict, Any
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Request, Depends
+from fastapi import APIRouter, HTTPException, UploadFile, File, Request
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -45,8 +45,7 @@ CHROMA_PERSIST_DIR = os.path.join(RAG_DATA_DIR, "chroma_db")
 
 # ─── Globals (lazy-loaded) ───────────────────────────────────────────────────
 _chroma_client = None
-_embedding_fn = None
-_active_embedding_key = DEFAULT_EMBEDDING_KEY
+_embedding_fns: Dict[str, Any] = {}  # cache per embedding key
 
 
 # ─── Pydantic Models ─────────────────────────────────────────────────────────
@@ -55,6 +54,7 @@ class ChatMessage(BaseModel):
     message: str
     collections: Optional[List[str]] = None
     use_rag: Optional[bool] = True
+    uploaded_context: Optional[List[Dict[str, str]]] = None  # [{filename, text}]
 
 
 class IngestRequest(BaseModel):
@@ -113,19 +113,14 @@ class LocalHFEmbeddingFunction:
 
 
 def get_embedding_fn(embedding_key: Optional[str] = None):
-    global _embedding_fn, _active_embedding_key
-    key = embedding_key or _active_embedding_key
-    if _embedding_fn is None or _active_embedding_key != key:
+    """Get or create an embedding function for the given key. Cached per key."""
+    key = embedding_key or DEFAULT_EMBEDDING_KEY
+    if key not in _embedding_fns:
         model_info = AVAILABLE_EMBEDDING_MODELS.get(key)
         if not model_info:
             raise ValueError(f"Unknown embedding model: {key}")
-        _embedding_fn = LocalHFEmbeddingFunction(model_info["local_dir"], key)
-        _active_embedding_key = key
-    return _embedding_fn
-
-
-def get_active_embedding_key() -> str:
-    return _active_embedding_key
+        _embedding_fns[key] = LocalHFEmbeddingFunction(model_info["local_dir"], key)
+    return _embedding_fns[key]
 
 
 def get_chroma_client():
@@ -227,9 +222,10 @@ def sanitize_collection_name(name: str) -> str:
 def ingest_file(filepath: str, embedding_key: Optional[str] = None) -> Dict[str, Any]:
     """Ingest a single docx/pdf file into ChromaDB."""
     filename = os.path.basename(filepath)
+    emb_key = embedding_key or DEFAULT_EMBEDDING_KEY
     collection_name = sanitize_collection_name(filename)
 
-    logger.info("Ingesting: %s → collection: %s", filename, collection_name)
+    logger.info("Ingesting: %s → collection: %s (model: %s)", filename, collection_name, emb_key)
 
     text = extract_text(filepath)
     if not text.strip():
@@ -238,8 +234,7 @@ def ingest_file(filepath: str, embedding_key: Optional[str] = None) -> Dict[str,
     chunks = chunk_text(text, chunk_size=500, overlap=100)
 
     client = get_chroma_client()
-    ef = get_embedding_fn(embedding_key)
-    emb_key = get_active_embedding_key()
+    ef = get_embedding_fn(emb_key)
 
     collection = client.get_or_create_collection(
         name=collection_name,
@@ -354,23 +349,18 @@ async def rag_chat_page(request: Request):
 
 @router.post("/rag/ingest", response_class=JSONResponse)
 async def rag_ingest(req: IngestRequest):
-    """Ingest files into ChromaDB (called by admin panel)."""
+    """Ingest a SINGLE file into ChromaDB. filename is required."""
     try:
+        if not req.filename:
+            raise HTTPException(status_code=400, detail="filename is required")
+
         files = get_all_rag_files()
-        if not files:
-            return JSONResponse(content={"status": "no_files", "message": "No documents found."})
+        matched = [f for f in files if os.path.basename(f) == req.filename]
+        if not matched:
+            raise HTTPException(status_code=404, detail=f"File not found: {req.filename}")
 
-        if req.filename:
-            files = [f for f in files if os.path.basename(f) == req.filename]
-            if not files:
-                raise HTTPException(status_code=404, detail=f"File not found: {req.filename}")
-
-        results = []
-        for fpath in files:
-            result = ingest_file(fpath, req.embedding_key)
-            results.append(result)
-
-        return JSONResponse(content={"status": "ok", "results": results})
+        result = ingest_file(matched[0], req.embedding_key)
+        return JSONResponse(content={"status": "ok", "results": [result]})
     except HTTPException:
         raise
     except Exception as e:
@@ -381,21 +371,25 @@ async def rag_ingest(req: IngestRequest):
 
 @router.get("/rag/documents", response_class=JSONResponse)
 async def rag_list_documents():
-    """List available documents and their ingestion status."""
+    """List available documents and their ingestion status from ChromaDB."""
     files = get_all_rag_files()
     client = get_chroma_client()
-    existing_collections = {c.name: c for c in client.list_collections()}
+
+    # Build a set of existing collection names for fast lookup
+    existing = {}
+    for col in client.list_collections():
+        existing[col.name] = col
 
     docs = []
     for fpath in files:
         fname = os.path.basename(fpath)
         cname = sanitize_collection_name(fname)
-        ingested = cname in existing_collections
+        ingested = cname in existing
         chunk_count = 0
         emb_model = ""
         if ingested:
             try:
-                col = client.get_collection(name=cname)
+                col = existing[cname]
                 chunk_count = col.count()
                 emb_model = (col.metadata or {}).get("embedding_model", "")
             except Exception:
@@ -428,7 +422,6 @@ async def upload_context_document(file: UploadFile = File(...)):
             detail=f"File too large ({size_mb:.1f} MB). Max is {RAG_UPLOAD_MAX_SIZE_MB} MB."
         )
 
-    # Write to temp file, extract text, delete
     suffix = ext
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp.write(content)
@@ -445,7 +438,7 @@ async def upload_context_document(file: UploadFile = File(...)):
     chunks = chunk_text(text, chunk_size=500, overlap=100)
     return JSONResponse(content={
         "filename": fname,
-        "text": text[:50000],  # cap at 50K chars
+        "text": text[:50000],
         "chunks": len(chunks),
         "size_mb": round(size_mb, 2),
     })
@@ -453,14 +446,18 @@ async def upload_context_document(file: UploadFile = File(...)):
 
 @router.post("/rag/ask", response_class=JSONResponse)
 async def rag_ask(chat: ChatMessage):
-    """Unified chat: uses RAG context if available, plus any extra context."""
+    """Unified chat: RAG context + uploaded context documents.
+    Always returns top-3 RAG sources and uploaded document references."""
     if not chat.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-    sources = []
+    rag_sources = []
+    uploaded_sources = []
     rag_context = ""
+    uploaded_context = ""
 
-    if chat.use_rag:
+    # 1) RAG document retrieval (top 3)
+    if chat.use_rag and chat.collections:
         chunks = query_collections(
             question=chat.message,
             collection_names=chat.collections,
@@ -470,11 +467,13 @@ async def rag_ask(chat: ChatMessage):
             context_parts = []
             for i, chunk in enumerate(chunks, 1):
                 context_parts.append(
-                    f"--- Fragment {i} (from: {chunk['source']}, "
+                    f"--- RAG Fragment {i} (from: {chunk['source']}, "
+                    f"collection: {chunk['collection']}, "
                     f"relevance: {1 - chunk['distance']:.2%}) ---\n"
                     f"{chunk['document']}"
                 )
-                sources.append({
+                rag_sources.append({
+                    "type": "rag",
                     "source": chunk["source"],
                     "collection": chunk["collection"],
                     "chunk_index": chunk["chunk_index"],
@@ -484,17 +483,44 @@ async def rag_ask(chat: ChatMessage):
                 })
             rag_context = "\n\n".join(context_parts)
 
+    # 2) Uploaded context documents
+    if chat.uploaded_context:
+        ctx_parts = []
+        for i, doc in enumerate(chat.uploaded_context, 1):
+            fname = doc.get("filename", f"uploaded_{i}")
+            text = doc.get("text", "")
+            if text.strip():
+                # Truncate to 15K chars per uploaded doc
+                truncated = text[:15000]
+                ctx_parts.append(
+                    f"--- Uploaded Document: {fname} ---\n{truncated}"
+                )
+                uploaded_sources.append({
+                    "type": "uploaded",
+                    "source": fname,
+                    "collection": "user_upload",
+                    "chunk_index": 0,
+                    "relevance": 1.0,
+                    "text": truncated[:500] + ("..." if len(truncated) > 500 else ""),
+                    "embedding_model": "n/a",
+                })
+        if ctx_parts:
+            uploaded_context = "\n\n".join(ctx_parts)
+
     system_prompt = (
         "You are Satriani, an expert document analysis assistant.\n\n"
         "FUNDAMENTAL RULE: ALWAYS respond in English.\n\n"
         "Use the provided document fragments to answer. "
         "If no context is provided, answer from your general knowledge.\n"
         "Cite sources when possible. Be structured and professional.\n"
+        "At the end of your answer, list the references you used.\n"
     )
 
     data_context = system_prompt
     if rag_context:
-        data_context += "\n\nRELEVANT DOCUMENTS:\n" + rag_context
+        data_context += "\n\nRAG DOCUMENTS (from knowledge base):\n" + rag_context
+    if uploaded_context:
+        data_context += "\n\nUPLOADED DOCUMENTS (user-provided):\n" + uploaded_context
 
     from .llm_routes import model_manager
     answer, inference_time = model_manager.generate_response(
@@ -502,9 +528,14 @@ async def rag_ask(chat: ChatMessage):
         data_context=data_context,
     )
 
+    # Combine all sources: RAG first, then uploaded
+    all_sources = rag_sources + uploaded_sources
+
     return JSONResponse(content={
         "response": answer,
-        "sources": sources,
+        "sources": all_sources,
+        "rag_sources": rag_sources,
+        "uploaded_sources": uploaded_sources,
         "inference_time": inference_time,
-        "chunks_used": len(sources),
+        "chunks_used": len(all_sources),
     })

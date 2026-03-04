@@ -69,7 +69,12 @@ else:
 
 @asynccontextmanager
 async def lifespan(app):
-    """Startup: load LLM model + RAG embeddings. Shutdown: cleanup."""
+    """Startup: init DB, load LLM model + RAG embeddings. Shutdown: cleanup."""
+    # Initialize SQLite database
+    import db as database
+    database.init_db(SQLITE_DB_PATH, SESSION_SECRET, ADMIN_DEFAULT_USERNAME, ADMIN_DEFAULT_PASSWORD)
+    logging.info("SQLite database initialized.")
+
     from routers.llm_routes import data_analyzer, model_manager
 
     logging.info("Loading chatbot dataset...")
@@ -79,23 +84,22 @@ async def lifespan(app):
     model_manager.load_model()
     logging.info("Chatbot initialization complete.")
 
-    # Initialize RAG: ingest existing docs if not already done
-    from routers.rag_routes import get_all_rag_files, ingest_file, get_embedding_fn
+    # Initialize RAG: pre-load embedding model (but do NOT auto-ingest)
+    from routers.rag_routes import get_all_rag_files, get_embedding_fn
     logging.info("Initializing RAG embedding model...")
     try:
         get_embedding_fn()
     except Exception as e:
         logging.warning("Could not load embedding model: %s", e)
 
+    # Register existing files in SQLite (metadata only, no ingestion)
     rag_files = get_all_rag_files()
     for fpath in rag_files:
-        try:
-            result = ingest_file(fpath)
-            logging.info("RAG ingest: %s → %s (%d chunks)",
-                         result["filename"], result["status"], result["chunks"])
-        except Exception as e:
-            logging.warning("RAG ingest failed for %s: %s", fpath, e)
-    logging.info("RAG initialization complete.")
+        fname = os.path.basename(fpath)
+        if not database.get_document(fname):
+            size_kb = round(os.path.getsize(fpath) / 1024, 1)
+            database.register_document(fname, size_kb, "system")
+    logging.info("RAG initialization complete. %d documents registered (ingestion is manual via admin panel).", len(rag_files))
 
     yield
     logging.info("Shutting down...")

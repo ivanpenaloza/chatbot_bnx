@@ -1,0 +1,31 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+1) In the URL /api/v1/admin/panel we need to have the choice of choosing which doments we want to ingest under the 
+embedding model we want to choose 
+
+2) I am getting the following error
+
+d
+INFO:     127.0.0.1:44436 - "GET /api/v1/auth/users HTTP/1.1" 401 Unauthorized
+INFO:watchfiles.main:1 change detected
+INFO:watchfiles.main:1 change detected
+INFO:watchfiles.main:1 change detected
+INFO:     127.0.0.1:39222 - "GET /api/v1/admin/panel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39236 - "GET /api/v1/rag/documents HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39222 - "GET /api/v1/admin/embedding-models HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:39252 - "GET /api/v1/auth/users HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:46752 - "GET /api/v1/admin/panel HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46766 - "GET /api/v1/rag/documents HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46752 - "GET /api/v1/admin/embedding-models HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:46776 - "GET /api/v1/auth/users HTTP/1.1" 401 Unauthorized
+
+and in addition to that says Error loading models
+
+3) In /api/v1/admin/panel there should appear two list: 
+3.1) List of pdf, docx, etc. to be ingested. Incating which ones are ingested or not. For that purpose you should send request to ChromaDB to know that 
+3.2) List of embeddings with its corresponding description and size as well 
+3.3) Each one of those lists must have the possibility of being deleted. If we delete any pdf or docx we only delete the document. If we delete the embedding we only delete it
+4) Fix the issue that when I choose a sinble document to be ingested all the documents appear as ingested 
+5) Finally, I do not know how you are handling the user, admin, document list, etc. But you must have a SQLite DB designed for that purpose
+keep in mind that ChromaDB also uses a SQLite, so you can take advantage of that using good principles of sofware engineering
+6) Considering 5, refactor the whole thing since the implementation is messy

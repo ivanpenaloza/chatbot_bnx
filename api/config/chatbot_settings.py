@@ -100,6 +100,11 @@ AUTH_DB_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "static", "data", "users.json"
 )
+# SQLite database for users, sessions, documents
+SQLITE_DB_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "static", "data", "satriani.db"
+)
 ADMIN_DEFAULT_USERNAME = "admin"
 ADMIN_DEFAULT_PASSWORD = "satriani2025"
 SESSION_SECRET = os.environ.get("SESSION_SECRET", "satriani-secret-key-change-me")

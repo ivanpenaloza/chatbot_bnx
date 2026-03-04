@@ -323,20 +323,21 @@
             var body={message:text,use_rag:selectedCollections.length>0};
             if(selectedCollections.length>0)body.collections=selectedCollections;
 
-            // If user uploaded context, prepend to message
-            var fullMessage=text;
+            // Send uploaded context as structured data
             if(uploadedContextTexts.length>0){
-                var ctxParts=uploadedContextTexts.map(function(u){
-                    return '--- Uploaded: '+u.filename+' ---\n'+u.text.substring(0,15000);
+                body.uploaded_context=uploadedContextTexts.map(function(u){
+                    return {filename:u.filename,text:u.text.substring(0,15000)};
                 });
-                body.message='[ADDITIONAL CONTEXT]\n'+ctxParts.join('\n\n')+'\n[END CONTEXT]\n\n'+text;
             }
 
             try{
                 var res=await fetch('/api/v1/rag/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
                 hideTyping();
                 if(!res.ok){var err={};try{err=await res.json();}catch(x){}addMsg('Error: '+(err.detail||'Server error'),'bot');}
-                else{var data=await res.json();addMsg(data.response,'bot',data.sources,data.inference_time);}
+                else{
+                    var data=await res.json();
+                    addMsg(data.response,'bot',data.rag_sources||[],data.uploaded_sources||[],data.inference_time);
+                }
             }catch(e){hideTyping();addMsg('Connection error.','bot');}
             isProcessing=false;sendBtn.disabled=false;msgInput.focus();
         };
@@ -355,7 +356,22 @@
             chatMessages.insertBefore(d,typingRow);scrollBottom();
         }
 
-        function addMsg(content,role,sources,time){
+        function buildSourceCard(cardId,num,filename,scoreLine,textContent){
+            return '<div class="source-card" id="'+cardId+'">'
+                +'<div class="source-card-header" onclick="toggleSource(\''+cardId+'\')">'
+                +'<div class="source-card-left">'
+                +'<div class="source-card-num">'+num+'</div>'
+                +'<div class="source-card-info">'
+                +'<div class="source-card-file">'+escHtml(filename)+'</div>'
+                +'<div class="source-card-score">'+escHtml(scoreLine)+'</div>'
+                +'</div></div>'
+                +'<div class="source-card-chevron"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>'
+                +'</div>'
+                +'<div class="source-card-body"><div class="source-card-text">'+escHtml(textContent)+'</div></div>'
+                +'</div>';
+        }
+
+        function addMsg(content,role,ragSources,uploadedSources,time){
             hideWelcome();
             var row=document.createElement('div');
             row.className='msg-row '+role;
@@ -364,26 +380,27 @@
             var formatted=role==='bot'?formatMd(content):'<p>'+escHtml(content).replace(/\n/g,'<br>')+'</p>';
 
             var sourcesHtml='';
-            if(role==='bot'&&sources&&sources.length>0){
-                sourcesHtml='<div class="source-cards"><div class="source-cards-label">Sources ('+sources.length+')</div>';
-                sources.forEach(function(s,idx){
-                    var rel=Math.round((s.relevance||0)*100);
-                    var cardId='src_'+Date.now()+'_'+idx;
-                    var embLabel=s.embedding_model?' · Embedding: '+s.embedding_model:'';
-                    sourcesHtml+='<div class="source-card" id="'+cardId+'">'
-                        +'<div class="source-card-header" onclick="toggleSource(\''+cardId+'\')">'
-                        +'<div class="source-card-left">'
-                        +'<div class="source-card-num">'+(idx+1)+'</div>'
-                        +'<div class="source-card-info">'
-                        +'<div class="source-card-file">'+escHtml(s.source)+'</div>'
-                        +'<div class="source-card-score">Relevance: '+rel+'% · Chunk #'+s.chunk_index+embLabel+'</div>'
-                        +'</div></div>'
-                        +'<div class="source-card-chevron"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>'
-                        +'</div>'
-                        +'<div class="source-card-body"><div class="source-card-text">'+escHtml(s.text||'')+'</div></div>'
-                        +'</div>';
-                });
-                sourcesHtml+='</div>';
+            if(role==='bot'){
+                // RAG Sources (top 3)
+                if(ragSources&&ragSources.length>0){
+                    sourcesHtml+='<div class="source-cards"><div class="source-cards-label">RAG References ('+ragSources.length+')</div>';
+                    ragSources.forEach(function(s,idx){
+                        var rel=Math.round((s.relevance||0)*100);
+                        var cardId='rag_'+Date.now()+'_'+idx;
+                        var embLabel=s.embedding_model?' · Embedding: '+s.embedding_model:'';
+                        sourcesHtml+=buildSourceCard(cardId,idx+1,s.source,'Relevance: '+rel+'% · Chunk #'+s.chunk_index+' · Collection: '+s.collection+embLabel,s.text||'');
+                    });
+                    sourcesHtml+='</div>';
+                }
+                // Uploaded Document Sources
+                if(uploadedSources&&uploadedSources.length>0){
+                    sourcesHtml+='<div class="source-cards" style="margin-top:8px"><div class="source-cards-label">Uploaded Document References ('+uploadedSources.length+')</div>';
+                    uploadedSources.forEach(function(s,idx){
+                        var cardId='upl_'+Date.now()+'_'+idx;
+                        sourcesHtml+=buildSourceCard(cardId,idx+1,s.source,'Uploaded document · Used as additional context',s.text||'');
+                    });
+                    sourcesHtml+='</div>';
+                }
             }
 
             var metaHtml='';

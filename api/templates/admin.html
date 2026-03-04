@@ -6,10 +6,9 @@
     <title>Satriani — Admin Console</title>
     <style>
         *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-        :root{--bg:#0a0a0a;--surface:#141414;--card:#1a1a1a;--border:#262626;--text:#ededed;--muted:#888;--white:#fff;--danger:#ef4444;--success:#22c55e;--radius:12px;--font:system-ui,-apple-system,'Segoe UI',sans-serif}
+        :root{--bg:#0a0a0a;--surface:#141414;--card:#1a1a1a;--border:#262626;--text:#ededed;--muted:#888;--white:#fff;--danger:#ef4444;--success:#22c55e;--accent:#3b82f6;--radius:12px;--font:system-ui,-apple-system,'Segoe UI',sans-serif}
         body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
 
-        /* HEADER */
         .header{padding:16px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
         .header-left{display:flex;align-items:center;gap:10px}
         .header-logo{width:28px;height:28px;display:flex;align-items:center;justify-content:center}
@@ -21,44 +20,44 @@
         .logout-btn{padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);font-size:.78rem;cursor:pointer;font-family:var(--font)}
         .logout-btn:hover{background:rgba(255,255,255,.06)}
 
-        /* LAYOUT */
-        .container{max-width:1000px;margin:0 auto;padding:32px 24px}
+        .container{max-width:1060px;margin:0 auto;padding:32px 24px}
         .section{margin-bottom:32px}
         .section-title{font-size:1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
         .section-title svg{width:18px;height:18px;stroke:var(--muted)}
 
-        /* CARDS */
-        .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px}
         .card-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
         .card-info{flex:1;min-width:0}
-        .card-name{font-size:.88rem;font-weight:600}
+        .card-name{font-size:.86rem;font-weight:600}
         .card-meta{font-size:.72rem;color:var(--muted);margin-top:2px}
         .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.62rem;font-weight:600}
         .badge.green{background:rgba(34,197,94,.12);color:var(--success)}
         .badge.red{background:rgba(239,68,68,.12);color:var(--danger)}
         .badge.gray{background:rgba(255,255,255,.06);color:var(--muted)}
+        .badge.blue{background:rgba(59,130,246,.12);color:var(--accent)}
 
-        /* BUTTONS */
-        .btn{padding:8px 16px;border-radius:8px;font-family:var(--font);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;border:none}
+        .btn{padding:7px 14px;border-radius:8px;font-family:var(--font);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;border:none}
         .btn-primary{background:var(--white);color:#0a0a0a}
         .btn-primary:hover{background:#e5e5e5}
         .btn-danger{background:transparent;color:var(--danger);border:1px solid rgba(239,68,68,.3)}
         .btn-danger:hover{background:rgba(239,68,68,.08)}
         .btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
         .btn-outline:hover{background:rgba(255,255,255,.06)}
+        .btn-sm{padding:5px 10px;font-size:.72rem}
         .btn:disabled{opacity:.4;cursor:not-allowed}
+        .btn-group{display:flex;gap:6px}
 
-        /* UPLOAD AREA */
-        .upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:all .2s}
+        .upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;transition:all .2s}
         .upload-area:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.02)}
         .upload-area.dragover{border-color:var(--white);background:rgba(255,255,255,.04)}
-        .upload-icon{margin-bottom:8px}
-        .upload-icon svg{width:32px;height:32px;stroke:var(--muted)}
-        .upload-text{font-size:.85rem;color:var(--muted)}
-        .upload-hint{font-size:.7rem;color:var(--muted);margin-top:4px;opacity:.7}
+        .upload-icon{margin-bottom:6px}
+        .upload-icon svg{width:28px;height:28px;stroke:var(--muted)}
+        .upload-text{font-size:.82rem;color:var(--muted)}
+        .upload-hint{font-size:.68rem;color:var(--muted);margin-top:3px;opacity:.7}
         input[type="file"]{display:none}
 
-        /* FORM */
+        .doc-check{width:16px;height:16px;accent-color:var(--white);cursor:pointer;flex-shrink:0}
+
         .form-row{display:flex;gap:10px;align-items:flex-end;margin-top:12px}
         .form-group{flex:1}
         .form-label{display:block;font-size:.7rem;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
@@ -66,7 +65,6 @@
         .form-input:focus{border-color:rgba(255,255,255,.3)}
         select.form-input{cursor:pointer}
 
-        /* TABLE */
         .user-table{width:100%;border-collapse:collapse}
         .user-table th,.user-table td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);font-size:.82rem}
         .user-table th{color:var(--muted);font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
@@ -75,6 +73,10 @@
         .toast.success{background:var(--success);color:#fff}
         .toast.error{background:var(--danger);color:#fff}
         @keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+        .ingesting-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--muted);border-top-color:var(--white);border-radius:50%;animation:spin .6s linear infinite;margin-right:6px;vertical-align:middle}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .empty-state{text-align:center;padding:24px;color:var(--muted);font-size:.82rem}
     </style>
 </head>
 <body>
@@ -92,17 +94,6 @@
     </div>
 
     <div class="container">
-        <!-- EMBEDDING MODEL -->
-        <div class="section">
-            <div class="section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
-                Embedding Model
-            </div>
-            <div id="embeddingInfo" class="card">
-                <div class="card-meta">Loading...</div>
-            </div>
-        </div>
-
         <!-- UPLOAD DOCUMENTS -->
         <div class="section">
             <div class="section-title">
@@ -117,17 +108,30 @@
             <input type="file" id="fileInput" accept=".docx,.pdf" multiple onchange="handleUpload(this.files)">
         </div>
 
-        <!-- DOCUMENTS & INGESTION -->
+        <!-- LIST 1: DOCUMENTS -->
         <div class="section">
             <div class="section-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                Documents &amp; Ingestion
+                Documents
             </div>
-            <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center">
-                <select class="form-input" id="embModelSelect" style="width:auto;min-width:200px"></select>
-                <button class="btn btn-primary" id="ingestAllBtn" onclick="ingestAll()">Ingest All Documents</button>
+            <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                    <label class="form-label" style="margin:0">Embedding Model</label>
+                    <select class="form-input" id="embModelSelect" style="width:auto;min-width:220px"><option value="">Loading...</option></select>
+                </div>
+                <button class="btn btn-primary" id="ingestSelectedBtn" onclick="ingestSelected()" style="align-self:flex-end">Ingest Selected</button>
+                <button class="btn btn-outline" id="selectAllBtn" onclick="toggleSelectAll()" style="align-self:flex-end">Select All</button>
             </div>
-            <div id="docList"></div>
+            <div id="docList"><div class="empty-state">Loading documents...</div></div>
+        </div>
+
+        <!-- LIST 2: EMBEDDINGS (ChromaDB Collections) -->
+        <div class="section">
+            <div class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+                Embeddings (ChromaDB Collections)
+            </div>
+            <div id="embeddingList"><div class="empty-state">Loading embeddings...</div></div>
         </div>
 
         <!-- USER MANAGEMENT -->
@@ -162,58 +166,97 @@
         var headers={'Content-Type':'application/json','Authorization':'Bearer '+token};
         var headersNoBody={'Authorization':'Bearer '+token};
 
+        async function verifySession(){
+            try{
+                var res=await fetch('/api/v1/auth/me',{headers:headersNoBody});
+                if(!res.ok){sessionStorage.clear();window.location.href='/';return false;}
+                return true;
+            }catch(e){sessionStorage.clear();window.location.href='/';return false;}
+        }
+
         function toast(msg,type){
             var t=document.getElementById('toast');
             t.textContent=msg;t.className='toast '+(type||'success');t.style.display='block';
-            setTimeout(function(){t.style.display='none';},3000);
+            setTimeout(function(){t.style.display='none';},3500);
         }
 
-        // ── Embedding models ──
-        async function loadEmbeddings(){
+        // ── Embedding Models (dropdown) ──
+        async function loadEmbeddingModels(){
+            var sel=document.getElementById('embModelSelect');
             try{
                 var res=await fetch('/api/v1/admin/embedding-models',{headers:headersNoBody});
+                if(!res.ok){sel.innerHTML='<option value="">Error loading models</option>';return;}
                 var data=await res.json();
-                var el=document.getElementById('embeddingInfo');
-                var sel=document.getElementById('embModelSelect');
                 sel.innerHTML='';
-                var html='';
                 (data.models||[]).forEach(function(m){
-                    var avail=m.available?'<span class="badge green">Available</span>':'<span class="badge red">Not Downloaded</span>';
-                    var active=m.active?' <span class="badge gray">Active</span>':'';
-                    html+='<div class="card-row" style="margin-bottom:8px"><div class="card-info"><div class="card-name">'+m.display_name+active+'</div><div class="card-meta">'+m.description+' · Context: '+m.context_length.toLocaleString()+' tokens '+avail+'</div></div></div>';
                     var opt=document.createElement('option');
-                    opt.value=m.key;opt.textContent=m.display_name;
+                    opt.value=m.key;
+                    opt.textContent=m.display_name+(m.available?'':' (not downloaded)');
                     if(m.active)opt.selected=true;
                     sel.appendChild(opt);
                 });
-                el.innerHTML=html||'<div class="card-meta">No embedding models configured</div>';
-            }catch(e){console.error(e);}
+                if(!sel.options.length)sel.innerHTML='<option value="">No models</option>';
+            }catch(e){console.error(e);sel.innerHTML='<option value="">Error</option>';}
         }
 
-        // ── Documents ──
+        // ── Documents List ──
         async function loadDocuments(){
             try{
                 var res=await fetch('/api/v1/rag/documents',{headers:headersNoBody});
                 var data=await res.json();
                 var el=document.getElementById('docList');
                 el.innerHTML='';
-                (data.documents||[]).forEach(function(d){
-                    var badge=d.ingested?'<span class="badge green">Ingested · '+d.chunks+' chunks</span>':'<span class="badge red">Pending</span>';
-                    var embInfo=d.embedding_model?'<span class="badge gray">'+d.embedding_model+'</span>':'';
+                var docs=data.documents||[];
+                if(!docs.length){el.innerHTML='<div class="empty-state">No documents found. Upload files above.</div>';return;}
+                docs.forEach(function(d){
+                    var statusBadge=d.ingested
+                        ?'<span class="badge green">Ingested · '+d.chunks+' chunks</span>'
+                        :'<span class="badge red">Not ingested</span>';
+                    var embBadge=d.embedding_model?'<span class="badge blue">'+d.embedding_model+'</span>':'';
                     var card=document.createElement('div');
                     card.className='card';
-                    card.innerHTML='<div class="card-row"><div class="card-info"><div class="card-name">'+d.filename+' '+embInfo+'</div><div class="card-meta">'+d.size_kb+' KB · Collection: '+d.collection+' '+badge+'</div></div><button class="btn btn-danger" onclick="deleteDoc(\''+d.filename+'\')">Delete</button></div>';
+                    card.innerHTML='<div class="card-row">'
+                        +'<input type="checkbox" class="doc-check" data-filename="'+d.filename+'" aria-label="Select '+d.filename+'">'
+                        +'<div class="card-info">'
+                        +'<div class="card-name">'+d.filename+' '+embBadge+'</div>'
+                        +'<div class="card-meta">'+d.size_kb+' KB · Collection: '+d.collection+' '+statusBadge+'</div>'
+                        +'</div>'
+                        +'<button class="btn btn-danger btn-sm" onclick="deleteDoc(\''+d.filename+'\')">Delete File</button>'
+                        +'</div>';
                     el.appendChild(card);
                 });
-                if(!(data.documents||[]).length){el.innerHTML='<div class="card"><div class="card-meta">No documents found. Upload files above.</div></div>';}
             }catch(e){console.error(e);}
+        }
+
+        // ── Embeddings List (ChromaDB collections) ──
+        async function loadEmbeddings(){
+            try{
+                var res=await fetch('/api/v1/admin/embeddings',{headers:headersNoBody});
+                var data=await res.json();
+                var el=document.getElementById('embeddingList');
+                el.innerHTML='';
+                var embs=data.embeddings||[];
+                if(!embs.length){el.innerHTML='<div class="empty-state">No embeddings in ChromaDB yet.</div>';return;}
+                embs.forEach(function(e){
+                    var card=document.createElement('div');
+                    card.className='card';
+                    card.innerHTML='<div class="card-row">'
+                        +'<div class="card-info">'
+                        +'<div class="card-name">'+e.collection_name+'</div>'
+                        +'<div class="card-meta">Source: '+e.source_file+' · Model: <span class="badge blue">'+e.embedding_model+'</span> · '+e.chunks+' chunks</div>'
+                        +'</div>'
+                        +'<button class="btn btn-danger btn-sm" onclick="deleteEmbedding(\''+e.collection_name+'\')">Delete Embedding</button>'
+                        +'</div>';
+                    el.appendChild(card);
+                });
+            }catch(ex){console.error(ex);}
         }
 
         // ── Upload ──
         var uploadArea=document.getElementById('uploadArea');
-        uploadArea.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('dragover');});
+        uploadArea.addEventListener('dragover',function(ev){ev.preventDefault();this.classList.add('dragover');});
         uploadArea.addEventListener('dragleave',function(){this.classList.remove('dragover');});
-        uploadArea.addEventListener('drop',function(e){e.preventDefault();this.classList.remove('dragover');handleUpload(e.dataTransfer.files);});
+        uploadArea.addEventListener('drop',function(ev){ev.preventDefault();this.classList.remove('dragover');handleUpload(ev.dataTransfer.files);});
 
         window.handleUpload=async function(files){
             for(var i=0;i<files.length;i++){
@@ -228,26 +271,57 @@
             loadDocuments();
         };
 
-        window.ingestAll=async function(){
-            var btn=document.getElementById('ingestAllBtn');
-            btn.disabled=true;btn.textContent='Ingesting...';
-            var embKey=document.getElementById('embModelSelect').value;
-            try{
-                var res=await fetch('/api/v1/rag/ingest',{method:'POST',headers:headers,body:JSON.stringify({embedding_key:embKey})});
-                var data=await res.json();
-                var count=(data.results||[]).reduce(function(s,r){return s+r.chunks;},0);
-                toast('Ingestion complete: '+count+' total chunks');
-                loadDocuments();
-            }catch(e){toast('Ingestion error','error');}
-            btn.disabled=false;btn.textContent='Ingest All Documents';
+        // ── Select All / Deselect All ──
+        window.toggleSelectAll=function(){
+            var boxes=document.querySelectorAll('.doc-check');
+            var allChecked=Array.prototype.every.call(boxes,function(b){return b.checked;});
+            boxes.forEach(function(b){b.checked=!allChecked;});
+            document.getElementById('selectAllBtn').textContent=allChecked?'Select All':'Deselect All';
         };
 
+        // ── Ingest Selected (one-by-one) ──
+        window.ingestSelected=async function(){
+            var boxes=document.querySelectorAll('.doc-check:checked');
+            var filenames=Array.prototype.map.call(boxes,function(b){return b.dataset.filename;});
+            if(!filenames.length){toast('Select at least one document to ingest','error');return;}
+            var btn=document.getElementById('ingestSelectedBtn');
+            btn.disabled=true;btn.innerHTML='<span class="ingesting-spinner"></span>Ingesting...';
+            var embKey=document.getElementById('embModelSelect').value;
+            var successCount=0;var totalChunks=0;
+            for(var i=0;i<filenames.length;i++){
+                try{
+                    var res=await fetch('/api/v1/rag/ingest',{method:'POST',headers:headers,body:JSON.stringify({filename:filenames[i],embedding_key:embKey})});
+                    if(!res.ok){var err=await res.json();toast('Error ingesting '+filenames[i]+': '+(err.detail||'unknown'),'error');continue;}
+                    var data=await res.json();
+                    (data.results||[]).forEach(function(r){totalChunks+=r.chunks;});
+                    successCount++;
+                }catch(ex){toast('Error ingesting '+filenames[i],'error');}
+            }
+            if(successCount>0)toast('Ingested '+successCount+' file(s), '+totalChunks+' total chunks');
+            btn.disabled=false;btn.textContent='Ingest Selected';
+            loadDocuments();
+            loadEmbeddings();
+        };
+
+        // ── Delete Document (file only) ──
         window.deleteDoc=async function(fname){
-            if(!confirm('Delete '+fname+'?'))return;
+            if(!confirm('Delete file "'+fname+'"? This only removes the file, not its embedding.'))return;
             try{
                 var res=await fetch('/api/v1/admin/documents/'+encodeURIComponent(fname),{method:'DELETE',headers:headersNoBody});
-                if(res.ok)toast('Deleted: '+fname);
+                if(res.ok)toast('Deleted file: '+fname);
                 else toast('Delete failed','error');
+                loadDocuments();
+            }catch(e){toast('Error','error');}
+        };
+
+        // ── Delete Embedding (ChromaDB collection only) ──
+        window.deleteEmbedding=async function(colName){
+            if(!confirm('Delete embedding collection "'+colName+'"? This only removes the embedding, not the source file.'))return;
+            try{
+                var res=await fetch('/api/v1/admin/embeddings/'+encodeURIComponent(colName),{method:'DELETE',headers:headersNoBody});
+                if(res.ok)toast('Deleted embedding: '+colName);
+                else toast('Delete failed','error');
+                loadEmbeddings();
                 loadDocuments();
             }catch(e){toast('Error','error');}
         };
@@ -256,12 +330,13 @@
         async function loadUsers(){
             try{
                 var res=await fetch('/api/v1/auth/users',{headers:headersNoBody});
+                if(!res.ok)return;
                 var data=await res.json();
                 var tbody=document.getElementById('userTableBody');
                 tbody.innerHTML='';
                 (data.users||[]).forEach(function(u){
                     var tr=document.createElement('tr');
-                    var delBtn=u.role==='admin'?'':'<button class="btn btn-danger" onclick="deleteUser(\''+u.username+'\')">Remove</button>';
+                    var delBtn=u.role==='admin'?'':'<button class="btn btn-danger btn-sm" onclick="deleteUser(\''+u.username+'\')">Remove</button>';
                     tr.innerHTML='<td>'+u.username+'</td><td>'+u.full_name+'</td><td><span class="badge '+(u.role==='admin'?'gray':'green')+'">'+u.role+'</span></td><td>'+delBtn+'</td>';
                     tbody.appendChild(tr);
                 });
@@ -301,9 +376,9 @@
         };
 
         // ── Init ──
-        loadEmbeddings();
-        loadDocuments();
-        loadUsers();
+        verifySession().then(function(valid){
+            if(valid){loadEmbeddingModels();loadDocuments();loadEmbeddings();loadUsers();}
+        });
     })();
     </script>
 </body>
