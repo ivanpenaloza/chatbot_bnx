@@ -1,0 +1,4 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+1) Change the logo of Satriani found at api/v1/admin/panel with the exact logo found in the landing page
+
