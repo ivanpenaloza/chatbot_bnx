@@ -47,13 +47,28 @@
         .btn:disabled{opacity:.4;cursor:not-allowed}
         .btn-group{display:flex;gap:6px}
 
-        .upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;transition:all .2s}
+        .upload-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,10,10,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:100;display:none;align-items:center;justify-content:center;animation:overlayIn .25s ease}
+        .upload-overlay.active{display:flex}
+        @keyframes overlayIn{from{opacity:0}to{opacity:1}}
+        .upload-modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:36px 40px;width:100%;max-width:520px;position:relative;animation:modalIn .3s ease}
+        @keyframes modalIn{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+        .upload-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+        .upload-modal-title{font-size:.95rem;font-weight:700}
+        .upload-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all .15s}
+        .upload-close:hover{background:rgba(255,255,255,.06);color:var(--text)}
+        .upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:40px 28px;text-align:center;cursor:pointer;transition:all .2s}
         .upload-area:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.02)}
         .upload-area.dragover{border-color:var(--white);background:rgba(255,255,255,.04)}
-        .upload-icon{margin-bottom:6px}
-        .upload-icon svg{width:28px;height:28px;stroke:var(--muted)}
-        .upload-text{font-size:.82rem;color:var(--muted)}
-        .upload-hint{font-size:.68rem;color:var(--muted);margin-top:3px;opacity:.7}
+        .upload-icon{margin-bottom:8px}
+        .upload-icon svg{width:32px;height:32px;stroke:var(--muted)}
+        .upload-text{font-size:.85rem;color:var(--muted)}
+        .upload-hint{font-size:.7rem;color:var(--muted);margin-top:4px;opacity:.7}
+        .upload-file-list{margin-top:16px;max-height:160px;overflow-y:auto}
+        .upload-file-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:.8rem}
+        .upload-file-item .file-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .upload-file-item .file-size{color:var(--muted);font-size:.7rem;margin-left:10px;flex-shrink:0}
+        .upload-file-remove{background:none;border:none;color:var(--danger);cursor:pointer;font-size:.9rem;padding:0 4px;margin-left:8px;flex-shrink:0}
+        .upload-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
         input[type="file"]{display:none}
 
         .doc-check{width:16px;height:16px;accent-color:var(--white);cursor:pointer;flex-shrink:0}
@@ -93,21 +108,28 @@
         </div>
     </div>
 
-    <div class="container">
-        <!-- UPLOAD DOCUMENTS -->
-        <div class="section">
-            <div class="section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Upload Documents
+    <!-- Upload Overlay -->
+    <div class="upload-overlay" id="uploadOverlay">
+        <div class="upload-modal">
+            <div class="upload-modal-header">
+                <div class="upload-modal-title">Upload New Documents</div>
+                <button class="upload-close" onclick="closeUploadOverlay()" aria-label="Close">&times;</button>
             </div>
             <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
                 <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
-                <div class="upload-text">Click or drag files here to upload</div>
+                <div class="upload-text">Click or drag files here</div>
                 <div class="upload-hint">.docx and .pdf files · Max 5 MB each</div>
             </div>
-            <input type="file" id="fileInput" accept=".docx,.pdf" multiple onchange="handleUpload(this.files)">
+            <div class="upload-file-list" id="uploadFileList"></div>
+            <div class="upload-actions" id="uploadActions" style="display:none">
+                <button class="btn btn-outline" onclick="clearPendingFiles()">Clear</button>
+                <button class="btn btn-primary" id="uploadSubmitBtn" onclick="submitPendingFiles()">Upload</button>
+            </div>
+            <input type="file" id="fileInput" accept=".docx,.pdf" multiple onchange="addPendingFiles(this.files)">
         </div>
+    </div>
 
+    <div class="container">
         <!-- LIST 1: DOCUMENTS -->
         <div class="section">
             <div class="section-title">
@@ -121,6 +143,9 @@
                 </div>
                 <button class="btn btn-primary" id="ingestSelectedBtn" onclick="ingestSelected()" style="align-self:flex-end">Ingest Selected</button>
                 <button class="btn btn-outline" id="selectAllBtn" onclick="toggleSelectAll()" style="align-self:flex-end">Select All</button>
+                <button class="btn btn-outline" onclick="openUploadOverlay()" style="align-self:flex-end">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload New Documents
+                </button>
             </div>
             <div id="docList"><div class="empty-state">Loading documents...</div></div>
         </div>
@@ -252,7 +277,88 @@
             }catch(ex){console.error(ex);}
         }
 
-        // ── Upload ──
+        // ── Upload Overlay ──
+        var pendingFiles=[];
+
+        window.openUploadOverlay=function(){
+            pendingFiles=[];
+            renderPendingFiles();
+            document.getElementById('uploadOverlay').classList.add('active');
+        };
+
+        window.closeUploadOverlay=function(){
+            document.getElementById('uploadOverlay').classList.remove('active');
+            pendingFiles=[];
+            renderPendingFiles();
+            document.getElementById('fileInput').value='';
+        };
+
+        // Close overlay when clicking backdrop
+        document.getElementById('uploadOverlay').addEventListener('click',function(ev){
+            if(ev.target===this)closeUploadOverlay();
+        });
+        // Close on Escape
+        document.addEventListener('keydown',function(ev){
+            if(ev.key==='Escape'&&document.getElementById('uploadOverlay').classList.contains('active'))closeUploadOverlay();
+        });
+
+        function renderPendingFiles(){
+            var list=document.getElementById('uploadFileList');
+            var actions=document.getElementById('uploadActions');
+            list.innerHTML='';
+            if(!pendingFiles.length){actions.style.display='none';return;}
+            actions.style.display='flex';
+            pendingFiles.forEach(function(f,i){
+                var item=document.createElement('div');
+                item.className='upload-file-item';
+                item.innerHTML='<span class="file-name">'+f.name+'</span><span class="file-size">'+(f.size/1024).toFixed(1)+' KB</span><button class="upload-file-remove" onclick="removePendingFile('+i+')" aria-label="Remove">&times;</button>';
+                list.appendChild(item);
+            });
+        }
+
+        window.addPendingFiles=function(fileList){
+            for(var i=0;i<fileList.length;i++){
+                var name=fileList[i].name.toLowerCase();
+                if(name.endsWith('.docx')||name.endsWith('.pdf')){
+                    // Avoid duplicates
+                    var dup=pendingFiles.some(function(p){return p.name===fileList[i].name&&p.size===fileList[i].size;});
+                    if(!dup)pendingFiles.push(fileList[i]);
+                }else{
+                    toast('Skipped "'+fileList[i].name+'": only .docx and .pdf allowed','error');
+                }
+            }
+            document.getElementById('fileInput').value='';
+            renderPendingFiles();
+        };
+
+        window.removePendingFile=function(idx){
+            pendingFiles.splice(idx,1);
+            renderPendingFiles();
+        };
+
+        window.clearPendingFiles=function(){
+            pendingFiles=[];
+            renderPendingFiles();
+        };
+
+        window.submitPendingFiles=async function(){
+            if(!pendingFiles.length)return;
+            var btn=document.getElementById('uploadSubmitBtn');
+            btn.disabled=true;btn.innerHTML='<span class="ingesting-spinner"></span>Uploading...';
+            for(var i=0;i<pendingFiles.length;i++){
+                var f=pendingFiles[i];
+                var fd=new FormData();fd.append('file',f);
+                try{
+                    var res=await fetch('/api/v1/admin/upload',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
+                    if(!res.ok){var e=await res.json();toast(e.detail||'Upload failed','error');continue;}
+                    toast('Uploaded: '+f.name);
+                }catch(ex){toast('Upload error','error');}
+            }
+            btn.disabled=false;btn.textContent='Upload';
+            closeUploadOverlay();
+            loadDocuments();
+        };
+
         // Prevent browser from opening dropped files
         document.addEventListener('dragover',function(ev){ev.preventDefault();});
         document.addEventListener('drop',function(ev){ev.preventDefault();});
@@ -261,20 +367,7 @@
         uploadArea.addEventListener('dragenter',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.add('dragover');});
         uploadArea.addEventListener('dragover',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.add('dragover');});
         uploadArea.addEventListener('dragleave',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.remove('dragover');});
-        uploadArea.addEventListener('drop',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.remove('dragover');if(ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files.length>0){var validFiles=[];for(var i=0;i<ev.dataTransfer.files.length;i++){var name=ev.dataTransfer.files[i].name.toLowerCase();if(name.endsWith('.docx')||name.endsWith('.pdf')){validFiles.push(ev.dataTransfer.files[i]);}else{toast('Skipped "'+ev.dataTransfer.files[i].name+'": only .docx and .pdf allowed','error');}}if(validFiles.length>0){window.handleUpload(validFiles);}}});
-
-        window.handleUpload=async function(files){
-            for(var i=0;i<files.length;i++){
-                var f=files[i];
-                var fd=new FormData();fd.append('file',f);
-                try{
-                    var res=await fetch('/api/v1/admin/upload',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
-                    if(!res.ok){var e=await res.json();toast(e.detail||'Upload failed','error');continue;}
-                    toast('Uploaded: '+f.name);
-                }catch(ex){toast('Upload error','error');}
-            }
-            loadDocuments();
-        };
+        uploadArea.addEventListener('drop',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.remove('dragover');if(ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files.length>0){addPendingFiles(ev.dataTransfer.files);}});
 
         // ── Select All / Deselect All ──
         window.toggleSelectAll=function(){

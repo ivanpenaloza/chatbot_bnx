@@ -1,0 +1,10 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+In the URL /api/v1/admin/panel almost everything is correct, but we need to fix some things:
+
+1) Make sure that you cannot upload the same document twice or that you ingest 
+'create the embeddings'  of the same documents under the same embedding model. 
+However, you can  embed the same document only if the models for embeddings are 
+different, so make sure that ChromaDB also has that metadata information about the 
+model used for embedding creation
+
