@@ -261,7 +261,7 @@
         uploadArea.addEventListener('dragenter',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.add('dragover');});
         uploadArea.addEventListener('dragover',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.add('dragover');});
         uploadArea.addEventListener('dragleave',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.remove('dragover');});
-        uploadArea.addEventListener('drop',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.remove('dragover');if(ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files.length>0){window.handleUpload(ev.dataTransfer.files);}});
+        uploadArea.addEventListener('drop',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.remove('dragover');if(ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files.length>0){var validFiles=[];for(var i=0;i<ev.dataTransfer.files.length;i++){var name=ev.dataTransfer.files[i].name.toLowerCase();if(name.endsWith('.docx')||name.endsWith('.pdf')){validFiles.push(ev.dataTransfer.files[i]);}else{toast('Skipped "'+ev.dataTransfer.files[i].name+'": only .docx and .pdf allowed','error');}}if(validFiles.length>0){window.handleUpload(validFiles);}}});
 
         window.handleUpload=async function(files){
             for(var i=0;i<files.length;i++){

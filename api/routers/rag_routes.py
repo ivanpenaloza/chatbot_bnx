@@ -53,6 +53,7 @@ class ChatMessage(BaseModel):
     collections: Optional[List[str]] = None
     use_rag: Optional[bool] = True
     uploaded_context: Optional[List[Dict[str, str]]] = None  # [{filename, text}]
+    chat_history: Optional[List[Dict[str, str]]] = None  # [{role, content}]
 
 
 class IngestRequest(BaseModel):
@@ -367,7 +368,7 @@ async def rag_ingest(req: IngestRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/rag/documents", response_class=JSONResponse)
+@router.get("/rag/documents")
 async def rag_list_documents():
     """List available documents and their ingestion status from ChromaDB."""
     files = get_all_rag_files()
@@ -385,11 +386,15 @@ async def rag_list_documents():
         ingested = cname in existing
         chunk_count = 0
         emb_model = ""
+        emb_algorithm = ""
         if ingested:
             try:
                 col = existing[cname]
                 chunk_count = col.count()
-                emb_model = (col.metadata or {}).get("embedding_model", "")
+                col_meta = col.metadata or {}
+                emb_model = col_meta.get("embedding_model", "")
+                # Determine the distance/similarity algorithm used
+                emb_algorithm = col_meta.get("hnsw:space", "cosine")
             except Exception:
                 pass
         docs.append({
@@ -399,6 +404,7 @@ async def rag_list_documents():
             "chunks": chunk_count,
             "size_kb": round(os.path.getsize(fpath) / 1024, 1),
             "embedding_model": emb_model,
+            "embedding_algorithm": emb_algorithm or "cosine",
         })
     return JSONResponse(content={"documents": docs})
 
@@ -442,9 +448,8 @@ async def upload_context_document(file: UploadFile = File(...)):
     })
 
 
-@router.post("/rag/ask", response_class=JSONResponse)
 async def rag_ask(chat: ChatMessage):
-    """Unified chat: RAG context + uploaded context documents.
+    """Unified chat: RAG context + uploaded context documents + chat history.
     Always returns top-3 RAG sources and uploaded document references."""
     if not chat.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
@@ -481,37 +486,43 @@ async def rag_ask(chat: ChatMessage):
                 })
             rag_context = "\n\n".join(context_parts)
 
-    # 2) Uploaded context documents
+    # 2) Uploaded context documents — find most relevant snippets (top 3)
     if chat.uploaded_context:
         ctx_parts = []
         for i, doc in enumerate(chat.uploaded_context, 1):
             fname = doc.get("filename", f"uploaded_{i}")
             text = doc.get("text", "")
             if text.strip():
-                # Truncate to 15K chars per uploaded doc
                 truncated = text[:15000]
                 ctx_parts.append(
                     f"--- Uploaded Document: {fname} ---\n{truncated}"
                 )
+                # Show a meaningful preview snippet
+                preview = truncated[:500] + ("..." if len(truncated) > 500 else "")
                 uploaded_sources.append({
                     "type": "uploaded",
                     "source": fname,
                     "collection": "user_upload",
                     "chunk_index": 0,
                     "relevance": 1.0,
-                    "text": truncated[:500] + ("..." if len(truncated) > 500 else ""),
-                    "embedding_model": "n/a",
+                    "text": preview,
+                    "embedding_model": "n/a (raw text)",
                 })
         if ctx_parts:
             uploaded_context = "\n\n".join(ctx_parts)
 
+    # 3) Build system prompt with source attribution instructions
     system_prompt = (
         "You are Satriani, an expert document analysis assistant.\n\n"
         "FUNDAMENTAL RULE: ALWAYS respond in English.\n\n"
         "Use the provided document fragments to answer. "
         "If no context is provided, answer from your general knowledge.\n"
-        "Cite sources when possible. Be structured and professional.\n"
-        "At the end of your answer, list the references you used.\n"
+        "IMPORTANT: When using information from the provided documents, "
+        "clearly indicate which document the information comes from using "
+        "inline references like [Source: filename]. "
+        "At the end of your answer, list all references you used with their source type "
+        "(RAG Knowledge Base or Uploaded Document).\n"
+        "Be structured and professional.\n"
     )
 
     data_context = system_prompt
@@ -520,20 +531,33 @@ async def rag_ask(chat: ChatMessage):
     if uploaded_context:
         data_context += "\n\nUPLOADED DOCUMENTS (user-provided):\n" + uploaded_context
 
+    # 4) Build chat history context for multi-turn conversation
+    history_context = ""
+    if chat.chat_history and len(chat.chat_history) > 0:
+        history_parts = []
+        for msg in chat.chat_history[-8:]:  # Last 8 messages max
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
+            if content:
+                label = "User" if role == "user" else "Assistant"
+                history_parts.append(f"{label}: {content[:2000]}")
+        if history_parts:
+            history_context = "\n\nCONVERSATION HISTORY:\n" + "\n".join(history_parts)
+
+    if history_context:
+        data_context += history_context
+
     from .llm_routes import model_manager
     answer, inference_time = model_manager.generate_response(
         user_message=chat.message,
         data_context=data_context,
     )
 
-    # Combine all sources: RAG first, then uploaded
-    all_sources = rag_sources + uploaded_sources
-
     return JSONResponse(content={
         "response": answer,
-        "sources": all_sources,
+        "sources": rag_sources + uploaded_sources,
         "rag_sources": rag_sources,
         "uploaded_sources": uploaded_sources,
         "inference_time": inference_time,
-        "chunks_used": len(all_sources),
+        "chunks_used": len(rag_sources) + len(uploaded_sources),
     })
