@@ -193,15 +193,48 @@ def extract_text(filepath: str) -> str:
 
 # ─── Chunking ────────────────────────────────────────────────────────────────
 
+def _clean_extracted_text(text: str) -> str:
+    """Clean up common PDF/docx extraction artifacts."""
+    # Fix broken words with spaces (e.g. "hist amine" → "histamine")
+    # This handles the common pattern where PDF extraction splits words
+    text = re.sub(r'(\w)\s+(\w)', lambda m: m.group(0) if len(m.group(1)) > 1 and len(m.group(2)) > 1 else m.group(1) + m.group(2), text)
+    # Collapse multiple whitespace into single space
+    text = re.sub(r'[ \t]+', ' ', text)
+    # Collapse 3+ newlines into 2
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip()
+
+
 def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100) -> List[str]:
+    """Split text into chunks, breaking at sentence boundaries when possible."""
+    text = text.strip()
+    if not text:
+        return []
+
+    # Split into sentences first for cleaner boundaries
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+
     chunks = []
-    start = 0
-    while start < len(text):
-        end = start + chunk_size
-        chunk = text[start:end]
-        if chunk.strip():
-            chunks.append(chunk.strip())
-        start += chunk_size - overlap
+    current_chunk = ""
+
+    for sentence in sentences:
+        sentence = sentence.strip()
+        if not sentence:
+            continue
+        # If adding this sentence exceeds chunk_size, save current and start new
+        if current_chunk and len(current_chunk) + len(sentence) + 1 > chunk_size:
+            chunks.append(current_chunk.strip())
+            # Keep overlap: take the last `overlap` characters of current chunk
+            if overlap > 0 and len(current_chunk) > overlap:
+                current_chunk = current_chunk[-overlap:].lstrip() + " " + sentence
+            else:
+                current_chunk = sentence
+        else:
+            current_chunk = (current_chunk + " " + sentence).strip() if current_chunk else sentence
+
+    if current_chunk.strip():
+        chunks.append(current_chunk.strip())
+
     return chunks
 
 
@@ -470,11 +503,11 @@ async def rag_ask(chat: RagChatMessage):
         if chunks:
             context_parts = []
             for i, chunk in enumerate(chunks, 1):
+                cleaned = _clean_extracted_text(chunk['document'])
                 context_parts.append(
-                    f"--- RAG Fragment {i} (from: {chunk['source']}, "
-                    f"collection: {chunk['collection']}, "
-                    f"relevance: {1 - chunk['distance']:.2%}) ---\n"
-                    f"{chunk['document']}"
+                    f"[Source {i}: {chunk['source']}, "
+                    f"relevance: {1 - chunk['distance']:.0%}]\n"
+                    f"{cleaned}"
                 )
                 rag_sources.append({
                     "type": "rag",
@@ -482,71 +515,79 @@ async def rag_ask(chat: RagChatMessage):
                     "collection": chunk["collection"],
                     "chunk_index": chunk["chunk_index"],
                     "relevance": round(1 - chunk["distance"], 4),
-                    "text": chunk["document"],
+                    "text": cleaned,
                     "embedding_model": chunk.get("embedding_model", ""),
                 })
             rag_context = "\n\n".join(context_parts)
 
-    # 2) Uploaded context documents — find most relevant snippets (top 3)
+    # 2) Uploaded context documents — extract most relevant portion
     if chat.uploaded_context:
         ctx_parts = []
         for i, doc in enumerate(chat.uploaded_context, 1):
             fname = doc.get("filename", f"uploaded_{i}")
             text = doc.get("text", "")
             if text.strip():
-                truncated = text[:15000]
-                ctx_parts.append(
-                    f"--- Uploaded Document: {fname} ---\n{truncated}"
-                )
-                # Show a meaningful preview snippet
-                preview = truncated[:500] + ("..." if len(truncated) > 500 else "")
-                uploaded_sources.append({
-                    "type": "uploaded",
-                    "source": fname,
-                    "collection": "user_upload",
-                    "chunk_index": 0,
-                    "relevance": 1.0,
-                    "text": preview,
-                    "embedding_model": "n/a (raw text)",
-                })
+                cleaned = _clean_extracted_text(text)
+                # Chunk the uploaded text and pick the most relevant chunks
+                doc_chunks = chunk_text(cleaned, chunk_size=600, overlap=50)
+                # Limit to first 5000 chars to avoid overwhelming the model
+                selected_text = ""
+                for dc in doc_chunks:
+                    if len(selected_text) + len(dc) > 5000:
+                        break
+                    selected_text += dc + "\n\n"
+                selected_text = selected_text.strip()
+                if selected_text:
+                    ctx_parts.append(
+                        f"[Uploaded: {fname}]\n{selected_text}"
+                    )
+                    preview = selected_text[:500] + ("..." if len(selected_text) > 500 else "")
+                    uploaded_sources.append({
+                        "type": "uploaded",
+                        "source": fname,
+                        "collection": "user_upload",
+                        "chunk_index": 0,
+                        "relevance": 1.0,
+                        "text": preview,
+                        "embedding_model": "n/a (raw text)",
+                    })
         if ctx_parts:
             uploaded_context = "\n\n".join(ctx_parts)
 
-    # 3) Build system prompt with source attribution instructions
-    system_prompt = (
-        "You are Satriani, an expert document analysis assistant.\n\n"
-        "FUNDAMENTAL RULE: ALWAYS respond in English.\n\n"
-        "Use the provided document fragments to answer. "
-        "If no context is provided, answer from your general knowledge.\n"
-        "IMPORTANT: When using information from the provided documents, "
-        "clearly indicate which document the information comes from using "
-        "inline references like [Source: filename]. "
-        "At the end of your answer, list all references you used with their source type "
-        "(RAG Knowledge Base or Uploaded Document).\n"
-        "Be structured and professional.\n"
+    # 3) Build context for the model — NO system prompt here,
+    #    generate_response already injects CHATBOT_SYSTEM_PROMPT via _build_prompt_text.
+    #    We only pass the document context as data_context.
+    context_parts = []
+    context_parts.append(
+        "INSTRUCTIONS FOR THIS RESPONSE:\n"
+        "- Answer the user's question using ONLY the document fragments below.\n"
+        "- If the documents do not contain enough information, say so clearly.\n"
+        "- Do NOT repeat the question. Do NOT list follow-up questions.\n"
+        "- Be concise, structured, and cite sources using [Source: filename].\n"
+        "- Respond in English.\n"
     )
-
-    data_context = system_prompt
     if rag_context:
-        data_context += "\n\nRAG DOCUMENTS (from knowledge base):\n" + rag_context
+        context_parts.append("KNOWLEDGE BASE DOCUMENTS:\n" + rag_context)
     if uploaded_context:
-        data_context += "\n\nUPLOADED DOCUMENTS (user-provided):\n" + uploaded_context
+        context_parts.append("UPLOADED DOCUMENTS:\n" + uploaded_context)
+    if not rag_context and not uploaded_context:
+        context_parts.append(
+            "No documents were provided. Answer from your general knowledge."
+        )
+
+    data_context = "\n\n".join(context_parts)
 
     # 4) Build chat history context for multi-turn conversation
-    history_context = ""
     if chat.chat_history and len(chat.chat_history) > 0:
         history_parts = []
-        for msg in chat.chat_history[-8:]:  # Last 8 messages max
+        for msg in chat.chat_history[-6:]:  # Last 6 messages max
             role = msg.get("role", "user")
             content = msg.get("content", "")
             if content:
                 label = "User" if role == "user" else "Assistant"
-                history_parts.append(f"{label}: {content[:2000]}")
+                history_parts.append(f"{label}: {content[:1000]}")
         if history_parts:
-            history_context = "\n\nCONVERSATION HISTORY:\n" + "\n".join(history_parts)
-
-    if history_context:
-        data_context += history_context
+            data_context += "\n\nCONVERSATION HISTORY:\n" + "\n".join(history_parts)
 
     from .llm_routes import model_manager
     answer, inference_time = model_manager.generate_response(

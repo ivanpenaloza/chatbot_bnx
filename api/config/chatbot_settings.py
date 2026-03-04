@@ -80,7 +80,7 @@ CHATBOT_MAX_NEW_TOKENS = 1024
 CHATBOT_TEMPERATURE = 0.7
 CHATBOT_TOP_P = 0.9
 CHATBOT_TOP_K = 50
-CHATBOT_REPETITION_PENALTY = 1.15
+CHATBOT_REPETITION_PENALTY = 1.3
 CHATBOT_DO_SAMPLE = True
 
 # ─── Data Configuration ──────────────────────────────────────────────────────

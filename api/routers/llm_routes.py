@@ -591,9 +591,8 @@ class MultiModelManager:
                 max_length=4096,
             ).to(self.device)
 
-            # Allow longer answers (the sample answers are 300-600
-            # tokens in Spanish).
-            max_tokens = max(CHATBOT_MAX_NEW_TOKENS, 1024)
+            # Cap max tokens to prevent runaway generation
+            max_tokens = min(max(CHATBOT_MAX_NEW_TOKENS, 512), 1024)
 
             t0 = time.time()
             with torch.no_grad():
