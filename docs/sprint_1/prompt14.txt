@@ -1,0 +1,15 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+In the URL /api/v1/rag/chat almost everything is correct, but we need to fix some things:
+
+1) Fix the issue that I cannot choose the other models that appear in the list. 
+2) Make sure that the light in online triggers when the model is being use.
+3) There must be an implementation of chat history until 5 messages per chat. A user can create up to 
+10 messages. Follow the state of the art chatgpt chat  implementation.
+4) In the 'Ask a question' part where you can ask anything at the exact same "+" button on the left. When clicking
+the user will see a list of option, among those attach documents. When clicking that option, must appear an state of the art drag and drop.
+That information of that document must also work as a context together with the rag docuemnts.
+5) The list of of rag docuemnts must also display the type of algorithm used for the embedding 
+6) When displaying an answer, the algorithm will take upto the top 3 (not necessary 3) most relevant references found in the RAG. 
+The same happen for the raw attach files. This state of the art app, must disclose those references as it has done before, but you indicating where 
+that infor comes from .
