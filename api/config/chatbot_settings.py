@@ -91,19 +91,25 @@ CHATBOT_TOP_N_CATEGORIES = 10
 # ─── RAG Data Directory ──────────────────────────────────────────────────────
 RAG_DATA_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "static", "data"
+    "data"
 )
 RAG_UPLOAD_MAX_SIZE_MB = 5
+
+# ─── ChromaDB Persist Directory ──────────────────────────────────────────────
+CHROMA_PERSIST_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "chroma_db"
+)
 
 # ─── Auth ─────────────────────────────────────────────────────────────────────
 AUTH_DB_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "static", "data", "users.json"
+    "db", "users.json"
 )
 # SQLite database for users, sessions, documents
 SQLITE_DB_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "static", "data", "satriani.db"
+    "db", "satriani.db"
 )
 ADMIN_DEFAULT_USERNAME = "admin"
 ADMIN_DEFAULT_PASSWORD = "satriani2025"

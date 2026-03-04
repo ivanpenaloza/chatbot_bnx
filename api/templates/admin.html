@@ -253,10 +253,15 @@
         }
 
         // ── Upload ──
+        // Prevent browser from opening dropped files
+        document.addEventListener('dragover',function(ev){ev.preventDefault();});
+        document.addEventListener('drop',function(ev){ev.preventDefault();});
+
         var uploadArea=document.getElementById('uploadArea');
-        uploadArea.addEventListener('dragover',function(ev){ev.preventDefault();this.classList.add('dragover');});
-        uploadArea.addEventListener('dragleave',function(){this.classList.remove('dragover');});
-        uploadArea.addEventListener('drop',function(ev){ev.preventDefault();this.classList.remove('dragover');handleUpload(ev.dataTransfer.files);});
+        uploadArea.addEventListener('dragenter',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.add('dragover');});
+        uploadArea.addEventListener('dragover',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.add('dragover');});
+        uploadArea.addEventListener('dragleave',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.remove('dragover');});
+        uploadArea.addEventListener('drop',function(ev){ev.preventDefault();ev.stopPropagation();this.classList.remove('dragover');if(ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files.length>0){window.handleUpload(ev.dataTransfer.files);}});
 
         window.handleUpload=async function(files){
             for(var i=0;i<files.length;i++){

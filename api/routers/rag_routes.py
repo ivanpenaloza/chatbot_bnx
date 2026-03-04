@@ -34,14 +34,12 @@ from config import (
     RAG_UPLOAD_MAX_SIZE_MB,
     AVAILABLE_EMBEDDING_MODELS,
     DEFAULT_EMBEDDING_KEY,
+    CHROMA_PERSIST_DIR,
 )
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["rag"])
 templates = Jinja2Templates(directory="templates")
-
-# ─── Paths ────────────────────────────────────────────────────────────────────
-CHROMA_PERSIST_DIR = os.path.join(RAG_DATA_DIR, "chroma_db")
 
 # ─── Globals (lazy-loaded) ───────────────────────────────────────────────────
 _chroma_client = None

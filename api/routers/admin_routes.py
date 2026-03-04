@@ -27,6 +27,7 @@ from config import (
     RAG_UPLOAD_MAX_SIZE_MB,
     AVAILABLE_EMBEDDING_MODELS,
     DEFAULT_EMBEDDING_KEY,
+    CHROMA_PERSIST_DIR,
 )
 from routers.auth_routes import get_current_user, require_admin
 import db
@@ -123,7 +124,7 @@ async def list_embeddings(user: dict = Depends(get_current_user)):
 async def delete_embedding(collection_name: str, admin: dict = Depends(require_admin)):
     """Delete a ChromaDB collection and its on-disk HNSW segment folders."""
     import shutil
-    from routers.rag_routes import get_chroma_client, CHROMA_PERSIST_DIR
+    from routers.rag_routes import get_chroma_client
     client = get_chroma_client()
     try:
         client.get_collection(name=collection_name)
