@@ -1,0 +1,10 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+In the URL /api/v1/rag/chat almost everything is correct, but we need to fix some things:
+
+1) It seems that the chat is getting the following error when I send a message
+
+INFO:     127.0.0.1:35312 - "POST /api/v1/rag/ask HTTP/1.1" 404 Not Found
+
+2) I need to fix the RAG document display. It must be a state of the art acordion. 
+3) I need to fix the model display. It must be a state of the art acordion
