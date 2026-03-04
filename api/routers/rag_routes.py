@@ -1,12 +1,11 @@
 """
 RAG Router — Satriani Document Chat
 
-Provides REST API endpoints for a RAG-powered chatbot that:
-  1. Ingests .docx files from static/data → extracts text
-  2. Chunks and embeds text using a local sentence-transformers model
-  3. Stores embeddings in ChromaDB (SQLite-backed persistent storage)
-  4. Retrieves top-3 relevant chunks per query
-  5. Feeds them as context to the same offline LLM models used by llm_routes
+Provides REST API endpoints for:
+  1. Ingesting .docx/.pdf files → extract text → chunk → embed → ChromaDB
+  2. Querying ChromaDB for relevant chunks
+  3. Unified chat: optional RAG context + optional uploaded doc context
+  4. User document upload (temporary, for chat context)
 
 Compatible with Python 3.9.20.
 """
@@ -17,61 +16,62 @@ import re
 import logging
 import hashlib
 import traceback
+import tempfile
 from typing import Optional, List, Dict, Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Request, Depends
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
-from fastapi import Request
 from pydantic import BaseModel
 
-# Add project root
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from config import MODELS_BASE_DIR
+from config import (
+    MODELS_BASE_DIR,
+    RAG_DATA_DIR,
+    RAG_UPLOAD_MAX_SIZE_MB,
+    AVAILABLE_EMBEDDING_MODELS,
+    DEFAULT_EMBEDDING_KEY,
+)
 
 logger = logging.getLogger(__name__)
-
 router = APIRouter(prefix="/api/v1", tags=["rag"])
 templates = Jinja2Templates(directory="templates")
 
 # ─── Paths ────────────────────────────────────────────────────────────────────
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "data")
-CHROMA_PERSIST_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "data", "chroma_db")
-EMBEDDING_MODEL_PATH = os.path.join(MODELS_BASE_DIR, "all-MiniLM-L6-v2")
+CHROMA_PERSIST_DIR = os.path.join(RAG_DATA_DIR, "chroma_db")
 
 # ─── Globals (lazy-loaded) ───────────────────────────────────────────────────
 _chroma_client = None
 _embedding_fn = None
+_active_embedding_key = DEFAULT_EMBEDDING_KEY
 
 
 # ─── Pydantic Models ─────────────────────────────────────────────────────────
 
-class RAGChatMessage(BaseModel):
+class ChatMessage(BaseModel):
     message: str
-    collections: Optional[List[str]] = None  # filter by doc collections
+    collections: Optional[List[str]] = None
+    use_rag: Optional[bool] = True
 
 
-class RAGIngestRequest(BaseModel):
-    filename: Optional[str] = None  # ingest specific file, or all if None
+class IngestRequest(BaseModel):
+    filename: Optional[str] = None
+    embedding_key: Optional[str] = None
 
 
 # ─── Embedding Function ──────────────────────────────────────────────────────
 
 class LocalHFEmbeddingFunction:
-    """ChromaDB-compatible embedding function using local sentence-transformers.
+    """ChromaDB-compatible embedding function using local sentence-transformers."""
 
-    Implements the interface expected by chromadb >= 1.5:
-    __call__, name, embed_query, and related methods.
-    """
-
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str, model_key: str):
         from sentence_transformers import SentenceTransformer
         import numpy as np
-        self._model = SentenceTransformer(model_path)
-        self._name = "local-hf-" + os.path.basename(model_path)
+        self._model = SentenceTransformer(model_path, trust_remote_code=True)
+        self._name = "local-hf-" + model_key
         self._np = np
         logger.info("Embedding model loaded from: %s", model_path)
 
@@ -112,11 +112,20 @@ class LocalHFEmbeddingFunction:
         return False
 
 
-def get_embedding_fn():
-    global _embedding_fn
-    if _embedding_fn is None:
-        _embedding_fn = LocalHFEmbeddingFunction(EMBEDDING_MODEL_PATH)
+def get_embedding_fn(embedding_key: Optional[str] = None):
+    global _embedding_fn, _active_embedding_key
+    key = embedding_key or _active_embedding_key
+    if _embedding_fn is None or _active_embedding_key != key:
+        model_info = AVAILABLE_EMBEDDING_MODELS.get(key)
+        if not model_info:
+            raise ValueError(f"Unknown embedding model: {key}")
+        _embedding_fn = LocalHFEmbeddingFunction(model_info["local_dir"], key)
+        _active_embedding_key = key
     return _embedding_fn
+
+
+def get_active_embedding_key() -> str:
+    return _active_embedding_key
 
 
 def get_chroma_client():
@@ -129,14 +138,13 @@ def get_chroma_client():
             path=CHROMA_PERSIST_DIR,
             settings=Settings(anonymized_telemetry=False),
         )
-        logger.info("ChromaDB persistent client initialized at: %s", CHROMA_PERSIST_DIR)
+        logger.info("ChromaDB initialized at: %s", CHROMA_PERSIST_DIR)
     return _chroma_client
 
 
-# ─── DOCX Text Extraction ────────────────────────────────────────────────────
+# ─── Text Extraction ─────────────────────────────────────────────────────────
 
 def extract_text_from_docx(filepath: str) -> str:
-    """Extract all text from a .docx file using python-docx."""
     from docx import Document
     doc = Document(filepath)
     paragraphs = []
@@ -144,7 +152,6 @@ def extract_text_from_docx(filepath: str) -> str:
         text = para.text.strip()
         if text:
             paragraphs.append(text)
-    # Also extract from tables
     for table in doc.tables:
         for row in table.rows:
             row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
@@ -153,10 +160,46 @@ def extract_text_from_docx(filepath: str) -> str:
     return "\n".join(paragraphs)
 
 
+def extract_text_from_pdf(filepath: str) -> str:
+    """Extract text from PDF using PyPDF2 (fallback: pdfplumber)."""
+    try:
+        import PyPDF2
+        text_parts = []
+        with open(filepath, 'rb') as f:
+            reader = PyPDF2.PdfReader(f)
+            for page in reader.pages:
+                t = page.extract_text()
+                if t:
+                    text_parts.append(t.strip())
+        return "\n".join(text_parts)
+    except ImportError:
+        pass
+    try:
+        import pdfplumber
+        text_parts = []
+        with pdfplumber.open(filepath) as pdf:
+            for page in pdf.pages:
+                t = page.extract_text()
+                if t:
+                    text_parts.append(t.strip())
+        return "\n".join(text_parts)
+    except ImportError:
+        raise ImportError("Install PyPDF2 or pdfplumber for PDF support")
+
+
+def extract_text(filepath: str) -> str:
+    ext = os.path.splitext(filepath)[1].lower()
+    if ext == ".docx":
+        return extract_text_from_docx(filepath)
+    elif ext == ".pdf":
+        return extract_text_from_pdf(filepath)
+    else:
+        raise ValueError(f"Unsupported file type: {ext}")
+
+
 # ─── Chunking ────────────────────────────────────────────────────────────────
 
 def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100) -> List[str]:
-    """Split text into overlapping chunks by character count."""
     chunks = []
     start = 0
     while start < len(text):
@@ -169,11 +212,8 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100) -> List[str
 
 
 def sanitize_collection_name(name: str) -> str:
-    """Make a valid ChromaDB collection name from a filename."""
-    # Remove extension, replace non-alphanumeric with underscore
     base = os.path.splitext(name)[0]
     sanitized = re.sub(r'[^a-zA-Z0-9_-]', '_', base)
-    # ChromaDB requires 3-63 chars, must start/end with alphanumeric
     sanitized = sanitized.strip('_-')
     if len(sanitized) < 3:
         sanitized = sanitized + "_doc"
@@ -184,31 +224,29 @@ def sanitize_collection_name(name: str) -> str:
 
 # ─── Ingestion Logic ─────────────────────────────────────────────────────────
 
-def ingest_docx_file(filepath: str) -> Dict[str, Any]:
-    """Ingest a single .docx file into ChromaDB."""
+def ingest_file(filepath: str, embedding_key: Optional[str] = None) -> Dict[str, Any]:
+    """Ingest a single docx/pdf file into ChromaDB."""
     filename = os.path.basename(filepath)
     collection_name = sanitize_collection_name(filename)
 
     logger.info("Ingesting: %s → collection: %s", filename, collection_name)
 
-    # Extract text
-    text = extract_text_from_docx(filepath)
+    text = extract_text(filepath)
     if not text.strip():
         return {"filename": filename, "status": "empty", "chunks": 0}
 
-    # Chunk
     chunks = chunk_text(text, chunk_size=500, overlap=100)
 
-    # Get or create collection
     client = get_chroma_client()
-    ef = get_embedding_fn()
+    ef = get_embedding_fn(embedding_key)
+    emb_key = get_active_embedding_key()
+
     collection = client.get_or_create_collection(
         name=collection_name,
         embedding_function=ef,
-        metadata={"source_file": filename},
+        metadata={"source_file": filename, "embedding_model": emb_key},
     )
 
-    # Check if already ingested (by count)
     if collection.count() > 0:
         logger.info("Collection '%s' already has %d chunks, skipping.", collection_name, collection.count())
         return {
@@ -216,9 +254,9 @@ def ingest_docx_file(filepath: str) -> Dict[str, Any]:
             "collection": collection_name,
             "status": "already_ingested",
             "chunks": collection.count(),
+            "embedding_model": emb_key,
         }
 
-    # Generate IDs and add
     ids = []
     for i, chunk in enumerate(chunks):
         chunk_hash = hashlib.md5(chunk.encode()).hexdigest()[:8]
@@ -226,7 +264,6 @@ def ingest_docx_file(filepath: str) -> Dict[str, Any]:
 
     metadatas = [{"source": filename, "chunk_index": i} for i in range(len(chunks))]
 
-    # Add in batches of 100
     batch_size = 100
     for start in range(0, len(chunks), batch_size):
         end = min(start + batch_size, len(chunks))
@@ -243,16 +280,17 @@ def ingest_docx_file(filepath: str) -> Dict[str, Any]:
         "status": "ingested",
         "chunks": len(chunks),
         "text_length": len(text),
+        "embedding_model": emb_key,
     }
 
 
-def get_all_docx_files() -> List[str]:
-    """Return list of .docx files in DATA_DIR."""
+def get_all_rag_files() -> List[str]:
+    """Return list of .docx and .pdf files in RAG_DATA_DIR."""
     files = []
-    if os.path.isdir(DATA_DIR):
-        for f in sorted(os.listdir(DATA_DIR)):
-            if f.lower().endswith('.docx'):
-                files.append(os.path.join(DATA_DIR, f))
+    if os.path.isdir(RAG_DATA_DIR):
+        for f in sorted(os.listdir(RAG_DATA_DIR)):
+            if f.lower().endswith(('.docx', '.pdf')):
+                files.append(os.path.join(RAG_DATA_DIR, f))
     return files
 
 
@@ -263,11 +301,9 @@ def query_collections(
     collection_names: Optional[List[str]] = None,
     n_results: int = 3,
 ) -> List[Dict[str, Any]]:
-    """Query ChromaDB collections and return top-N relevant chunks."""
     client = get_chroma_client()
     ef = get_embedding_fn()
 
-    # Determine which collections to search
     all_collections = client.list_collections()
     if collection_names:
         target_names = collection_names
@@ -291,6 +327,8 @@ def query_collections(
             docs = query_result.get("documents", [[]])[0]
             metas = query_result.get("metadatas", [[]])[0]
             dists = query_result.get("distances", [[]])[0]
+            col_meta = collection.metadata or {}
+            emb_model = col_meta.get("embedding_model", "unknown")
             for doc, meta, dist in zip(docs, metas, dists):
                 results.append({
                     "collection": cname,
@@ -298,11 +336,11 @@ def query_collections(
                     "source": meta.get("source", ""),
                     "chunk_index": meta.get("chunk_index", 0),
                     "distance": round(dist, 4),
+                    "embedding_model": emb_model,
                 })
         except Exception as e:
             logger.warning("Error querying collection '%s': %s", cname, e)
 
-    # Sort by distance (lower = more relevant) and take top N
     results.sort(key=lambda x: x["distance"])
     return results[:n_results]
 
@@ -311,17 +349,16 @@ def query_collections(
 
 @router.get("/rag/chat", response_class=HTMLResponse)
 async def rag_chat_page(request: Request):
-    """Serve the Satriani RAG chat page."""
     return templates.TemplateResponse("rag_chat.html", {"request": request})
 
 
 @router.post("/rag/ingest", response_class=JSONResponse)
-async def rag_ingest(req: RAGIngestRequest):
-    """Ingest .docx files into ChromaDB collections."""
+async def rag_ingest(req: IngestRequest):
+    """Ingest files into ChromaDB (called by admin panel)."""
     try:
-        files = get_all_docx_files()
+        files = get_all_rag_files()
         if not files:
-            return JSONResponse(content={"status": "no_files", "message": "No .docx files found in data directory."})
+            return JSONResponse(content={"status": "no_files", "message": "No documents found."})
 
         if req.filename:
             files = [f for f in files if os.path.basename(f) == req.filename]
@@ -330,7 +367,7 @@ async def rag_ingest(req: RAGIngestRequest):
 
         results = []
         for fpath in files:
-            result = ingest_docx_file(fpath)
+            result = ingest_file(fpath, req.embedding_key)
             results.append(result)
 
         return JSONResponse(content={"status": "ok", "results": results})
@@ -342,44 +379,25 @@ async def rag_ingest(req: RAGIngestRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/rag/collections", response_class=JSONResponse)
-async def rag_list_collections():
-    """List all ingested document collections."""
-    try:
-        client = get_chroma_client()
-        collections = client.list_collections()
-        result = []
-        for c in collections:
-            col = client.get_collection(name=c.name)
-            meta = col.metadata or {}
-            result.append({
-                "name": c.name,
-                "source_file": meta.get("source_file", "Unknown"),
-                "chunks": col.count(),
-            })
-        return JSONResponse(content={"collections": result})
-    except Exception as e:
-        logger.error("Error listing collections: %s", e)
-        return JSONResponse(content={"collections": []})
-
-
 @router.get("/rag/documents", response_class=JSONResponse)
 async def rag_list_documents():
-    """List available .docx files and their ingestion status."""
-    files = get_all_docx_files()
+    """List available documents and their ingestion status."""
+    files = get_all_rag_files()
     client = get_chroma_client()
-    existing = {c.name for c in client.list_collections()}
+    existing_collections = {c.name: c for c in client.list_collections()}
 
     docs = []
     for fpath in files:
         fname = os.path.basename(fpath)
         cname = sanitize_collection_name(fname)
-        ingested = cname in existing
+        ingested = cname in existing_collections
         chunk_count = 0
+        emb_model = ""
         if ingested:
             try:
                 col = client.get_collection(name=cname)
                 chunk_count = col.count()
+                emb_model = (col.metadata or {}).get("embedding_model", "")
             except Exception:
                 pass
         docs.append({
@@ -388,101 +406,105 @@ async def rag_list_documents():
             "ingested": ingested,
             "chunks": chunk_count,
             "size_kb": round(os.path.getsize(fpath) / 1024, 1),
+            "embedding_model": emb_model,
         })
     return JSONResponse(content={"documents": docs})
 
 
+@router.post("/rag/upload-context")
+async def upload_context_document(file: UploadFile = File(...)):
+    """User uploads a doc/pdf for temporary chat context (max 5MB).
+    Extracts text and returns it — does NOT persist to ChromaDB."""
+    fname = file.filename or "unknown"
+    ext = os.path.splitext(fname)[1].lower()
+    if ext not in (".docx", ".pdf"):
+        raise HTTPException(status_code=400, detail="Only .docx and .pdf files are allowed")
+
+    content = await file.read()
+    size_mb = len(content) / (1024 * 1024)
+    if size_mb > RAG_UPLOAD_MAX_SIZE_MB:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File too large ({size_mb:.1f} MB). Max is {RAG_UPLOAD_MAX_SIZE_MB} MB."
+        )
+
+    # Write to temp file, extract text, delete
+    suffix = ext
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(content)
+        tmp_path = tmp.name
+
+    try:
+        text = extract_text(tmp_path)
+    finally:
+        os.unlink(tmp_path)
+
+    if not text.strip():
+        return JSONResponse(content={"filename": fname, "text": "", "chunks": 0})
+
+    chunks = chunk_text(text, chunk_size=500, overlap=100)
+    return JSONResponse(content={
+        "filename": fname,
+        "text": text[:50000],  # cap at 50K chars
+        "chunks": len(chunks),
+        "size_mb": round(size_mb, 2),
+    })
+
+
 @router.post("/rag/ask", response_class=JSONResponse)
-async def rag_ask(chat: RAGChatMessage):
-    """Answer a question using RAG: retrieve top-3 chunks then generate with LLM."""
+async def rag_ask(chat: ChatMessage):
+    """Unified chat: uses RAG context if available, plus any extra context."""
     if not chat.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-    # Retrieve relevant chunks
-    chunks = query_collections(
-        question=chat.message,
-        collection_names=chat.collections,
-        n_results=3,
-    )
-
-    if not chunks:
-        return JSONResponse(content={
-            "response": "No relevant documents found. Please ingest documents first.",
-            "sources": [],
-            "inference_time": 0,
-        })
-
-    # Build context from retrieved chunks
-    context_parts = []
     sources = []
-    for i, chunk in enumerate(chunks, 1):
-        context_parts.append(
-            f"--- Fragment {i} (from: {chunk['source']}, relevance: {1 - chunk['distance']:.2%}) ---\n"
-            f"{chunk['document']}"
+    rag_context = ""
+
+    if chat.use_rag:
+        chunks = query_collections(
+            question=chat.message,
+            collection_names=chat.collections,
+            n_results=3,
         )
-        sources.append({
-            "source": chunk["source"],
-            "collection": chunk["collection"],
-            "chunk_index": chunk["chunk_index"],
-            "relevance": round(1 - chunk["distance"], 4),
-            "text": chunk["document"],
-        })
+        if chunks:
+            context_parts = []
+            for i, chunk in enumerate(chunks, 1):
+                context_parts.append(
+                    f"--- Fragment {i} (from: {chunk['source']}, "
+                    f"relevance: {1 - chunk['distance']:.2%}) ---\n"
+                    f"{chunk['document']}"
+                )
+                sources.append({
+                    "source": chunk["source"],
+                    "collection": chunk["collection"],
+                    "chunk_index": chunk["chunk_index"],
+                    "relevance": round(1 - chunk["distance"], 4),
+                    "text": chunk["document"],
+                    "embedding_model": chunk.get("embedding_model", ""),
+                })
+            rag_context = "\n\n".join(context_parts)
 
-    rag_context = "\n\n".join(context_parts)
-
-    # Build system prompt for RAG
     system_prompt = (
         "You are Satriani, an expert document analysis assistant.\n\n"
-        "FUNDAMENTAL RULE: ALWAYS respond in English regardless of "
-        "the language of the question.\n\n"
-        "You are provided with relevant fragments from internal documents. "
-        "Use ONLY the information from these fragments to answer.\n"
-        "If the information is insufficient, state so clearly.\n"
-        "Cite the source document when possible.\n"
-        "Respond in a structured and professional manner.\n"
+        "FUNDAMENTAL RULE: ALWAYS respond in English.\n\n"
+        "Use the provided document fragments to answer. "
+        "If no context is provided, answer from your general knowledge.\n"
+        "Cite sources when possible. Be structured and professional.\n"
     )
 
-    # Use the same LLM model manager from llm_routes
-    from .llm_routes import model_manager
+    data_context = system_prompt
+    if rag_context:
+        data_context += "\n\nRELEVANT DOCUMENTS:\n" + rag_context
 
+    from .llm_routes import model_manager
     answer, inference_time = model_manager.generate_response(
         user_message=chat.message,
-        data_context=system_prompt + "\n\nRELEVANT DOCUMENTS:\n" + rag_context,
+        data_context=data_context,
     )
 
     return JSONResponse(content={
         "response": answer,
         "sources": sources,
         "inference_time": inference_time,
-        "chunks_used": len(chunks),
-    })
-
-
-@router.post("/rag/free-ask", response_class=JSONResponse)
-async def rag_free_ask(chat: RAGChatMessage):
-    """Free mode: answer using only the pre-trained LLM, no RAG context."""
-    if not chat.message.strip():
-        raise HTTPException(status_code=400, detail="Message cannot be empty")
-
-    from .llm_routes import model_manager
-
-    system_prompt = (
-        "You are Satriani, a knowledgeable AI assistant.\n\n"
-        "FUNDAMENTAL RULE: ALWAYS respond in English regardless of "
-        "the language of the question.\n\n"
-        "Answer the user's question using your general knowledge.\n"
-        "Be precise, structured, and professional.\n"
-        "If you are unsure about something, say so clearly.\n"
-    )
-
-    answer, inference_time = model_manager.generate_response(
-        user_message=chat.message,
-        data_context=system_prompt,
-    )
-
-    return JSONResponse(content={
-        "response": answer,
-        "sources": [],
-        "inference_time": inference_time,
-        "chunks_used": 0,
+        "chunks_used": len(sources),
     })

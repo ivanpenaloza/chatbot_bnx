@@ -2,19 +2,15 @@
 LLM Router - AI Chatbot with Multi-Model Offline Support
 
 This module provides REST API endpoints for an AI-powered chatbot
-that answers statistical questions about the cubo_datos_v2 dataset
 using locally-stored LLM models (fully offline, no internet needed).
 
 Supported models:
-  - Qwen2.5-0.5B-Instruct  (fastest, ~1GB)
-  - TinyLlama-1.1B-Chat     (fast, ~2.2GB)
-  - Gemma-3-1B-IT            (best quality, ~3.8GB)
+  - Gemma-3-1B-IT            (compact, ~3.8GB)
+  - Meta-Llama-3.1-8B-Instruct (high quality, ~16GB)
+  - Mistral-7B-Instruct-v0.3   (strong reasoning, ~14GB)
 
 Only one model is loaded in memory at a time. Switching models
 unloads the current one first to conserve GPU/CPU resources.
-
-Authors: Ivan Dario Penaloza Rojas <ip70574@citi.com>
-Manager: Ivan Dario Penaloza Rojas <ip70574@citi.com>
 '''
 
 import os

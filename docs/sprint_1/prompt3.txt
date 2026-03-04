@@ -1,9 +1,34 @@
-Excellent work. Everything is working so far. I would like you to help me to find a lighther model
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
 
-than gemma3 if possible. I need the response much faster. So in the right hand side I should be able 
-to pick the models available to answer the questions. In addition to that remove the logo of the robot above
-stargazer databot.
+1) There must be a very nice landing page with a very compelling message about the purpose of this app. Remember that is has to be 
+an app similar to "Citi Stylus Workspaces is a proprietary, AI-powered internal productivity platform developed by Citigroup, not a consumer application. It is designed for employees to enhance workflow efficiency, summarize, documents, draft emails, and conduct research. "
+2) The landing page must indicate login user, and login admin. 
+3) When I get access as an admin, I should register the allowed users to use the app. The users then 
+can use their username and password to get access to the app.
+4) The current functionality of ingesting document to create their correspondign docuemnts must only appear in the admin panel.
+That panel should list the documents that were ingested (their embedding was created). 
+Update the default path that will work to identify all the docuemnts that are available for RAG. That path should be 
+something like chatbot_bnx/api/static/data or something like that. 
+5) There must be a state of the art upload document to upload the docuemnt (either docx or pdf) to be listed in the files available for RAG. 
+As you imagine as soon as I upload that file should be stored at chatbot_bnx/api/static/data to be avialable for RAG 
+6) When a user get access to the chat, the user will only find the documents available for RAG when chatting. 
+7) There must be a state of the art upload uption so the user can also add documents (docs, and pdfs) as a context. The documents cannot be 
+more than 5MB larger. 
+8) The flow of the chat is perfect, however change the logos. Instead use what you did before. an 'S' for the agent answering, and a 'U' for the user 
+answering. 
+9) The admin console must also indicate the type of embedding used for the ingestion posssible
+10) The user chat, must also have the in the list of documents to be choosen from RAG to add more context, the name of the 
+embedding model used for those embeddings. 
+11) Now the list of offline models from huggingface that we will use will be gemma3 1b, and the following ones
 
-No model can be loaded online. All models must be offline. And every time I switch from one model to another 
-the icon should indicate processing and then turn green indicated that the model choosed is loaded. When this happen
-you discard the others from memory so you do not consume too much resources
+Chat	Meta-Llama-3.1-8B-Instruct	32,000
+Chat	Mistral-7B-Instruct-v0.3	32,000
+Embedding	gte-large-en-v1.5	8,192
+Embedding	gte-multilingual-base	8,192
+
+
+we cannot have any other model
+12) Update /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/.github/copilot-instructions.md to have an overview of the project 
+13) Add the corresponding /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/routers to make the project more modular
+14) Instead of chatmode: RAG or Free. We should have a unified chat where, as we said before, can add context of either embedded documents
+or uploaded docuemnts or both

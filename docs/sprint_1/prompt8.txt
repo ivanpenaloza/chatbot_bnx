@@ -1,9 +1,0 @@
-1) Delete all the routers at /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/routers except for /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/routers/llm_routes.py
-2) Create a new type of chat where you first have to pass the docx documents to pdf. Those files can be found at /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/static/data
-3) The new chat be the same state of the art chart that uses the same offline models and we can toggle those.
-4) Look if it is possible to use chroma with huggingface embedding to create a rag implementation using offline models as the llm_routes
-5) The chat must be able to show the list of documents pdf docuemnts that have been ingested to creat the embeddings. Each
-document must have its corresponding collection. So when a user ask a question. The chat must provide an answer based on the top 3 most relevant parts of the documents that may answer his question
-6) Change the color of the interface to a state of the art openAI black chat 
-7) The vector db must be sqlite 
-8) The name of the app must be called Satriani

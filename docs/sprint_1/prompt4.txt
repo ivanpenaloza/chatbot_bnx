@@ -1,16 +1,5 @@
-The UI of 
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
 
-Model Selection
-Qwen 2.5 0.5B
-Fastest. Great for quick answers.
-~1 GB
-TinyLlama 1.1B
-Fast and balanced performance.
-~2.2 GB
-Gemma 3 1B
-Best quality. Slower inference.
-~3.8 GB
-
-is pretty cool, but I would like to create a state of the art
-and elegant way to unfolder the list and fold it again so when I pick one this is the one 
-that should appear on the UI as activated
+1) I would like to change the logo /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/images/banamex.png to openai black and white state of the art since the current colors are different from
+black and white. 
+2) It should be placed on the left of Admin and Sign In. 

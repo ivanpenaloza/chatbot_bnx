@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satriani — Admin Console</title>
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0a0a;--surface:#141414;--card:#1a1a1a;--border:#262626;--text:#ededed;--muted:#888;--white:#fff;--danger:#ef4444;--success:#22c55e;--radius:12px;--font:system-ui,-apple-system,'Segoe UI',sans-serif}
+        body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+
+        /* HEADER */
+        .header{padding:16px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+        .header-left{display:flex;align-items:center;gap:10px}
+        .header-logo{width:28px;height:28px;background:var(--white);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#0a0a0a;font-weight:800;font-size:13px}
+        .header-title{font-size:.95rem;font-weight:700}
+        .header-badge{padding:3px 10px;border-radius:4px;font-size:.65rem;font-weight:600;background:rgba(255,255,255,.08);color:var(--muted);margin-left:8px}
+        .header-right{display:flex;align-items:center;gap:12px}
+        .header-user{font-size:.8rem;color:var(--muted)}
+        .logout-btn{padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);font-size:.78rem;cursor:pointer;font-family:var(--font)}
+        .logout-btn:hover{background:rgba(255,255,255,.06)}
+
+        /* LAYOUT */
+        .container{max-width:1000px;margin:0 auto;padding:32px 24px}
+        .section{margin-bottom:32px}
+        .section-title{font-size:1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+        .section-title svg{width:18px;height:18px;stroke:var(--muted)}
+
+        /* CARDS */
+        .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px}
+        .card-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+        .card-info{flex:1;min-width:0}
+        .card-name{font-size:.88rem;font-weight:600}
+        .card-meta{font-size:.72rem;color:var(--muted);margin-top:2px}
+        .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.62rem;font-weight:600}
+        .badge.green{background:rgba(34,197,94,.12);color:var(--success)}
+        .badge.red{background:rgba(239,68,68,.12);color:var(--danger)}
+        .badge.gray{background:rgba(255,255,255,.06);color:var(--muted)}
+
+        /* BUTTONS */
+        .btn{padding:8px 16px;border-radius:8px;font-family:var(--font);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;border:none}
+        .btn-primary{background:var(--white);color:#0a0a0a}
+        .btn-primary:hover{background:#e5e5e5}
+        .btn-danger{background:transparent;color:var(--danger);border:1px solid rgba(239,68,68,.3)}
+        .btn-danger:hover{background:rgba(239,68,68,.08)}
+        .btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+        .btn-outline:hover{background:rgba(255,255,255,.06)}
+        .btn:disabled{opacity:.4;cursor:not-allowed}
+
+        /* UPLOAD AREA */
+        .upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:all .2s}
+        .upload-area:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.02)}
+        .upload-area.dragover{border-color:var(--white);background:rgba(255,255,255,.04)}
+        .upload-icon{margin-bottom:8px}
+        .upload-icon svg{width:32px;height:32px;stroke:var(--muted)}
+        .upload-text{font-size:.85rem;color:var(--muted)}
+        .upload-hint{font-size:.7rem;color:var(--muted);margin-top:4px;opacity:.7}
+        input[type="file"]{display:none}
+
+        /* FORM */
+        .form-row{display:flex;gap:10px;align-items:flex-end;margin-top:12px}
+        .form-group{flex:1}
+        .form-label{display:block;font-size:.7rem;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+        .form-input{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:.85rem;outline:none}
+        .form-input:focus{border-color:rgba(255,255,255,.3)}
+        select.form-input{cursor:pointer}
+
+        /* TABLE */
+        .user-table{width:100%;border-collapse:collapse}
+        .user-table th,.user-table td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);font-size:.82rem}
+        .user-table th{color:var(--muted);font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+
+        .toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:8px;font-size:.82rem;font-weight:600;z-index:200;display:none;animation:slideIn .3s}
+        .toast.success{background:var(--success);color:#fff}
+        .toast.error{background:var(--danger);color:#fff}
+        @keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="header-logo">S</div>
+            <div class="header-title">Satriani</div>
+            <div class="header-badge">Admin Console</div>
+        </div>
+        <div class="header-right">
+            <span class="header-user" id="adminName">admin</span>
+            <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- EMBEDDING MODEL -->
+        <div class="section">
+            <div class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+                Embedding Model
+            </div>
+            <div id="embeddingInfo" class="card">
+                <div class="card-meta">Loading...</div>
+            </div>
+        </div>
+
+        <!-- UPLOAD DOCUMENTS -->
+        <div class="section">
+            <div class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload Documents
+            </div>
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+                <div class="upload-text">Click or drag files here to upload</div>
+                <div class="upload-hint">.docx and .pdf files · Max 5 MB each</div>
+            </div>
+            <input type="file" id="fileInput" accept=".docx,.pdf" multiple onchange="handleUpload(this.files)">
+        </div>
+
+        <!-- DOCUMENTS & INGESTION -->
+        <div class="section">
+            <div class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Documents &amp; Ingestion
+            </div>
+            <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center">
+                <select class="form-input" id="embModelSelect" style="width:auto;min-width:200px"></select>
+                <button class="btn btn-primary" id="ingestAllBtn" onclick="ingestAll()">Ingest All Documents</button>
+            </div>
+            <div id="docList"></div>
+        </div>
+
+        <!-- USER MANAGEMENT -->
+        <div class="section">
+            <div class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                User Management
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Username</label><input class="form-input" id="newUser" placeholder="username"></div>
+                <div class="form-group"><label class="form-label">Password</label><input class="form-input" id="newPass" type="password" placeholder="password"></div>
+                <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="newName" placeholder="Full Name"></div>
+                <button class="btn btn-primary" onclick="registerUser()" style="margin-bottom:0;height:38px">Add User</button>
+            </div>
+            <table class="user-table" style="margin-top:16px">
+                <thead><tr><th>Username</th><th>Full Name</th><th>Role</th><th></th></tr></thead>
+                <tbody id="userTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    (function(){
+        var token=sessionStorage.getItem('satriani_token');
+        if(!token){window.location.href='/';return;}
+        var userInfo=JSON.parse(sessionStorage.getItem('satriani_user')||'{}');
+        if(userInfo.role!=='admin'){window.location.href='/api/v1/rag/chat';return;}
+        document.getElementById('adminName').textContent=userInfo.full_name||userInfo.username||'admin';
+
+        var headers={'Content-Type':'application/json','Authorization':'Bearer '+token};
+        var headersNoBody={'Authorization':'Bearer '+token};
+
+        function toast(msg,type){
+            var t=document.getElementById('toast');
+            t.textContent=msg;t.className='toast '+(type||'success');t.style.display='block';
+            setTimeout(function(){t.style.display='none';},3000);
+        }
+
+        // ── Embedding models ──
+        async function loadEmbeddings(){
+            try{
+                var res=await fetch('/api/v1/admin/embedding-models',{headers:headersNoBody});
+                var data=await res.json();
+                var el=document.getElementById('embeddingInfo');
+                var sel=document.getElementById('embModelSelect');
+                sel.innerHTML='';
+                var html='';
+                (data.models||[]).forEach(function(m){
+                    var avail=m.available?'<span class="badge green">Available</span>':'<span class="badge red">Not Downloaded</span>';
+                    var active=m.active?' <span class="badge gray">Active</span>':'';
+                    html+='<div class="card-row" style="margin-bottom:8px"><div class="card-info"><div class="card-name">'+m.display_name+active+'</div><div class="card-meta">'+m.description+' · Context: '+m.context_length.toLocaleString()+' tokens '+avail+'</div></div></div>';
+                    var opt=document.createElement('option');
+                    opt.value=m.key;opt.textContent=m.display_name;
+                    if(m.active)opt.selected=true;
+                    sel.appendChild(opt);
+                });
+                el.innerHTML=html||'<div class="card-meta">No embedding models configured</div>';
+            }catch(e){console.error(e);}
+        }
+
+        // ── Documents ──
+        async function loadDocuments(){
+            try{
+                var res=await fetch('/api/v1/rag/documents',{headers:headersNoBody});
+                var data=await res.json();
+                var el=document.getElementById('docList');
+                el.innerHTML='';
+                (data.documents||[]).forEach(function(d){
+                    var badge=d.ingested?'<span class="badge green">Ingested · '+d.chunks+' chunks</span>':'<span class="badge red">Pending</span>';
+                    var embInfo=d.embedding_model?'<span class="badge gray">'+d.embedding_model+'</span>':'';
+                    var card=document.createElement('div');
+                    card.className='card';
+                    card.innerHTML='<div class="card-row"><div class="card-info"><div class="card-name">'+d.filename+' '+embInfo+'</div><div class="card-meta">'+d.size_kb+' KB · Collection: '+d.collection+' '+badge+'</div></div><button class="btn btn-danger" onclick="deleteDoc(\''+d.filename+'\')">Delete</button></div>';
+                    el.appendChild(card);
+                });
+                if(!(data.documents||[]).length){el.innerHTML='<div class="card"><div class="card-meta">No documents found. Upload files above.</div></div>';}
+            }catch(e){console.error(e);}
+        }
+
+        // ── Upload ──
+        var uploadArea=document.getElementById('uploadArea');
+        uploadArea.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('dragover');});
+        uploadArea.addEventListener('dragleave',function(){this.classList.remove('dragover');});
+        uploadArea.addEventListener('drop',function(e){e.preventDefault();this.classList.remove('dragover');handleUpload(e.dataTransfer.files);});
+
+        window.handleUpload=async function(files){
+            for(var i=0;i<files.length;i++){
+                var f=files[i];
+                var fd=new FormData();fd.append('file',f);
+                try{
+                    var res=await fetch('/api/v1/admin/upload',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
+                    if(!res.ok){var e=await res.json();toast(e.detail||'Upload failed','error');continue;}
+                    toast('Uploaded: '+f.name);
+                }catch(ex){toast('Upload error','error');}
+            }
+            loadDocuments();
+        };
+
+        window.ingestAll=async function(){
+            var btn=document.getElementById('ingestAllBtn');
+            btn.disabled=true;btn.textContent='Ingesting...';
+            var embKey=document.getElementById('embModelSelect').value;
+            try{
+                var res=await fetch('/api/v1/rag/ingest',{method:'POST',headers:headers,body:JSON.stringify({embedding_key:embKey})});
+                var data=await res.json();
+                var count=(data.results||[]).reduce(function(s,r){return s+r.chunks;},0);
+                toast('Ingestion complete: '+count+' total chunks');
+                loadDocuments();
+            }catch(e){toast('Ingestion error','error');}
+            btn.disabled=false;btn.textContent='Ingest All Documents';
+        };
+
+        window.deleteDoc=async function(fname){
+            if(!confirm('Delete '+fname+'?'))return;
+            try{
+                var res=await fetch('/api/v1/admin/documents/'+encodeURIComponent(fname),{method:'DELETE',headers:headersNoBody});
+                if(res.ok)toast('Deleted: '+fname);
+                else toast('Delete failed','error');
+                loadDocuments();
+            }catch(e){toast('Error','error');}
+        };
+
+        // ── Users ──
+        async function loadUsers(){
+            try{
+                var res=await fetch('/api/v1/auth/users',{headers:headersNoBody});
+                var data=await res.json();
+                var tbody=document.getElementById('userTableBody');
+                tbody.innerHTML='';
+                (data.users||[]).forEach(function(u){
+                    var tr=document.createElement('tr');
+                    var delBtn=u.role==='admin'?'':'<button class="btn btn-danger" onclick="deleteUser(\''+u.username+'\')">Remove</button>';
+                    tr.innerHTML='<td>'+u.username+'</td><td>'+u.full_name+'</td><td><span class="badge '+(u.role==='admin'?'gray':'green')+'">'+u.role+'</span></td><td>'+delBtn+'</td>';
+                    tbody.appendChild(tr);
+                });
+            }catch(e){console.error(e);}
+        }
+
+        window.registerUser=async function(){
+            var u=document.getElementById('newUser').value.trim();
+            var p=document.getElementById('newPass').value;
+            var n=document.getElementById('newName').value.trim();
+            if(!u||!p){toast('Username and password required','error');return;}
+            try{
+                var res=await fetch('/api/v1/auth/register',{method:'POST',headers:headers,body:JSON.stringify({username:u,password:p,full_name:n})});
+                if(!res.ok){var e=await res.json();toast(e.detail||'Error','error');return;}
+                toast('User created: '+u);
+                document.getElementById('newUser').value='';
+                document.getElementById('newPass').value='';
+                document.getElementById('newName').value='';
+                loadUsers();
+            }catch(ex){toast('Error','error');}
+        };
+
+        window.deleteUser=async function(uname){
+            if(!confirm('Remove user '+uname+'?'))return;
+            try{
+                var res=await fetch('/api/v1/auth/users/'+encodeURIComponent(uname),{method:'DELETE',headers:headersNoBody});
+                if(res.ok)toast('Removed: '+uname);
+                else toast('Error','error');
+                loadUsers();
+            }catch(e){toast('Error','error');}
+        };
+
+        window.doLogout=function(){
+            fetch('/api/v1/auth/logout',{method:'POST',headers:headersNoBody});
+            sessionStorage.clear();
+            window.location.href='/';
+        };
+
+        // ── Init ──
+        loadEmbeddings();
+        loadDocuments();
+        loadUsers();
+    })();
+    </script>
+</body>
+</html>
