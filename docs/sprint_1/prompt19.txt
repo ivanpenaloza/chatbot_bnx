@@ -1,0 +1,11 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+In the URL /api/v1/rag/chat almost everything is correct, but we need to fix some things:
+
+1) Can you explain why I cannot get access to the models 
+
+Chat	Meta-Llama-3.1-8B-Instruct	32,000
+Chat	Mistral-7B-Instruct-v0.3	32,000
+
+you should store those models at /home/ivan/ProjectPrometheus/models
+
