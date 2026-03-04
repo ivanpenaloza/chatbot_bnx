@@ -12,7 +12,7 @@
         /* NAV */
         nav{padding:20px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
         .nav-brand{display:flex;align-items:center;gap:10px;font-size:1.1rem;font-weight:700}
-        .nav-logo{width:32px;height:32px;background:var(--white);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#0a0a0a;font-weight:800;font-size:15px}
+        .nav-logo{width:32px;height:32px;display:flex;align-items:center;justify-content:center}
         .nav-img-logo{height:28px;width:auto;filter:grayscale(1) brightness(0) invert(1);opacity:.9;margin-right:4px}
         .nav-links{display:flex;align-items:center;gap:8px}
         .nav-btn{padding:8px 20px;border-radius:8px;font-family:var(--font);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;border:1px solid var(--border);background:transparent;color:var(--text)}
@@ -71,7 +71,15 @@
 <body>
     <nav>
         <div class="nav-brand">
-            <div class="nav-logo">S</div>
+            <div class="nav-logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="32" height="32" rx="8" fill="white"/>
+                    <path d="M16 6L16 26" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round"/>
+                    <path d="M10 10C10 10 13 13 16 13C19 13 22 10 22 10" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                    <path d="M10 17C10 17 13 20 16 20C19 20 22 17 22 17" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                    <circle cx="16" cy="25" r="1.5" fill="#0a0a0a"/>
+                </svg>
+            </div>
             Satriani
         </div>
         <div class="nav-links">
