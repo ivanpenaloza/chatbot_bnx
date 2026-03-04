@@ -16,6 +16,7 @@
         .header-title{font-size:.95rem;font-weight:700}
         .header-badge{padding:3px 10px;border-radius:4px;font-size:.65rem;font-weight:600;background:rgba(255,255,255,.08);color:var(--muted);margin-left:8px}
         .header-right{display:flex;align-items:center;gap:12px}
+        .header-banamex-logo{height:22px;width:auto;filter:grayscale(1) brightness(0) invert(1);opacity:.7}
         .header-user{font-size:.8rem;color:var(--muted)}
         .logout-btn{padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);font-size:.78rem;cursor:pointer;font-family:var(--font)}
         .logout-btn:hover{background:rgba(255,255,255,.06)}
@@ -84,6 +85,7 @@
             <div class="header-badge">Admin Console</div>
         </div>
         <div class="header-right">
+            <img src="/static/images/banamex_brand.png" alt="Banamex" class="header-banamex-logo">
             <span class="header-user" id="adminName">admin</span>
             <button class="logout-btn" onclick="doLogout()">Sign Out</button>
         </div>
