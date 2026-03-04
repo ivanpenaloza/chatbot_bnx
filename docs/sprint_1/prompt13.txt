@@ -1,0 +1,8 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+In the URL /api/v1/admin/panel almost everything is correct, but we need to fix some things:
+
+1) We need to move /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/static/data/chroma_db to /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/chroma_db and update all the config paths accordingly
+2) We need to move /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/static/data/satriani.db to /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/db/satriani.db and update all the config paths accordingly (the name of the folder must be db please)
+3) We need to move all the .docx and .pdf documents found at /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/static/data to a new folder /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/data update all the config paths accordingly to make things work
+4) In the URL /api/v1/admin/panel almost everything is except the drag and drop functionality, so please fix it
