@@ -238,10 +238,22 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100) -> List[str
     return chunks
 
 
-def sanitize_collection_name(name: str) -> str:
+def sanitize_collection_name(name: str, embedding_key: Optional[str] = None) -> str:
+    """Build a ChromaDB collection name from filename + embedding model key.
+
+    Including the model key allows the same document to be embedded with
+    different models while preventing duplicate ingestion for the same
+    (document, model) pair.
+    """
     base = os.path.splitext(name)[0]
     sanitized = re.sub(r'[^a-zA-Z0-9_-]', '_', base)
     sanitized = sanitized.strip('_-')
+
+    # Append a short model suffix so each model gets its own collection
+    if embedding_key:
+        model_suffix = re.sub(r'[^a-zA-Z0-9_-]', '_', embedding_key)
+        sanitized = f"{sanitized}__{model_suffix}"
+
     if len(sanitized) < 3:
         sanitized = sanitized + "_doc"
     if len(sanitized) > 63:
@@ -252,12 +264,36 @@ def sanitize_collection_name(name: str) -> str:
 # ─── Ingestion Logic ─────────────────────────────────────────────────────────
 
 def ingest_file(filepath: str, embedding_key: Optional[str] = None) -> Dict[str, Any]:
-    """Ingest a single docx/pdf file into ChromaDB."""
+    """Ingest a single docx/pdf file into ChromaDB.
+
+    The collection name encodes both the filename and the embedding model,
+    so the same document can be embedded with different models but cannot
+    be ingested twice with the same model.
+    """
     filename = os.path.basename(filepath)
     emb_key = embedding_key or DEFAULT_EMBEDDING_KEY
-    collection_name = sanitize_collection_name(filename)
+    collection_name = sanitize_collection_name(filename, emb_key)
 
     logger.info("Ingesting: %s → collection: %s (model: %s)", filename, collection_name, emb_key)
+
+    # ── Duplicate check: same document + same model ──
+    client = get_chroma_client()
+    try:
+        existing = client.get_collection(name=collection_name)
+        if existing.count() > 0:
+            logger.info(
+                "Collection '%s' already has %d chunks (model: %s), skipping duplicate.",
+                collection_name, existing.count(), emb_key,
+            )
+            return {
+                "filename": filename,
+                "collection": collection_name,
+                "status": "already_ingested",
+                "chunks": existing.count(),
+                "embedding_model": emb_key,
+            }
+    except Exception:
+        pass  # Collection doesn't exist yet — proceed
 
     text = extract_text(filepath)
     if not text.strip():
@@ -265,7 +301,6 @@ def ingest_file(filepath: str, embedding_key: Optional[str] = None) -> Dict[str,
 
     chunks = chunk_text(text, chunk_size=500, overlap=100)
 
-    client = get_chroma_client()
     ef = get_embedding_fn(emb_key)
 
     collection = client.get_or_create_collection(
@@ -273,16 +308,6 @@ def ingest_file(filepath: str, embedding_key: Optional[str] = None) -> Dict[str,
         embedding_function=ef,
         metadata={"source_file": filename, "embedding_model": emb_key},
     )
-
-    if collection.count() > 0:
-        logger.info("Collection '%s' already has %d chunks, skipping.", collection_name, collection.count())
-        return {
-            "filename": filename,
-            "collection": collection_name,
-            "status": "already_ingested",
-            "chunks": collection.count(),
-            "embedding_model": emb_key,
-        }
 
     ids = []
     for i, chunk in enumerate(chunks):
@@ -403,42 +428,55 @@ async def rag_ingest(req: IngestRequest):
 
 @router.get("/rag/documents")
 async def rag_list_documents():
-    """List available documents and their ingestion status from ChromaDB."""
+    """List available documents and their ingestion status from ChromaDB.
+
+    A document may have multiple embeddings (one per model), so we return
+    a list of embedding entries per file.
+    """
     files = get_all_rag_files()
     client = get_chroma_client()
 
-    # Build a set of existing collection names for fast lookup
-    existing = {}
+    # Index all collections by source_file from metadata
+    collections_by_source: Dict[str, List[Any]] = {}
     for col in client.list_collections():
-        existing[col.name] = col
+        meta = col.metadata or {}
+        src = meta.get("source_file", "")
+        if src:
+            collections_by_source.setdefault(src, []).append(col)
 
     docs = []
     for fpath in files:
         fname = os.path.basename(fpath)
-        cname = sanitize_collection_name(fname)
-        ingested = cname in existing
-        chunk_count = 0
-        emb_model = ""
-        emb_algorithm = ""
-        if ingested:
-            try:
-                col = existing[cname]
-                chunk_count = col.count()
+        matched_cols = collections_by_source.get(fname, [])
+        if matched_cols:
+            for col in matched_cols:
                 col_meta = col.metadata or {}
                 emb_model = col_meta.get("embedding_model", "")
-                # Determine the distance/similarity algorithm used
                 emb_algorithm = col_meta.get("hnsw:space", "cosine")
-            except Exception:
-                pass
-        docs.append({
-            "filename": fname,
-            "collection": cname,
-            "ingested": ingested,
-            "chunks": chunk_count,
-            "size_kb": round(os.path.getsize(fpath) / 1024, 1),
-            "embedding_model": emb_model,
-            "embedding_algorithm": emb_algorithm or "cosine",
-        })
+                try:
+                    chunk_count = col.count()
+                except Exception:
+                    chunk_count = 0
+                docs.append({
+                    "filename": fname,
+                    "collection": col.name,
+                    "ingested": True,
+                    "chunks": chunk_count,
+                    "size_kb": round(os.path.getsize(fpath) / 1024, 1),
+                    "embedding_model": emb_model,
+                    "embedding_algorithm": emb_algorithm or "cosine",
+                })
+        else:
+            # Document exists on disk but has no embeddings yet
+            docs.append({
+                "filename": fname,
+                "collection": sanitize_collection_name(fname),
+                "ingested": False,
+                "chunks": 0,
+                "size_kb": round(os.path.getsize(fpath) / 1024, 1),
+                "embedding_model": "",
+                "embedding_algorithm": "cosine",
+            })
     return JSONResponse(content={"documents": docs})
 
 

@@ -64,6 +64,14 @@ async def upload_document(
 
     os.makedirs(RAG_DATA_DIR, exist_ok=True)
     dest = os.path.join(RAG_DATA_DIR, fname)
+
+    # Prevent uploading a file that already exists on disk
+    if os.path.exists(dest):
+        raise HTTPException(
+            status_code=409,
+            detail=f"Document '{fname}' already exists. Delete it first if you want to re-upload."
+        )
+
     with open(dest, "wb") as f:
         f.write(content)
 

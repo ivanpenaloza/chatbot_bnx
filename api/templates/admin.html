@@ -234,17 +234,27 @@
                 var docs=data.documents||[];
                 if(!docs.length){el.innerHTML='<div class="empty-state">No documents found. Upload files above.</div>';return;}
                 docs.forEach(function(d){
+                    // Group by filename: show one card per file with all its embedding badges
+                    var existing=el.querySelector('[data-doc-filename="'+d.filename+'"]');
+                    if(existing){
+                        // Append another embedding badge to existing card
+                        if(d.ingested){
+                            var metaEl=existing.querySelector('.card-meta-badges');
+                            metaEl.innerHTML+='<span class="badge green" style="margin-right:4px">'+d.embedding_model+' · '+d.chunks+' chunks</span>';
+                        }
+                        return;
+                    }
                     var statusBadge=d.ingested
-                        ?'<span class="badge green">Ingested · '+d.chunks+' chunks</span>'
-                        :'<span class="badge red">Not ingested</span>';
-                    var embBadge=d.embedding_model?'<span class="badge blue">'+d.embedding_model+'</span>':'';
+                        ?'<span class="badge green">'+d.embedding_model+' · '+d.chunks+' chunks</span>'
+                        :'<span class="badge gray">Not ingested</span>';
                     var card=document.createElement('div');
                     card.className='card';
+                    card.setAttribute('data-doc-filename',d.filename);
                     card.innerHTML='<div class="card-row">'
                         +'<input type="checkbox" class="doc-check" data-filename="'+d.filename+'" aria-label="Select '+d.filename+'">'
                         +'<div class="card-info">'
-                        +'<div class="card-name">'+d.filename+' '+embBadge+'</div>'
-                        +'<div class="card-meta">'+d.size_kb+' KB · Collection: '+d.collection+' '+statusBadge+'</div>'
+                        +'<div class="card-name">'+d.filename+'</div>'
+                        +'<div class="card-meta">'+d.size_kb+' KB · <span class="card-meta-badges">'+statusBadge+'</span></div>'
                         +'</div>'
                         +'<button class="btn btn-danger btn-sm" onclick="deleteDoc(\''+d.filename+'\')">Delete File</button>'
                         +'</div>';
@@ -391,6 +401,11 @@
                     var res=await fetch('/api/v1/rag/ingest',{method:'POST',headers:headers,body:JSON.stringify({filename:filenames[i],embedding_key:embKey})});
                     if(!res.ok){var err=await res.json();toast('Error ingesting '+filenames[i]+': '+(err.detail||'unknown'),'error');continue;}
                     var data=await res.json();
+                    var r=(data.results||[])[0];
+                    if(r&&r.status==='already_ingested'){
+                        toast(filenames[i]+' already ingested with model "'+embKey+'"','error');
+                        continue;
+                    }
                     (data.results||[]).forEach(function(r){totalChunks+=r.chunks;});
                     successCount++;
                 }catch(ex){toast('Error ingesting '+filenames[i],'error');}
