@@ -1,0 +1,8 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+Please can you help me with update the whole logic of the state of the art ChatGPT:
+
+
+1) I would like that on the top right corner of each message there should be a three dots vertical when you hover appear 
+a state of the art 'More actions' similar to ChatGPT. This time when you click on those dot should appear to convert to 
+Pdf, docx or markdown, so you download the document.
