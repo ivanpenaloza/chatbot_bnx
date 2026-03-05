@@ -262,7 +262,7 @@
         .msg-more-dropdown-item svg{width:16px;height:16px;color:var(--muted);flex-shrink:0}
 
         /* SOURCE CARDS */
-        .source-cards{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+        .source-cards{margin-top:12px;display:flex;flex-direction:column;gap:6px;margin-left:-42px;width:calc(100% + 42px)}
         .source-cards-label{font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
         .source-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-sm);overflow:hidden;transition:all .15s}
         .source-card:hover{border-color:rgba(255,255,255,.2)}
@@ -277,7 +277,7 @@
         .source-card.open .source-card-chevron{transform:rotate(180deg)}
         .source-card-body{padding:0 12px 10px;display:none;font-size:.78rem;color:var(--secondary);line-height:1.6;border-top:1px solid rgba(255,255,255,.06)}
         .source-card.open .source-card-body{display:block;padding-top:8px}
-        .source-card-text{white-space:pre-wrap;word-break:break-word}
+        .source-card-text{white-space:normal;word-break:break-word}
 
         /* TYPING */
         .typing-row{display:none;padding:14px 24px;max-width:768px;margin:0 auto;width:100%}
@@ -716,6 +716,8 @@
         }
 
         function buildSourceCard(cardId,num,filename,scoreLine,originLine,textContent){
+            // Collapse PDF line breaks into spaces so text flows across full width
+            var displayText=textContent.replace(/\n+/g,' ').replace(/\s{2,}/g,' ').trim();
             return '<div class="source-card" id="'+cardId+'">'
                 +'<div class="source-card-header" onclick="toggleSource(\''+cardId+'\')">'
                 +'<div class="source-card-left">'
@@ -727,7 +729,7 @@
                 +'</div></div>'
                 +'<div class="source-card-chevron"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>'
                 +'</div>'
-                +'<div class="source-card-body"><div class="source-card-text">'+escHtml(textContent)+'</div></div>'
+                +'<div class="source-card-body"><div class="source-card-text">'+escHtml(displayText)+'</div></div>'
                 +'</div>';
         }
 
