@@ -1,9 +1,15 @@
 """
 Database Layer — Satriani Platform
 
-Single SQLite database for users, sessions, and document metadata.
+Single SQLite database for users, sessions, chats, messages, and document metadata.
 ChromaDB keeps its own SQLite for embeddings — we reference collections
 by name but don't duplicate vector data here.
+
+Schema:
+  users    1──N  chats    (a user owns many chats)
+  chats    1──N  messages (a chat contains many messages)
+  users    1──N  sessions
+  documents (standalone)
 
 Compatible with Python 3.9.20.
 """
@@ -33,6 +39,17 @@ def init_db(db_path: str, session_secret: str, admin_user: str, admin_pass: str)
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
     conn = _get_conn()
+
+    # Drop all existing tables to wipe data (fresh start with new schema)
+    conn.executescript("""
+        DROP TABLE IF EXISTS messages;
+        DROP TABLE IF EXISTS chats;
+        DROP TABLE IF EXISTS sessions;
+        DROP TABLE IF EXISTS users;
+        DROP TABLE IF EXISTS documents;
+    """)
+    conn.commit()
+
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS users (
             username    TEXT PRIMARY KEY,
@@ -49,6 +66,27 @@ def init_db(db_path: str, session_secret: str, admin_user: str, admin_pass: str)
             created_at  TEXT NOT NULL DEFAULT (datetime('now')),
             FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE
         );
+        CREATE TABLE IF NOT EXISTS chats (
+            id          TEXT PRIMARY KEY,
+            username    TEXT NOT NULL,
+            title       TEXT NOT NULL DEFAULT 'New Chat',
+            created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at  TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE
+        );
+        CREATE TABLE IF NOT EXISTS messages (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            chat_id     TEXT NOT NULL,
+            role        TEXT NOT NULL CHECK(role IN ('user', 'bot')),
+            content     TEXT NOT NULL,
+            rag_sources TEXT DEFAULT '[]',
+            uploaded_sources TEXT DEFAULT '[]',
+            inference_time REAL DEFAULT NULL,
+            created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (chat_id) REFERENCES chats(id) ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS idx_chats_username ON chats(username);
+        CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
         CREATE TABLE IF NOT EXISTS documents (
             filename    TEXT PRIMARY KEY,
             size_kb     REAL NOT NULL DEFAULT 0,
@@ -58,7 +96,7 @@ def init_db(db_path: str, session_secret: str, admin_user: str, admin_pass: str)
     """)
     conn.commit()
 
-    # Seed default admin if not exists
+    # Seed default admin
     row = conn.execute("SELECT 1 FROM users WHERE username=?", (admin_user,)).fetchone()
     if not row:
         conn.execute(
@@ -68,8 +106,6 @@ def init_db(db_path: str, session_secret: str, admin_user: str, admin_pass: str)
         conn.commit()
         logger.info("Default admin user created.")
 
-    # Migrate existing users.json if present
-    _migrate_json_users(db_path, admin_user)
     logger.info("Database initialized at: %s", db_path)
 
 
@@ -85,31 +121,6 @@ def _get_conn() -> sqlite3.Connection:
 
 def _hash_password(password: str) -> str:
     return hashlib.sha256((password + _session_secret).encode()).hexdigest()
-
-
-def _migrate_json_users(db_path: str, admin_user: str):
-    """One-time migration from users.json → SQLite."""
-    import json
-    json_path = os.path.join(os.path.dirname(db_path), "users.json")
-    if not os.path.exists(json_path):
-        return
-    try:
-        with open(json_path, "r") as f:
-            users = json.load(f)
-        conn = _get_conn()
-        for uname, info in users.items():
-            existing = conn.execute("SELECT 1 FROM users WHERE username=?", (uname,)).fetchone()
-            if not existing:
-                conn.execute(
-                    "INSERT INTO users (username, password_hash, role, full_name) VALUES (?,?,?,?)",
-                    (uname, info["password_hash"], info.get("role", "user"), info.get("full_name", "")),
-                )
-        conn.commit()
-        # Rename old file so migration doesn't repeat
-        os.rename(json_path, json_path + ".migrated")
-        logger.info("Migrated users.json → SQLite (%d users)", len(users))
-    except Exception as e:
-        logger.warning("Could not migrate users.json: %s", e)
 
 
 # ─── User Operations ─────────────────────────────────────────────────────────
@@ -173,11 +184,118 @@ def create_user(username: str, password: str, full_name: str = "") -> bool:
 
 def delete_user(username: str) -> bool:
     conn = _get_conn()
-    # Also delete their sessions
     conn.execute("DELETE FROM sessions WHERE username=?", (username,))
     cur = conn.execute("DELETE FROM users WHERE username=?", (username,))
     conn.commit()
     return cur.rowcount > 0
+
+
+# ─── Chat Operations ─────────────────────────────────────────────────────────
+
+def create_chat(chat_id: str, username: str, title: str = "New Chat") -> Dict[str, Any]:
+    """Create a new chat for a user."""
+    conn = _get_conn()
+    now = datetime.utcnow().isoformat()
+    conn.execute(
+        "INSERT INTO chats (id, username, title, created_at, updated_at) VALUES (?,?,?,?,?)",
+        (chat_id, username, title, now, now),
+    )
+    conn.commit()
+    return {"id": chat_id, "username": username, "title": title, "created_at": now, "updated_at": now}
+
+
+def list_chats(username: str) -> List[Dict[str, Any]]:
+    """List all chats for a user, newest first."""
+    conn = _get_conn()
+    rows = conn.execute(
+        "SELECT id, username, title, created_at, updated_at FROM chats WHERE username=? ORDER BY updated_at DESC",
+        (username,),
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def get_chat(chat_id: str, username: str) -> Optional[Dict[str, Any]]:
+    """Get a single chat, verifying ownership."""
+    conn = _get_conn()
+    row = conn.execute(
+        "SELECT id, username, title, created_at, updated_at FROM chats WHERE id=? AND username=?",
+        (chat_id, username),
+    ).fetchone()
+    return dict(row) if row else None
+
+
+def update_chat_title(chat_id: str, username: str, title: str) -> bool:
+    """Update a chat's title."""
+    conn = _get_conn()
+    now = datetime.utcnow().isoformat()
+    cur = conn.execute(
+        "UPDATE chats SET title=?, updated_at=? WHERE id=? AND username=?",
+        (title, now, chat_id, username),
+    )
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def delete_chat(chat_id: str, username: str) -> bool:
+    """Delete a chat and all its messages (CASCADE)."""
+    conn = _get_conn()
+    cur = conn.execute("DELETE FROM chats WHERE id=? AND username=?", (chat_id, username))
+    conn.commit()
+    return cur.rowcount > 0
+
+
+# ─── Message Operations ──────────────────────────────────────────────────────
+
+def add_message(chat_id: str, role: str, content: str,
+                rag_sources: str = "[]", uploaded_sources: str = "[]",
+                inference_time: Optional[float] = None) -> Dict[str, Any]:
+    """Add a message to a chat. Also updates chat.updated_at and auto-titles."""
+    import json
+    conn = _get_conn()
+    now = datetime.utcnow().isoformat()
+    cur = conn.execute(
+        "INSERT INTO messages (chat_id, role, content, rag_sources, uploaded_sources, inference_time, created_at) "
+        "VALUES (?,?,?,?,?,?,?)",
+        (chat_id, role, content, rag_sources, uploaded_sources, inference_time, now),
+    )
+    conn.execute("UPDATE chats SET updated_at=? WHERE id=?", (now, chat_id))
+
+    # Auto-title: set chat title from first user message
+    if role == "user":
+        chat_row = conn.execute("SELECT title FROM chats WHERE id=?", (chat_id,)).fetchone()
+        if chat_row and chat_row["title"] == "New Chat":
+            auto_title = content[:50] + ("..." if len(content) > 50 else "")
+            conn.execute("UPDATE chats SET title=? WHERE id=?", (auto_title, chat_id))
+
+    conn.commit()
+    return {
+        "id": cur.lastrowid,
+        "chat_id": chat_id,
+        "role": role,
+        "content": content,
+        "rag_sources": json.loads(rag_sources),
+        "uploaded_sources": json.loads(uploaded_sources),
+        "inference_time": inference_time,
+        "created_at": now,
+    }
+
+
+def get_messages(chat_id: str) -> List[Dict[str, Any]]:
+    """Get all messages for a chat, ordered chronologically."""
+    import json
+    conn = _get_conn()
+    rows = conn.execute(
+        "SELECT id, chat_id, role, content, rag_sources, uploaded_sources, inference_time, created_at "
+        "FROM messages WHERE chat_id=? ORDER BY id ASC",
+        (chat_id,),
+    ).fetchall()
+    result = []
+    for r in rows:
+        d = dict(r)
+        d["rag_sources"] = json.loads(d["rag_sources"]) if d["rag_sources"] else []
+        d["uploaded_sources"] = json.loads(d["uploaded_sources"]) if d["uploaded_sources"] else []
+        result.append(d)
+    return result
 
 
 # ─── Document Metadata Operations ────────────────────────────────────────────

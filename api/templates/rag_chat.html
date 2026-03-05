@@ -316,6 +316,8 @@
         var token=sessionStorage.getItem('satriani_token');
         if(!token){window.location.href='/';return;}
 
+        var authHeaders={'Authorization':'Bearer '+token,'Content-Type':'application/json'};
+
         var chatMessages=document.getElementById('chatMessages');
         var msgInput=document.getElementById('msgInput');
         var sendBtn=document.getElementById('sendBtn');
@@ -339,25 +341,10 @@
             if(el)el.classList.toggle('open');
         };
 
-        // ── Chat History State ──
-        var MAX_CHATS=10;
-        var MAX_MESSAGES_PER_CHAT=5;
-        var chats=JSON.parse(localStorage.getItem('satriani_chats')||'[]');
+        // ── Chat History State (server-side) ──
+        var MAX_CHATS=50;
+        var chats=[];
         var activeChatId=null;
-
-        function generateId(){return 'chat_'+Date.now()+'_'+Math.random().toString(36).substr(2,6);}
-        function saveChats(){localStorage.setItem('satriani_chats',JSON.stringify(chats));}
-
-        function getChatTitle(chat){
-            if(chat.messages&&chat.messages.length>0){
-                var first=chat.messages[0];
-                if(first.role==='user'){
-                    var t=first.content.substring(0,40);
-                    return t+(first.content.length>40?'...':'');
-                }
-            }
-            return 'New Chat';
-        }
 
         function renderChatHistory(){
             var list=document.getElementById('chatHistoryList');
@@ -366,7 +353,7 @@
             chats.forEach(function(c){
                 var item=document.createElement('div');
                 item.className='chat-history-item'+(c.id===activeChatId?' active':'');
-                item.innerHTML='<span class="chat-title">'+escHtml(getChatTitle(c))+'</span>'
+                item.innerHTML='<span class="chat-title">'+escHtml(c.title||'New Chat')+'</span>'
                     +'<button class="chat-delete" onclick="event.stopPropagation();deleteChat(\''+c.id+'\')" title="Delete">&times;</button>';
                 item.onclick=function(){loadChat(c.id);};
                 list.appendChild(item);
@@ -374,40 +361,63 @@
             countLabel.textContent=chats.length+'/'+MAX_CHATS+' chats';
         }
 
-        window.createNewChat=function(){
+        async function fetchChats(){
+            try{
+                var res=await fetch('/api/v1/chats',{headers:authHeaders});
+                if(!res.ok)return;
+                var data=await res.json();
+                chats=data.chats||[];
+                renderChatHistory();
+            }catch(e){console.error('Error fetching chats',e);}
+        }
+
+        window.createNewChat=async function(){
             if(chats.length>=MAX_CHATS){
                 addSystem('Maximum '+MAX_CHATS+' chats reached. Delete one to create a new chat.');
                 return;
             }
-            var chat={id:generateId(),messages:[],createdAt:new Date().toISOString()};
-            chats.unshift(chat);
-            saveChats();
-            loadChat(chat.id);
+            try{
+                var res=await fetch('/api/v1/chats',{method:'POST',headers:authHeaders,body:JSON.stringify({title:'New Chat'})});
+                if(!res.ok)return;
+                var data=await res.json();
+                var chat=data.chat;
+                chats.unshift(chat);
+                activeChatId=chat.id;
+                clearChatUI();
+                renderChatHistory();
+            }catch(e){addSystem('Error creating chat');}
         };
 
-        window.deleteChat=function(id){
-            chats=chats.filter(function(c){return c.id!==id;});
-            saveChats();
-            if(activeChatId===id){
-                if(chats.length>0){loadChat(chats[0].id);}
-                else{activeChatId=null;clearChatUI();renderChatHistory();}
-            }else{renderChatHistory();}
+        window.deleteChat=async function(id){
+            try{
+                await fetch('/api/v1/chats/'+id,{method:'DELETE',headers:authHeaders});
+                chats=chats.filter(function(c){return c.id!==id;});
+                if(activeChatId===id){
+                    if(chats.length>0){loadChat(chats[0].id);}
+                    else{activeChatId=null;clearChatUI();renderChatHistory();}
+                }else{renderChatHistory();}
+            }catch(e){addSystem('Error deleting chat');}
         };
 
-        function loadChat(id){
+        async function loadChat(id){
             activeChatId=id;
             clearChatUI();
-            var chat=chats.find(function(c){return c.id===id;});
-            if(!chat)return;
-            if(chat.messages.length===0){
-                welcomeScreen.style.display='';
-            }else{
-                welcomeScreen.style.display='none';
-                chat.messages.forEach(function(m){
-                    if(m.role==='user') addMsgToDOM(m.content,'user');
-                    else if(m.role==='bot') addMsgToDOM(m.content,'bot',m.ragSources||[],m.uploadedSources||[],m.time);
-                });
-            }
+            try{
+                var res=await fetch('/api/v1/chats/'+id,{headers:authHeaders});
+                if(!res.ok)return;
+                var data=await res.json();
+                var chat=data.chat;
+                var msgs=chat.messages||[];
+                if(msgs.length===0){
+                    welcomeScreen.style.display='';
+                }else{
+                    welcomeScreen.style.display='none';
+                    msgs.forEach(function(m){
+                        if(m.role==='user') addMsgToDOM(m.content,'user');
+                        else if(m.role==='bot') addMsgToDOM(m.content,'bot',m.rag_sources||[],m.uploaded_sources||[],m.inference_time);
+                    });
+                }
+            }catch(e){console.error('Error loading chat',e);}
             renderChatHistory();
         }
 
@@ -419,26 +429,16 @@
             welcomeScreen.style.display='';
         }
 
-        function getActiveChat(){return chats.find(function(c){return c.id===activeChatId;});}
-
-        function addMessageToChat(role,content,ragSources,uploadedSources,time){
-            var chat=getActiveChat();
-            if(!chat)return false;
-            if(chat.messages.length>=MAX_MESSAGES_PER_CHAT*2) return false;
-            var msg={role:role,content:content};
-            if(ragSources)msg.ragSources=ragSources;
-            if(uploadedSources)msg.uploadedSources=uploadedSources;
-            if(time)msg.time=time;
-            chat.messages.push(msg);
-            saveChats();
-            renderChatHistory();
-            return true;
-        }
-
-        function getMessageCount(){
-            var chat=getActiveChat();
-            if(!chat)return 0;
-            return chat.messages.filter(function(m){return m.role==='user';}).length;
+        async function saveMessage(role,content,ragSources,uploadedSources,inferenceTime){
+            if(!activeChatId)return;
+            try{
+                await fetch('/api/v1/chats/'+activeChatId+'/messages',{
+                    method:'POST',headers:authHeaders,
+                    body:JSON.stringify({role:role,content:content,rag_sources:ragSources||[],uploaded_sources:uploadedSources||[],inference_time:inferenceTime||null})
+                });
+                // Refresh chat list to update titles
+                fetchChats();
+            }catch(e){console.error('Error saving message',e);}
         }
 
         // ── Input ──
@@ -582,33 +582,34 @@
                     addSystem('Maximum '+MAX_CHATS+' chats reached. Delete one first.');
                     return;
                 }
-                createNewChat();
-            }
-
-            if(getMessageCount()>=MAX_MESSAGES_PER_CHAT){
-                addSystem('This chat has reached the '+MAX_MESSAGES_PER_CHAT+' message limit. Start a new chat.');
-                return;
+                await createNewChat();
             }
 
             isProcessing=true;sendBtn.disabled=true;
             msgInput.value='';msgInput.style.height='auto';
             hideWelcome();addMsgToDOM(text,'user');showTyping();
-            addMessageToChat('user',text);
+            saveMessage('user',text);
             setStatusInference();
 
             var body={message:text,use_rag:selectedCollections.length>0};
             if(selectedCollections.length>0)body.collections=selectedCollections;
 
-            var chat=getActiveChat();
-            if(chat&&chat.messages.length>1){
-                var history=[];
-                var msgs=chat.messages.slice(0,-1);
-                var start=Math.max(0,msgs.length-8);
-                for(var i=start;i<msgs.length;i++){
-                    history.push({role:msgs[i].role==='user'?'user':'assistant',content:msgs[i].content});
+            // Build chat history from server-side messages
+            try{
+                var histRes=await fetch('/api/v1/chats/'+activeChatId+'/messages',{headers:authHeaders});
+                if(histRes.ok){
+                    var histData=await histRes.json();
+                    var allMsgs=histData.messages||[];
+                    if(allMsgs.length>1){
+                        var history=[];
+                        var recent=allMsgs.slice(Math.max(0,allMsgs.length-9),-1);
+                        for(var i=0;i<recent.length;i++){
+                            history.push({role:recent[i].role==='user'?'user':'assistant',content:recent[i].content});
+                        }
+                        if(history.length>0)body.chat_history=history;
+                    }
                 }
-                if(history.length>0)body.chat_history=history;
-            }
+            }catch(e){}
 
             if(uploadedContextTexts.length>0){
                 body.uploaded_context=uploadedContextTexts.map(function(u){
@@ -623,16 +624,16 @@
                     var err={};try{err=await res.json();}catch(x){}
                     var errMsg='Error: '+(err.detail||'Server error ('+res.status+')');
                     addMsgToDOM(errMsg,'bot');
-                    addMessageToChat('bot',errMsg);
+                    saveMessage('bot',errMsg);
                 }else{
                     var data=await res.json();
                     addMsgToDOM(data.response,'bot',data.rag_sources||[],data.uploaded_sources||[],data.inference_time);
-                    addMessageToChat('bot',data.response,data.rag_sources||[],data.uploaded_sources||[],data.inference_time);
+                    saveMessage('bot',data.response,data.rag_sources||[],data.uploaded_sources||[],data.inference_time);
                 }
             }catch(e){
                 hideTyping();
                 addMsgToDOM('Connection error.','bot');
-                addMessageToChat('bot','Connection error.');
+                saveMessage('bot','Connection error.');
             }
             restoreStatusAfterInference();
             isProcessing=false;sendBtn.disabled=false;msgInput.focus();
@@ -782,9 +783,12 @@
         loadModels();
         loadDocuments();
         checkHealth();
-        if(chats.length>0){loadChat(chats[0].id);}
-        else{createNewChat();}
-        msgInput.focus();
+        (async function(){
+            await fetchChats();
+            if(chats.length>0){await loadChat(chats[0].id);}
+            else{await createNewChat();}
+            msgInput.focus();
+        })();
         setInterval(checkHealth,30000);
     })();
     </script>

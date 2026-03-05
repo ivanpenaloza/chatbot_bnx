@@ -19,6 +19,7 @@ from routers import llm_routes
 from routers import rag_routes
 from routers import auth_routes
 from routers import admin_routes
+from routers import chat_routes
 
 # Set JAVA_HOME and HADOOP_HOME
 os.environ['JAVA_HOME'] = JAVA_HOME
@@ -114,6 +115,7 @@ app = FastAPI(
 
 app.include_router(auth_routes.router)
 app.include_router(admin_routes.router)
+app.include_router(chat_routes.router)
 app.include_router(llm_routes.router)
 app.include_router(rag_routes.router)
 
