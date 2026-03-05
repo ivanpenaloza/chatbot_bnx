@@ -41,6 +41,22 @@ AVAILABLE_MODELS = {
         "context_length": 32000,
         "description": "High quality. 32K context window.",
     },
+    "tinyllama-1.1b-chat": {
+        "hf_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        "local_dir": os.path.join(MODELS_BASE_DIR, "tinyllama-1.1b-chat"),
+        "display_name": "TinyLlama 1.1B Chat",
+        "size": "~2.2 GB",
+        "context_length": 2048,
+        "description": "Ultra-lightweight chat model. Fast inference.",
+    },
+    "qwen2.5-0.5b-instruct": {
+        "hf_id": "Qwen/Qwen2.5-0.5B-Instruct",
+        "local_dir": os.path.join(MODELS_BASE_DIR, "qwen2.5-0.5b-instruct"),
+        "display_name": "Qwen 2.5 0.5B Instruct",
+        "size": "~1.0 GB",
+        "context_length": 32768,
+        "description": "Compact instruction model. 32K context window.",
+    },
 }
 
 # ─── Embedding Models ─────────────────────────────────────────────────────────

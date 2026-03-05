@@ -1,0 +1,9 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+I love the accordion of models at /api/v1/rag/chat, now I need to also include the models 
+
+/home/ivan/ProjectPrometheus/models/tinyllama-1.1b-chat
+/home/ivan/ProjectPrometheus/models/qwen2.5-0.5b-instruct
+
+that can be found in the same path we have the other llms
+

@@ -34,6 +34,20 @@ MODELS = {
         "gated": True,
         "size": "~16 GB",
     },
+    "tinyllama": {
+        "hf_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        "local_dir": os.path.join(MODELS_DIR, "tinyllama-1.1b-chat"),
+        "type": "chat",
+        "gated": False,
+        "size": "~2.2 GB",
+    },
+    "qwen2.5": {
+        "hf_id": "Qwen/Qwen2.5-0.5B-Instruct",
+        "local_dir": os.path.join(MODELS_DIR, "qwen2.5-0.5b-instruct"),
+        "type": "chat",
+        "gated": False,
+        "size": "~1.0 GB",
+    },
     # Embedding models
     "gte-large": {
         "hf_id": "Alibaba-NLP/gte-large-en-v1.5",

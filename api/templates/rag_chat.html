@@ -32,10 +32,15 @@
         .accordion-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:none;border:none;color:var(--text);cursor:pointer;font-family:var(--font);font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px;transition:background .15s}
         .accordion-trigger:hover{background:rgba(255,255,255,.04)}
         .accordion-trigger svg{width:12px;height:12px;color:var(--muted);transition:transform .25s ease;flex-shrink:0}
-        .accordion.open .accordion-trigger svg{transform:rotate(180deg)}
+        .accordion.open .accordion-trigger svg.chevron-icon{transform:rotate(180deg)}
         .accordion-icon{display:flex;align-items:center;gap:6px}
         .accordion-icon>svg:first-child{width:14px;height:14px;color:var(--muted)}
         .accordion-badge{font-size:.6rem;background:rgba(255,255,255,.08);color:var(--muted);padding:1px 6px;border-radius:10px;font-weight:500;letter-spacing:0;text-transform:none}
+        .selected-model-indicator{display:none;font-size:.7rem;color:var(--text);font-weight:500;letter-spacing:0;text-transform:none;padding:6px 12px 8px;border-top:1px solid rgba(255,255,255,.04);align-items:center;gap:6px}
+        .selected-model-indicator.visible{display:flex}
+        .selected-model-indicator .sel-dot{width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0}
+        .selected-model-indicator .sel-name{opacity:.9}
+        .accordion.open .selected-model-indicator{display:none !important}
         .accordion-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
         .accordion.open .accordion-body{max-height:600px}
         .accordion-scroll{max-height:220px;overflow-y:auto;padding:4px 8px 8px}
@@ -111,7 +116,7 @@
         <div class="sidebar-body">
             <!-- MODEL ACCORDION -->
             <div style="padding:8px 0 0"></div>
-            <div class="accordion open" id="modelAccordion">
+            <div class="accordion" id="modelAccordion">
                 <button class="accordion-trigger" onclick="toggleAccordion('modelAccordion')">
                     <span class="accordion-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
@@ -119,9 +124,13 @@
                     </span>
                     <span style="display:flex;align-items:center;gap:6px">
                         <span class="accordion-badge" id="modelBadge">0</span>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </span>
                 </button>
+                <div class="selected-model-indicator" id="selectedModelIndicator">
+                    <span class="sel-dot"></span>
+                    <span class="sel-name" id="selectedModelName">No model selected</span>
+                </div>
                 <div class="accordion-body">
                     <div class="accordion-scroll" id="modelList"></div>
                 </div>
@@ -136,7 +145,7 @@
                     </span>
                     <span style="display:flex;align-items:center;gap:6px">
                         <span class="accordion-badge" id="docBadge">0</span>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </span>
                 </button>
                 <div class="accordion-body">
@@ -520,6 +529,7 @@
                 modelList.innerHTML='';
                 var models=data.models||[];
                 document.getElementById('modelBadge').textContent=models.length;
+                var activeModel=null;
                 models.forEach(function(m){
                     var card=document.createElement('div');
                     card.className='model-card'+(m.active?' active':'')+((!m.available)?' disabled':'');
@@ -527,7 +537,7 @@
                     var dotHtml=m.active?'<span class="model-active-dot"></span>':'';
                     var badgeClass=m.active?'loading':m.available?'available':'unavailable';
                     var badgeText=m.active?'Active':m.available?'Ready':'Not downloaded';
-                    if(m.active) currentActiveModelKey=m.key;
+                    if(m.active){currentActiveModelKey=m.key;activeModel=m;}
                     card.innerHTML='<div class="model-card-name">'+dotHtml+escHtml(m.display_name)+'</div>'
                         +'<div class="model-card-meta">'+escHtml(m.size)+' · '+escHtml(m.key)+'</div>'
                         +'<div class="model-card-desc">'+escHtml(m.description||'')+'</div>'
@@ -537,6 +547,21 @@
                     }
                     modelList.appendChild(card);
                 });
+                // Update selected model indicator and collapse accordion
+                var indicator=document.getElementById('selectedModelIndicator');
+                var nameEl=document.getElementById('selectedModelName');
+                var accordion=document.getElementById('modelAccordion');
+                if(activeModel){
+                    nameEl.textContent=activeModel.display_name;
+                    indicator.classList.add('visible');
+                    // Collapse accordion to show just the selected model
+                    accordion.classList.remove('open');
+                }else{
+                    nameEl.textContent='No model selected';
+                    indicator.classList.add('visible');
+                    // Keep open if no model selected so user can pick one
+                    accordion.classList.add('open');
+                }
                 updateStatus(data);
             }catch(e){statusDot.className='status-dot off';statusLabel.textContent='Disconnected';}
         }

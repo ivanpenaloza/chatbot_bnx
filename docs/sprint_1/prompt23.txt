@@ -1,0 +1,4 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+I love the accordion of models at /api/v1/rag/chat, I need you that when you choose a model 
+it should appear in dicating the model you choose, but I have the choice again of clicking the accordion to disclose all the choices and scroll 
