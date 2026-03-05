@@ -598,25 +598,39 @@ async def rag_ask(chat: RagChatMessage):
             n_results=3,
         )
         if chunks:
-            has_rag = True
-            context_parts = []
-            for i, chunk in enumerate(chunks, 1):
-                cleaned = _clean_extracted_text(chunk['document'])
-                context_parts.append(
-                    f"[Source {i}: {chunk['source']}, "
-                    f"relevance: {1 - chunk['distance']:.0%}]\n"
-                    f"{cleaned}"
+            # Filter by relevance threshold — discard chunks with very low relevance
+            RELEVANCE_THRESHOLD = 0.25  # minimum relevance (1 - distance)
+            relevant_chunks = [c for c in chunks if (1 - c['distance']) >= RELEVANCE_THRESHOLD]
+
+            if relevant_chunks:
+                has_rag = True
+                context_parts = []
+                for i, chunk in enumerate(relevant_chunks, 1):
+                    cleaned = _clean_extracted_text(chunk['document'])
+                    context_parts.append(
+                        f"[Source {i}: {chunk['source']}, "
+                        f"relevance: {1 - chunk['distance']:.0%}]\n"
+                        f"{cleaned}"
+                    )
+                    rag_sources.append({
+                        "type": "rag",
+                        "source": chunk["source"],
+                        "collection": chunk["collection"],
+                        "chunk_index": chunk["chunk_index"],
+                        "relevance": round(1 - chunk["distance"], 4),
+                        "text": cleaned,
+                        "embedding_model": chunk.get("embedding_model", ""),
+                    })
+                rag_context = "\n\n".join(context_parts)
+            else:
+                # Chunks found but all below relevance threshold — still use
+                # document prompt so the model can say "not related"
+                has_rag = True
+                rag_context = (
+                    "[NOTE: The retrieved document fragments have very low relevance "
+                    "to the user's question. The question is likely unrelated to the "
+                    "loaded documents. Inform the user accordingly.]"
                 )
-                rag_sources.append({
-                    "type": "rag",
-                    "source": chunk["source"],
-                    "collection": chunk["collection"],
-                    "chunk_index": chunk["chunk_index"],
-                    "relevance": round(1 - chunk["distance"], 4),
-                    "text": cleaned,
-                    "embedding_model": chunk.get("embedding_model", ""),
-                })
-            rag_context = "\n\n".join(context_parts)
 
     # ── Step 2: Uploaded document processing (top 3 documents max) ──────
     has_upload = False
@@ -681,18 +695,17 @@ async def rag_ask(chat: RagChatMessage):
         system_prompt = SATRIANI_IDENTITY_PROMPT
         data_context = ""
 
-    # ── Step 4: Append conversation history ──────────────────────────────
+    # ── Step 4: Build conversation history for proper multi-turn chat ────
+    conversation_history = []
     if chat.chat_history and len(chat.chat_history) > 0:
-        history_parts = []
         for msg in chat.chat_history[-6:]:
             role = msg.get("role", "user")
             content = msg.get("content", "")
             if content:
-                label = "User" if role == "user" else "Assistant"
-                history_parts.append(f"{label}: {content[:1000]}")
-        if history_parts:
-            history_block = "\n\nCONVERSATION HISTORY:\n" + "\n".join(history_parts)
-            data_context = (data_context + history_block) if data_context else history_block
+                conversation_history.append({
+                    "role": role if role in ("user", "assistant") else "user",
+                    "content": content[:1000],
+                })
 
     # ── Step 5: Generate response ────────────────────────────────────────
     from .llm_routes import model_manager
@@ -700,6 +713,7 @@ async def rag_ask(chat: RagChatMessage):
         user_message=chat.message,
         data_context=data_context,
         system_prompt_override=system_prompt,
+        conversation_history=conversation_history,
     )
 
     return JSONResponse(content={

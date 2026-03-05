@@ -3,3 +3,10 @@ You are doing an excellent job doing an app similar to the state of the art Open
 I love almost all the functionalities at /api/v1/rag/chat, now I need to do a better job. 
 
 1) I wonder if it is possible to implement message history in each one of the chats using LangChain
+2) why when I select or deselect the rags, I need to refresh the web page in order 
+to ask a question that can be answer coherently based on the context or not context 
+that I added.The same happen with attached files
+3) Why when I checked some of the RAGs and I refresh the page, all the rag docuemnts are checked again. It 
+should keep the ones I selected.
+4) Whey when I ask an unrelated question to the RAG documents the AI assitant does not indicate that. Instead it
+gives an answer completely unrelated 

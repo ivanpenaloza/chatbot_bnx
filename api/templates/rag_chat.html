@@ -596,6 +596,14 @@
                 var docs=data.documents||[];
                 var ingestedDocs=docs.filter(function(d){return d.ingested;});
                 document.getElementById('docBadge').textContent=ingestedDocs.length;
+
+                // Load saved selections from localStorage
+                var savedSelections=null;
+                try{
+                    var saved=localStorage.getItem('satriani_selected_collections');
+                    if(saved) savedSelections=JSON.parse(saved);
+                }catch(e){}
+
                 ingestedDocs.forEach(function(d){
                     var card=document.createElement('div');
                     card.className='doc-card';
@@ -609,14 +617,26 @@
                     card.onclick=function(){card.classList.toggle('selected');rebuildSelected();};
                     docList.appendChild(card);
                 });
-                // Auto-select all ingested documents so RAG is active by default
-                document.querySelectorAll('.doc-card').forEach(function(c){c.classList.add('selected');});
+
+                // Restore saved selections or auto-select all if no saved state
+                if(savedSelections!==null){
+                    document.querySelectorAll('.doc-card').forEach(function(c){
+                        if(savedSelections.indexOf(c.dataset.collection)!==-1){
+                            c.classList.add('selected');
+                        }
+                    });
+                }else{
+                    // First visit: auto-select all ingested documents
+                    document.querySelectorAll('.doc-card').forEach(function(c){c.classList.add('selected');});
+                }
                 rebuildSelected();
             }catch(e){docList.innerHTML='<div style="font-size:.72rem;color:var(--muted);padding:4px">Error loading documents</div>';}
         }
         function rebuildSelected(){
             selectedCollections=[];
             document.querySelectorAll('.doc-card.selected').forEach(function(c){selectedCollections.push(c.dataset.collection);});
+            // Persist selections to localStorage
+            try{localStorage.setItem('satriani_selected_collections',JSON.stringify(selectedCollections));}catch(e){}
             // Update toggle button label
             var toggleBtn=document.getElementById('toggleAllDocs');
             if(toggleBtn){

@@ -236,14 +236,17 @@ class MultiModelManager:
         system_prompt: str,
         user_message: str,
         data_context: str,
+        conversation_history: list = None,
     ) -> str:
         """
         Build the final prompt string using the model's chat template
-        when available, with proper system/user role separation.
-        Falls back to a manual template for models without one.
+        when available, with proper system/user role separation and
+        multi-turn conversation history.
 
         When data_context is empty (no documents), the system prompt
         alone defines the assistant's behavior (identity mode).
+
+        conversation_history: list of {"role": "user"|"assistant", "content": "..."}
         """
         # Build system content — only include DATA CONTEXT block if non-empty
         if data_context.strip():
@@ -256,21 +259,40 @@ class MultiModelManager:
 
         user_content = user_message
 
-        # Try system+user roles first (Qwen, Gemma support this)
+        # Build multi-turn conversation with system + history + current message
         conversation_with_system = [
             {"role": "system", "content": system_content},
-            {"role": "user", "content": user_content},
         ]
-        # Fallback: single user role (TinyLlama sometimes lacks system)
+        # Add conversation history for multi-turn context
+        if conversation_history:
+            for msg in conversation_history:
+                conversation_with_system.append({
+                    "role": msg["role"],
+                    "content": msg["content"],
+                })
+        conversation_with_system.append(
+            {"role": "user", "content": user_content}
+        )
+
+        # Fallback: single user role with history embedded as text
+        history_text = ""
+        if conversation_history:
+            history_parts = []
+            for msg in conversation_history:
+                label = "User" if msg["role"] == "user" else "Assistant"
+                history_parts.append(f"{label}: {msg['content']}")
+            history_text = "\n\nCONVERSATION HISTORY:\n" + "\n".join(history_parts) + "\n\n"
+
         conversation_single = [
             {"role": "user", "content": (
                 f"{system_content}\n\n"
+                f"{history_text}"
                 f"USER QUESTION: {user_content}"
             )},
         ]
 
         if hasattr(self.tokenizer, 'apply_chat_template'):
-            # First try with system role
+            # First try with system role + multi-turn history
             try:
                 return self.tokenizer.apply_chat_template(
                     conversation_with_system,
@@ -279,7 +301,7 @@ class MultiModelManager:
                 )
             except Exception:
                 pass
-            # Fallback to single user role
+            # Fallback to single user role with embedded history
             try:
                 return self.tokenizer.apply_chat_template(
                     conversation_single,
@@ -292,6 +314,7 @@ class MultiModelManager:
         # Manual fallback for models without chat template
         return (
             f"### System:\n{system_content}\n\n"
+            f"{history_text}"
             f"### User:\n{user_content}\n\n"
             f"### Assistant:\n"
         )
@@ -302,6 +325,7 @@ class MultiModelManager:
         data_context: str,
         dynamic_context: str = "",
         system_prompt_override: str = "",
+        conversation_history: list = None,
     ) -> tuple:
         """
         Generate a response using the currently loaded model.
@@ -309,6 +333,8 @@ class MultiModelManager:
 
         system_prompt_override: if provided, replaces the default
         CHATBOT_SYSTEM_PROMPT (used by RAG flow routing).
+        conversation_history: list of {"role": "user"|"assistant", "content": "..."}
+        for proper multi-turn chat support.
         """
         if not self.is_ready:
             return (
@@ -332,6 +358,7 @@ class MultiModelManager:
                 system_prompt=active_prompt,
                 user_message=user_message,
                 data_context=context,
+                conversation_history=conversation_history,
             )
 
             # Use a larger max_length so the full context + sample
