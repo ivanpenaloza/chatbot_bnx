@@ -3,6 +3,10 @@ You are doing an excellent job doing an app similar to the state of the art Open
 Please can you help me with update the whole logic of the state of the art ChatGPT:
 
 
-1) I would like that on the top right corner of each message there should be a three dots vertical when you hover appear 
-a state of the art 'More actions' similar to ChatGPT. This time when you click on those dot should appear to convert to 
-Pdf, docx or markdown, so you download the document.
+1) I would like that on the top right corner of each message there should be a three dots vertical.  When you hover those three dots, must appear 
+a state of the art 'More actions' similar to ChatGPT. This time when you click on 'More actions' should appear to convert to 
+Pdf, docx or markdown, so you convert that specific message to the specific format you choose.
+2) Be careful with those does the should be place in that manner that they must be separated of the text since there is chance that they cannot see 
+if they juxtapose the letters of the message
+3) The 3 dots must be more white
+
