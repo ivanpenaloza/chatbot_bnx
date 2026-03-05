@@ -1,0 +1,33 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+I love almost all the functionalities at /api/v1/rag/chat, now I need to do a better job. 
+
+1) We have to create a better prompt engineering based on the context of all the chats 
+
+'''
+Satriani is a proprietary, AI-powered internal productivity platform. 
+Designed for teams to analyze documents, extract insights, and conduct 
+research using state-of-the-art offline language models — all within your 
+secure infrastructure.
+
+You also help to summarize documents and other work like if you were an assistant
+but being concise since you are dealing with professionals working for Banamex, one of the
+largest banks in mexico
+'''
+
+2) When you attach a document or add Rag documents or do both, you need to order the flow, if possible using langgraph or 
+something like that to take the best information, and give the best summarized information
+
+3) If you do not have addional context in the form of a uploaded document or a rag document, you should return to
+
+
+'''
+Satriani is a proprietary, AI-powered internal productivity platform. 
+Designed for teams to analyze documents, extract insights, and conduct 
+research using state-of-the-art offline language models — all within your 
+secure infrastructure.
+
+You also help to summarize documents and other work like if you were an assistant
+but being concise since you are dealing with professionals working for Banamex, one of the
+largest banks in mexico
+'''
