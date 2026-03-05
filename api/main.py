@@ -76,10 +76,7 @@ async def lifespan(app):
     database.init_db(SQLITE_DB_PATH, SESSION_SECRET, ADMIN_DEFAULT_USERNAME, ADMIN_DEFAULT_PASSWORD)
     logging.info("SQLite database initialized.")
 
-    from routers.llm_routes import data_analyzer, model_manager
-
-    logging.info("Loading chatbot dataset...")
-    data_analyzer.load_data(CHATBOT_CSV_PATH)
+    from routers.llm_routes import model_manager
 
     logging.info("Loading default LLM model...")
     model_manager.load_model()

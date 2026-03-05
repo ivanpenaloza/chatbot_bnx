@@ -90,11 +90,6 @@ CHATBOT_TOP_K = 50
 CHATBOT_REPETITION_PENALTY = 1.3
 CHATBOT_DO_SAMPLE = True
 
-# ─── Data Configuration ──────────────────────────────────────────────────────
-CHATBOT_CSV_PATH = "static/data/cubo_datos_v2.csv"
-CHATBOT_MAX_CONTEXT_ROWS = 50
-CHATBOT_TOP_N_CATEGORIES = 10
-
 # ─── RAG Data Directory ──────────────────────────────────────────────────────
 RAG_DATA_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
