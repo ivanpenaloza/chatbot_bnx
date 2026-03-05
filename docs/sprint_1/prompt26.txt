@@ -1,0 +1,5 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+I love almost all the functionalities at /api/v1/rag/chat, now I need to do a better job. 
+
+1) I wonder if it is possible to implement message history in each one of the chats using LangChain
