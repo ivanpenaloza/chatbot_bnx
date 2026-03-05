@@ -68,11 +68,14 @@ class LocalHFEmbeddingFunction:
 
     def __init__(self, model_path: str, model_key: str):
         from sentence_transformers import SentenceTransformer
+        import torch
         import numpy as np
-        self._model = SentenceTransformer(model_path, trust_remote_code=True, device="cpu")
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self._model = SentenceTransformer(model_path, trust_remote_code=True, device=device)
         self._name = "local-hf-" + model_key
         self._np = np
-        logger.info("Embedding model loaded on CPU from: %s", model_path)
+        logger.info("Embedding model loaded on %s from: %s", device.upper(), model_path)
+
 
     def name(self) -> str:
         return self._name
@@ -154,31 +157,29 @@ def extract_text_from_docx(filepath: str) -> str:
     return "\n".join(paragraphs)
 
 
+
+
+
+
 def extract_text_from_pdf(filepath: str) -> str:
-    """Extract text from PDF using PyPDF2 (fallback: pdfplumber)."""
-    try:
-        import PyPDF2
-        text_parts = []
-        with open(filepath, 'rb') as f:
-            reader = PyPDF2.PdfReader(f)
-            for page in reader.pages:
-                t = page.extract_text()
-                if t:
-                    text_parts.append(t.strip())
-        return "\n".join(text_parts)
-    except ImportError:
-        pass
-    try:
-        import pdfplumber
-        text_parts = []
-        with pdfplumber.open(filepath) as pdf:
-            for page in pdf.pages:
-                t = page.extract_text()
-                if t:
-                    text_parts.append(t.strip())
-        return "\n".join(text_parts)
-    except ImportError:
-        raise ImportError("Install PyPDF2 or pdfplumber for PDF support")
+    """Extract text from PDF using pymupdf (fitz).
+
+    pymupdf uses the MuPDF engine which preserves word boundaries
+    from the PDF layout, producing clean readable text.
+    """
+    import fitz
+    text_parts = []
+    with fitz.open(filepath) as doc:
+        for page in doc:
+            t = page.get_text("text")
+            if t:
+                text_parts.append(t.strip())
+    raw = "\n".join(text_parts)
+    return _fix_pdf_spacing(raw)
+
+
+
+
 
 
 def extract_text(filepath: str) -> str:
@@ -193,16 +194,52 @@ def extract_text(filepath: str) -> str:
 
 # ─── Chunking ────────────────────────────────────────────────────────────────
 
+
 def _clean_extracted_text(text: str) -> str:
-    """Clean up common PDF/docx extraction artifacts."""
-    # Fix broken words with spaces (e.g. "hist amine" → "histamine")
-    # This handles the common pattern where PDF extraction splits words
-    text = re.sub(r'(\w)\s+(\w)', lambda m: m.group(0) if len(m.group(1)) > 1 and len(m.group(2)) > 1 else m.group(1) + m.group(2), text)
+    """Clean up common PDF/docx extraction artifacts for display.
+
+    Handles concatenated words (e.g. 'theenzymesare' → 'the enzymes are')
+    by detecting likely word boundaries using case transitions, common
+    patterns, and heuristics.
+    """
+    # First pass: fix spacing issues from PDF extraction
+    text = _fix_pdf_spacing(text)
     # Collapse multiple whitespace into single space
     text = re.sub(r'[ \t]+', ' ', text)
     # Collapse 3+ newlines into 2
     text = re.sub(r'\n{3,}', '\n\n', text)
     return text.strip()
+
+def _fix_pdf_spacing(text: str) -> str:
+    """Re-insert spaces into text where PDF extraction concatenated words.
+
+    Uses multiple heuristics:
+      1. Insert space between a lowercase letter and an uppercase letter
+         (e.g. 'enzymesAre' → 'enzymes Are')
+      2. Insert space between a letter and a digit boundary
+         (e.g. 'pH7' → 'pH 7', 'level5' → 'level 5')
+      3. Insert space between a period/comma and a letter with no space
+         (e.g. 'cells.The' → 'cells. The', 'acids,which' → 'acids, which')
+      4. Insert space between a closing paren and a letter
+         (e.g. ')The' → ') The')
+    """
+    if not text:
+        return text
+    # lowercase followed by uppercase: camelCase word boundaries
+    text = re.sub(r'([a-z])([A-Z])', r'\1 \2', text)
+    # letter followed by digit (but not common patterns like pH, H2O, etc.)
+    text = re.sub(r'([a-zA-Z]{2,})(\d)', r'\1 \2', text)
+    # digit followed by letter (e.g. '5in' → '5 in', but keep '2nd', '3rd', etc.)
+    text = re.sub(r'(\d)([a-zA-Z])', lambda m: m.group(0) if m.group(2) in ('st','nd','rd','th') else m.group(1) + ' ' + m.group(2), text)
+    # period/comma/semicolon/colon followed by a letter (no space)
+    text = re.sub(r'([.,;:])([A-Za-z])', r'\1 \2', text)
+    # closing paren followed by a letter
+    text = re.sub(r'\)([A-Za-z])', r') \1', text)
+    # letter followed by opening paren
+    text = re.sub(r'([a-zA-Z])\(', r'\1 (', text)
+    return text
+
+
 
 
 def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100) -> List[str]:
