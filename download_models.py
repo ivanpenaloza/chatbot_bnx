@@ -6,7 +6,6 @@ Downloads chat and embedding models to /home/ivan/ProjectPrometheus/models/
 
 Chat models (require HF_TOKEN for gated models):
   - Meta-Llama-3.1-8B-Instruct  (~16 GB)
-  - Mistral-7B-Instruct-v0.3    (~14 GB)
 
 Embedding models (no token needed):
   - gte-large-en-v1.5            (~670 MB)
@@ -35,13 +34,6 @@ MODELS = {
         "gated": True,
         "size": "~16 GB",
     },
-    "mistral": {
-        "hf_id": "mistralai/Mistral-7B-Instruct-v0.3",
-        "local_dir": os.path.join(MODELS_DIR, "Mistral-7B-Instruct-v0.3"),
-        "type": "chat",
-        "gated": True,
-        "size": "~14 GB",
-    },
     # Embedding models
     "gte-large": {
         "hf_id": "Alibaba-NLP/gte-large-en-v1.5",
@@ -69,22 +61,20 @@ def get_dir_size(path):
 
 
 def download_chat_model(model_id, output_dir, token):
-    """Download a causal LM (chat model)."""
-    from transformers import AutoTokenizer, AutoModelForCausalLM
+    """Download a causal LM (chat model) using snapshot_download.
+    This avoids loading the full model into RAM — just downloads files."""
+    from huggingface_hub import snapshot_download
 
     os.makedirs(output_dir, exist_ok=True)
 
-    print(f"  [1/2] Downloading tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_id, token=token, trust_remote_code=True
+    print(f"  Downloading all model files...")
+    snapshot_download(
+        repo_id=model_id,
+        local_dir=output_dir,
+        local_dir_use_symlinks=False,
+        token=token if token else None,
+        ignore_patterns=["consolidated.safetensors"],  # skip duplicate single-file
     )
-    tokenizer.save_pretrained(output_dir)
-
-    print(f"  [2/2] Downloading model weights (this will take a while)...")
-    model = AutoModelForCausalLM.from_pretrained(
-        model_id, token=token, trust_remote_code=True
-    )
-    model.save_pretrained(output_dir)
 
 
 def download_embedding_model(model_id, output_dir, token):
@@ -155,7 +145,7 @@ def main():
     print()
 
     if not token:
-        print("WARNING: HF_TOKEN not set. Gated models (Llama, Mistral)")
+        print("WARNING: HF_TOKEN not set. Gated models (Llama)")
         print("will be skipped. Set it with: export HF_TOKEN='hf_...'")
         print()
 

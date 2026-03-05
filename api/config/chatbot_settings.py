@@ -7,7 +7,6 @@ After that, the application runs fully offline.
 Chat models:
   - Gemma-3-1B-IT            (~3.8GB)
   - Meta-Llama-3.1-8B-Instruct (~16GB)
-  - Mistral-7B-Instruct-v0.3   (~14GB)
 
 Embedding models:
   - gte-large-en-v1.5   (8192 ctx)
@@ -41,14 +40,6 @@ AVAILABLE_MODELS = {
         "size": "~16 GB",
         "context_length": 32000,
         "description": "High quality. 32K context window.",
-    },
-    "mistral-7b": {
-        "hf_id": "mistralai/Mistral-7B-Instruct-v0.3",
-        "local_dir": os.path.join(MODELS_BASE_DIR, "Mistral-7B-Instruct-v0.3"),
-        "display_name": "Mistral 7B Instruct v0.3",
-        "size": "~14 GB",
-        "context_length": 32000,
-        "description": "Strong reasoning. 32K context window.",
     },
 }
 

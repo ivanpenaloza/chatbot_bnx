@@ -51,7 +51,6 @@ chatbot_bnx/
 ### Chat Models (one loaded at a time)
 - **Gemma 3 1B** — google/gemma-3-1b-it (~3.8 GB)
 - **Llama 3.1 8B Instruct** — meta-llama/Meta-Llama-3.1-8B-Instruct (~16 GB, 32K ctx)
-- **Mistral 7B Instruct v0.3** — mistralai/Mistral-7B-Instruct-v0.3 (~14 GB, 32K ctx)
 
 ### Embedding Models
 - **GTE Large EN v1.5** — Alibaba-NLP/gte-large-en-v1.5 (8192 ctx)

@@ -7,7 +7,6 @@ using locally-stored LLM models (fully offline, no internet needed).
 Supported models:
   - Gemma-3-1B-IT            (compact, ~3.8GB)
   - Meta-Llama-3.1-8B-Instruct (high quality, ~16GB)
-  - Mistral-7B-Instruct-v0.3   (strong reasoning, ~14GB)
 
 Only one model is loaded in memory at a time. Switching models
 unloads the current one first to conserve GPU/CPU resources.
@@ -440,18 +439,35 @@ class MultiModelManager:
 
             # Load tokenizer
             logger.info("Loading tokenizer...")
-            self.tokenizer = AutoTokenizer.from_pretrained(
-                model_path,
-                local_files_only=True,
-                trust_remote_code=True
-            )
+            try:
+                self.tokenizer = AutoTokenizer.from_pretrained(
+                    model_path,
+                    local_files_only=True,
+                    trust_remote_code=True
+                )
+            except ValueError as tok_err:
+                if "sentencepiece" in str(tok_err).lower():
+                    # Fallback: force fast tokenizer (uses tokenizer.json)
+                    logger.warning(
+                        "Slow tokenizer failed (sentencepiece issue), "
+                        "falling back to fast tokenizer..."
+                    )
+                    self.tokenizer = AutoTokenizer.from_pretrained(
+                        model_path,
+                        local_files_only=True,
+                        trust_remote_code=True,
+                        use_fast=True,
+                    )
+                else:
+                    raise
 
             # Load model
             logger.info("Loading model weights...")
-            dtype = (
-                torch.float16 if self.device == "cuda"
-                else torch.float32
-            )
+            if self.device == "cuda":
+                dtype = torch.float16
+            else:
+                dtype = torch.float32
+
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_path,
                 local_files_only=True,
