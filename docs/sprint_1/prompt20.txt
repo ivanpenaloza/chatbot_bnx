@@ -1,0 +1,14 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+Please can you help me with updating 
+
+1) /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/.github/copilot-instructions.md
+2) /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/README.md
+
+to take into account a detailed description of the schema and example of 
+
+/home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/db/satriani.db
+
+/home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/api/chroma_db/chroma.sqlite3
+
+

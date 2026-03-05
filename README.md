@@ -1,96 +1,189 @@
+# Satriani — AI Document Intelligence Platform
 
-# StargazerAPI
+An AI-powered internal productivity platform for document analysis and knowledge retrieval. Runs fully offline using locally-stored LLM and embedding models — no data leaves the infrastructure.
 
-The fourth project from **Citilabs** designed for:
+## Features
 
-1. ATMs' locations and insights
-2. Banamex' merchants, their locations and insights
-   
+- Landing page with user/admin login
+- Session-based authentication with admin/user roles
+- Admin console: user management, document upload (.docx/.pdf), embedding model selection, ingestion lifecycle
+- Unified chat interface: RAG-grounded answers with source citations, temporary context upload (max 5MB), free chat mode
+- RAG pipeline: ChromaDB (SQLite-backed), 500-char overlapping chunks, top-3 retrieval
+- OpenEvidence-style expandable source cards
 
-See also 
-- [FastAPI](https://fastapi.tiangolo.com/) for web development documentation
+## Tech Stack
 
+- Python 3.9.20, FastAPI + Uvicorn
+- ChromaDB (PersistentClient, SQLite backend)
+- sentence-transformers for embeddings
+- transformers + torch for LLM inference
+- python-docx + PyPDF2 for document extraction
 
-### About this project
+## Models
 
-- 📦 A basic [setup.py](setup.py) file to provide installation, packaging and distribution for your project.  
-  Template uses setuptools because it's the de-facto standard for Python packages, you can run `make switch-to-poetry` later if you want.
-- 🤖 A [pyproject.toml](pyproject.toml) file that provides details about dependencies and Stargazer's Ivan Dario Penaloza Rojas
+| Type | Model | Size | Context |
+|------|-------|------|---------|
+| Chat | google/gemma-3-1b-it | ~3.8 GB | — |
+| Chat | meta-llama/Meta-Llama-3.1-8B-Instruct | ~16 GB | 32K |
+| Embedding | Alibaba-NLP/gte-large-en-v1.5 | — | 8192 |
+| Embedding | Alibaba-NLP/gte-multilingual-base | — | 8192 |
 
-> Curious about architectural views and patterns? read [Stargazer](https://cedt-gct-confluence.nam.nsroot.net/confluence/display/MEXAA/Sherlock++V2.0)  
-> If you want to contribute to this project please open an [issue](https://cedt-gct-bitbucket.nam.nsroot.net/bitbucket/users/ip70574/repos/stargazerapi/pull-requests) or fork and send a PULL REQUEST.
+## Quick Start
 
-[❤️ Sponsor Citilabs](https://cedt-gct-confluence.nam.nsroot.net/confluence/display/MEXAA/Citilabs)
+```bash
+# Install dependencies
+python39 -m venv env
+source env/bin/activate
+pip install -r requirements.txt
+
+# Run
+cd api
+PORT=8000 python main.py
+```
+
+Default admin credentials: `admin` / `satriani2025`
 
 ---
-# Usage
 
-## INSTALL StargazerAPI AND RUN IT USING EXISTING PYTHON ENVIRONMENT
+## Database Schema
 
-```bash
-ssh bdqtr005x17h3.lac.nsroot.net
-kinit
-bash
-cd /data/1/gcgamdlmxpysp/ip70574
-source envs/env39/bin/activate
-cd /data/1/gcgamdlmxpysp/
-mkdir YOUR_PERSONAL_FOLDER_NAME
-cd YOUR_PERSONAL_FOLDER_NAME
-git clone https://cedt-gct-bitbucket.nam.nsroot.net/bitbucket/scm/~ip70574/stargazerapi.git
-cd stargazerapi
-git checkout develop
-cd api  
-PORT='5050' python main.py & 
-(press CTRL+D to disconnect console and not affect StargazerAPI)
+Satriani uses two SQLite databases: an application database for users, sessions, and document metadata, and a ChromaDB-managed database for vector embeddings.
+
+### 1. Application Database — `api/db/satriani.db`
+
+Managed by `api/db.py`. Uses WAL journal mode and foreign keys enabled.
+
+#### `users`
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `username` | TEXT | PRIMARY KEY | Unique login identifier |
+| `password_hash` | TEXT | NOT NULL | SHA-256 hash (password + session secret) |
+| `role` | TEXT | NOT NULL, DEFAULT `'user'` | `admin` or `user` |
+| `full_name` | TEXT | NOT NULL, DEFAULT `''` | Display name |
+| `created_at` | TEXT | NOT NULL, DEFAULT `datetime('now')` | ISO-8601 creation timestamp |
+
+#### `sessions`
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `token` | TEXT | PRIMARY KEY | 64-char hex session token |
+| `username` | TEXT | NOT NULL, FK → `users.username` ON DELETE CASCADE | Owning user |
+| `role` | TEXT | NOT NULL | Cached role at login time |
+| `full_name` | TEXT | NOT NULL, DEFAULT `''` | Cached display name |
+| `created_at` | TEXT | NOT NULL, DEFAULT `datetime('now')` | Session creation timestamp |
+
+#### `documents`
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `filename` | TEXT | PRIMARY KEY | Original filename |
+| `size_kb` | REAL | NOT NULL, DEFAULT `0` | File size in kilobytes |
+| `uploaded_at` | TEXT | NOT NULL, DEFAULT `datetime('now')` | Upload timestamp |
+| `uploaded_by` | TEXT | NOT NULL, DEFAULT `'system'` | Username of uploader |
+
+Example data:
+
+```
+filename                                   size_kb   uploaded_by
+ConsumerValuationModelsMDDT.docx           447.0     system
+GuidelineForAIandMLModels.docx             245.0     system
+GuidelineSponsorsCVandAMLModels.docx       5685.1    system
+hopkinsmedicine_CFS-low-histamine-diet.pdf 141.0     admin
 ```
 
-## INSTALL StargazerAPI AND RUN IT USING A NEW PYTHON ENVIRONMENT (IDEAL FOR DEPLOYMENT)
+### 2. ChromaDB Vector Store — `api/chroma_db/chroma.sqlite3`
 
-```bash
-ssh bdqtr005x17h3.lac.nsroot.net
-kinit
-bash
-cd /data/1/gcgamdlmxpysp/
-mkdir YOUR_PERSONAL_FOLDER_NAME
-cd YOUR_PERSONAL_FOLDER_NAME
-git clone https://cedt-gct-bitbucket.nam.nsroot.net/bitbucket/scm/~ip70574/stargazerapi.git
-cd stargazerapi
-git checkout develop
-python39 -m venv env39
-source env39/bin/activate
-pip install -r requirements.txt
-cd api  
-PORT='5050' python main.py & 
-(press CTRL+D to disconnect console and not affect StargazerAPI)
+Managed internally by ChromaDB's `PersistentClient`. The application interacts via the ChromaDB Python API — never by raw SQL. Schema documented here for reference and debugging.
+
+#### Core tables
+
+| Table | Purpose |
+|-------|---------|
+| `tenants` | Multi-tenant isolation (single `default_tenant`) |
+| `databases` | Logical databases (single `default_database`) |
+| `collections` | One collection per ingested document × embedding model |
+| `collection_metadata` | Key-value metadata per collection (`embedding_model`, `source_file`) |
+| `segments` | Storage segments: VECTOR (HNSW) + METADATA (SQLite) per collection |
+
+#### `collections`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | TEXT PK | UUID |
+| `name` | TEXT | Collection name (document name or `{doc}__{model}`) |
+| `dimension` | INTEGER | Embedding vector dimension |
+| `database_id` | TEXT | FK to `databases.id` |
+| `config_json_str` | TEXT | ChromaDB config JSON |
+
+Current collections:
+
+| Name | Dimension | Embedding Model |
+|------|-----------|-----------------|
+| `ConsumerValuationModelsMDDT` | 1024 | gte-large-en |
+| `GuidelineForAIandMLModels` | 768 | gte-multilingual |
+| `GuidelineSponsorsCVandAMLModels` | 768 | gte-multilingual |
+| `hopkinsmedicine_CFS-low-histamine-diet__gte-large-en` | 1024 | gte-large-en |
+| `hopkinsmedicine_CFS-low-histamine-diet__gte-multilingual` | 768 | gte-multilingual |
+
+#### Embedding tables
+
+| Table | Purpose |
+|-------|---------|
+| `embeddings` | Maps `embedding_id` → `segment_id` with sequence and timestamp |
+| `embedding_metadata` | Per-chunk metadata: `chunk_index`, `source`, `chroma:document` (chunk text) |
+| `embedding_fulltext_search` | FTS5 virtual table for full-text search over chunk text |
+| `embeddings_queue` | Write-ahead queue with raw FLOAT32 vectors |
+
+Embedding ID convention: `{CollectionName}_{chunkIndex}_{hash8}`
+
+Current stats: 887 total embeddings across 5 collections.
+
+#### Segment types
+
+Each collection has two segments:
+- `urn:chroma:segment/vector/hnsw-local-persisted` — HNSW index in `api/chroma_db/{segment_uuid}/` (binary files)
+- `urn:chroma:segment/metadata/sqlite` — Metadata in the same `chroma.sqlite3`
+
+#### Internal tables
+
+| Table | Purpose |
+|-------|---------|
+| `migrations` | Schema version tracking (18 migrations) |
+| `max_seq_id` | Per-segment sequence watermark |
+| `embeddings_queue_config` | Queue settings (`automatically_purge: true`) |
+| `maintenance_log` | Maintenance operations log |
+| `acquire_write` | Write lock coordination |
+
+---
+
+## Project Structure
+
+```
+chatbot_bnx/
+├── api/
+│   ├── main.py                    # FastAPI entry point, lifespan, router wiring
+│   ├── db.py                      # SQLite database layer (users, sessions, documents)
+│   ├── config/
+│   │   ├── default_settings.py    # Infrastructure config (ports, paths)
+│   │   ├── chatbot_settings.py    # Model registry, generation params, RAG config, auth
+│   │   └── jinja_functions.py     # Custom Jinja2 template functions
+│   ├── routers/
+│   │   ├── auth_routes.py         # Authentication (login, register, sessions)
+│   │   ├── admin_routes.py        # Admin panel (upload docs, embeddings, ingestion)
+│   │   ├── llm_routes.py          # LLM model management (load, switch, generate)
+│   │   └── rag_routes.py          # RAG pipeline (ingest, query, unified chat)
+│   ├── db/                        # satriani.db (SQLite application database)
+│   ├── chroma_db/                 # ChromaDB persistent storage
+│   ├── data/                      # Uploaded RAG documents (.docx, .pdf)
+│   ├── templates/                 # Jinja2 HTML templates
+│   └── static/                    # Static assets (images, legacy data)
+├── docs/                          # Context files, prompts, schema docs
+├── requirements.txt
+└── .github/
+    └── copilot-instructions.md
 ```
 
+---
 
-## RUN StargazerAPI
-
-> **YOU CAN CHOOSE WHATEVER PORT YOU WANT** Choose a port between 5000 and 9999.
-
-```bash
-cd /data/1/gcgamdlmxpysp/YOUR_PERSONAL_FOLDER_NAME/stargazer/api
-PORT='5050' python main.py & 
-(press CTRL+D to disconnect console and not affect StargazerAPI)
-```
-
-## HOW TO OPEN StargazerAPI
-
-Just do CTRL + CLICK on the link in your console
-
-```bash
-http://bdqtr005x17h3.lac.nsroot.net:PORT
-```
-
-## HOW TO QUIT StargazerAPI
-
-There are different ways to quit StargazerAPI:
-
-**Alternative 1:** DO USE CTRL + C from console in the directory where the api is located. This will cause the uvicorn web server to stop StargazerAPI.
-
-**Alternative 2:** If the previous step does not work. Use the following commands: 
- ```bash
-kill -9 $(lsof -t -i :PORT)
-```
-Where PORT must be your port number.
+See also: [FastAPI docs](https://fastapi.tiangolo.com/)
