@@ -69,10 +69,10 @@ class LocalHFEmbeddingFunction:
     def __init__(self, model_path: str, model_key: str):
         from sentence_transformers import SentenceTransformer
         import numpy as np
-        self._model = SentenceTransformer(model_path, trust_remote_code=True)
+        self._model = SentenceTransformer(model_path, trust_remote_code=True, device="cpu")
         self._name = "local-hf-" + model_key
         self._np = np
-        logger.info("Embedding model loaded from: %s", model_path)
+        logger.info("Embedding model loaded on CPU from: %s", model_path)
 
     def name(self) -> str:
         return self._name
@@ -521,8 +521,29 @@ async def upload_context_document(file: UploadFile = File(...)):
 
 @router.post("/rag/ask")
 async def rag_ask(chat: RagChatMessage):
-    """Unified chat: RAG context + uploaded context documents + chat history.
-    Always returns top-3 RAG sources and uploaded document references."""
+    """Unified chat with intelligent flow routing.
+
+    Flow graph:
+      ┌─────────────┐
+      │  User Query  │
+      └──────┬───────┘
+             │
+      ┌──────▼───────┐
+      │ Classify      │──→ has_rag? has_upload? neither?
+      └──────┬───────┘
+             │
+      ┌──────▼───────────────────────────────────────┐
+      │  BRANCH A: RAG + Upload (merge & rank)       │
+      │  BRANCH B: RAG only                          │
+      │  BRANCH C: Upload only                       │
+      │  BRANCH D: No docs → identity prompt         │
+      └──────┬───────────────────────────────────────┘
+             │
+      ┌──────▼───────┐
+      │ Build prompt  │
+      │ + LLM call    │
+      └──────────────┘
+    """
     if not chat.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
@@ -531,7 +552,8 @@ async def rag_ask(chat: RagChatMessage):
     rag_context = ""
     uploaded_context = ""
 
-    # 1) RAG document retrieval (top 3)
+    # ── Step 1: RAG retrieval ────────────────────────────────────────────
+    has_rag = False
     if chat.use_rag and chat.collections:
         chunks = query_collections(
             question=chat.message,
@@ -539,6 +561,7 @@ async def rag_ask(chat: RagChatMessage):
             n_results=3,
         )
         if chunks:
+            has_rag = True
             context_parts = []
             for i, chunk in enumerate(chunks, 1):
                 cleaned = _clean_extracted_text(chunk['document'])
@@ -558,17 +581,16 @@ async def rag_ask(chat: RagChatMessage):
                 })
             rag_context = "\n\n".join(context_parts)
 
-    # 2) Uploaded context documents — extract most relevant portion
+    # ── Step 2: Uploaded document processing (top 3 documents max) ──────
+    has_upload = False
     if chat.uploaded_context:
         ctx_parts = []
-        for i, doc in enumerate(chat.uploaded_context, 1):
+        for i, doc in enumerate(chat.uploaded_context[:3], 1):
             fname = doc.get("filename", f"uploaded_{i}")
             text = doc.get("text", "")
             if text.strip():
                 cleaned = _clean_extracted_text(text)
-                # Chunk the uploaded text and pick the most relevant chunks
                 doc_chunks = chunk_text(cleaned, chunk_size=600, overlap=50)
-                # Limit to first 5000 chars to avoid overwhelming the model
                 selected_text = ""
                 for dc in doc_chunks:
                     if len(selected_text) + len(dc) > 5000:
@@ -576,6 +598,7 @@ async def rag_ask(chat: RagChatMessage):
                     selected_text += dc + "\n\n"
                 selected_text = selected_text.strip()
                 if selected_text:
+                    has_upload = True
                     ctx_parts.append(
                         f"[Uploaded: {fname}]\n{selected_text}"
                     )
@@ -592,45 +615,54 @@ async def rag_ask(chat: RagChatMessage):
         if ctx_parts:
             uploaded_context = "\n\n".join(ctx_parts)
 
-    # 3) Build context for the model — NO system prompt here,
-    #    generate_response already injects CHATBOT_SYSTEM_PROMPT via _build_prompt_text.
-    #    We only pass the document context as data_context.
-    context_parts = []
-    context_parts.append(
-        "INSTRUCTIONS FOR THIS RESPONSE:\n"
-        "- Answer the user's question using ONLY the document fragments below.\n"
-        "- If the documents do not contain enough information, say so clearly.\n"
-        "- Do NOT repeat the question. Do NOT list follow-up questions.\n"
-        "- Be concise, structured, and cite sources using [Source: filename].\n"
-        "- Respond in English.\n"
-    )
-    if rag_context:
-        context_parts.append("KNOWLEDGE BASE DOCUMENTS:\n" + rag_context)
-    if uploaded_context:
-        context_parts.append("UPLOADED DOCUMENTS:\n" + uploaded_context)
-    if not rag_context and not uploaded_context:
-        context_parts.append(
-            "No documents were provided. Answer from your general knowledge."
+    # ── Step 3: Route to the correct branch ──────────────────────────────
+    from config import SATRIANI_IDENTITY_PROMPT, SATRIANI_DOCUMENT_PROMPT
+
+    if has_rag and has_upload:
+        # BRANCH A: Both RAG and uploaded docs — merge and rank
+        system_prompt = SATRIANI_DOCUMENT_PROMPT
+        data_context = (
+            "You have access to TWO types of document sources. "
+            "Cross-reference them to give the most complete answer.\n\n"
+            "KNOWLEDGE BASE DOCUMENTS (from RAG):\n" + rag_context + "\n\n"
+            "UPLOADED DOCUMENTS (user-provided):\n" + uploaded_context
         )
+    elif has_rag:
+        # BRANCH B: RAG only
+        system_prompt = SATRIANI_DOCUMENT_PROMPT
+        data_context = (
+            "KNOWLEDGE BASE DOCUMENTS:\n" + rag_context
+        )
+    elif has_upload:
+        # BRANCH C: Uploaded docs only
+        system_prompt = SATRIANI_DOCUMENT_PROMPT
+        data_context = (
+            "UPLOADED DOCUMENTS:\n" + uploaded_context
+        )
+    else:
+        # BRANCH D: No documents — use identity prompt, general assistant
+        system_prompt = SATRIANI_IDENTITY_PROMPT
+        data_context = ""
 
-    data_context = "\n\n".join(context_parts)
-
-    # 4) Build chat history context for multi-turn conversation
+    # ── Step 4: Append conversation history ──────────────────────────────
     if chat.chat_history and len(chat.chat_history) > 0:
         history_parts = []
-        for msg in chat.chat_history[-6:]:  # Last 6 messages max
+        for msg in chat.chat_history[-6:]:
             role = msg.get("role", "user")
             content = msg.get("content", "")
             if content:
                 label = "User" if role == "user" else "Assistant"
                 history_parts.append(f"{label}: {content[:1000]}")
         if history_parts:
-            data_context += "\n\nCONVERSATION HISTORY:\n" + "\n".join(history_parts)
+            history_block = "\n\nCONVERSATION HISTORY:\n" + "\n".join(history_parts)
+            data_context = (data_context + history_block) if data_context else history_block
 
+    # ── Step 5: Generate response ────────────────────────────────────────
     from .llm_routes import model_manager
     answer, inference_time = model_manager.generate_response(
         user_message=chat.message,
         data_context=data_context,
+        system_prompt_override=system_prompt,
     )
 
     return JSONResponse(content={

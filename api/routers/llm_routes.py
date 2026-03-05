@@ -514,18 +514,20 @@ class MultiModelManager:
         Build the final prompt string using the model's chat template
         when available, with proper system/user role separation.
         Falls back to a manual template for models without one.
+
+        When data_context is empty (no documents), the system prompt
+        alone defines the assistant's behavior (identity mode).
         """
-        # Separate system and user roles so each model can format
-        # them according to its own chat template conventions.
-        system_content = (
-            f"{system_prompt}\n\n"
-            f"DATA CONTEXT:\n{data_context}"
-        )
-        user_content = (
-            f"{user_message}\n\n"
-            f"Provide a detailed and accurate answer in English "
-            f"based on the data provided."
-        )
+        # Build system content — only include DATA CONTEXT block if non-empty
+        if data_context.strip():
+            system_content = (
+                f"{system_prompt}\n\n"
+                f"DATA CONTEXT:\n{data_context}"
+            )
+        else:
+            system_content = system_prompt
+
+        user_content = user_message
 
         # Try system+user roles first (Qwen, Gemma support this)
         conversation_with_system = [
@@ -571,11 +573,15 @@ class MultiModelManager:
         self,
         user_message: str,
         data_context: str,
-        dynamic_context: str = ""
+        dynamic_context: str = "",
+        system_prompt_override: str = "",
     ) -> tuple:
         """
         Generate a response using the currently loaded model.
         Returns (response_text, inference_time_seconds).
+
+        system_prompt_override: if provided, replaces the default
+        CHATBOT_SYSTEM_PROMPT (used by RAG flow routing).
         """
         if not self.is_ready:
             return (
@@ -591,9 +597,12 @@ class MultiModelManager:
         if dynamic_context:
             context += "\n\n" + dynamic_context
 
+        # Use override prompt if provided, otherwise default
+        active_prompt = system_prompt_override if system_prompt_override else CHATBOT_SYSTEM_PROMPT
+
         try:
             input_text = self._build_prompt_text(
-                system_prompt=CHATBOT_SYSTEM_PROMPT,
+                system_prompt=active_prompt,
                 user_message=user_message,
                 data_context=context,
             )

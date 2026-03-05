@@ -149,6 +149,9 @@
                     </span>
                 </button>
                 <div class="accordion-body">
+                    <div style="display:flex;justify-content:flex-end;padding:4px 8px 2px">
+                        <button id="toggleAllDocs" onclick="toggleAllDocSelection()" style="font-size:.62rem;color:var(--muted);background:none;border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:2px 8px;cursor:pointer;transition:all .15s">Deselect All</button>
+                    </div>
                     <div class="accordion-scroll" id="docList"></div>
                 </div>
             </div>
@@ -606,12 +609,30 @@
                     card.onclick=function(){card.classList.toggle('selected');rebuildSelected();};
                     docList.appendChild(card);
                 });
+                // Auto-select all ingested documents so RAG is active by default
+                document.querySelectorAll('.doc-card').forEach(function(c){c.classList.add('selected');});
+                rebuildSelected();
             }catch(e){docList.innerHTML='<div style="font-size:.72rem;color:var(--muted);padding:4px">Error loading documents</div>';}
         }
         function rebuildSelected(){
             selectedCollections=[];
             document.querySelectorAll('.doc-card.selected').forEach(function(c){selectedCollections.push(c.dataset.collection);});
+            // Update toggle button label
+            var toggleBtn=document.getElementById('toggleAllDocs');
+            if(toggleBtn){
+                var total=document.querySelectorAll('.doc-card').length;
+                toggleBtn.textContent=selectedCollections.length===total?'Deselect All':'Select All';
+            }
         }
+        window.toggleAllDocSelection=function(){
+            var cards=document.querySelectorAll('.doc-card');
+            var allSelected=document.querySelectorAll('.doc-card.selected').length===cards.length;
+            cards.forEach(function(c){
+                if(allSelected)c.classList.remove('selected');
+                else c.classList.add('selected');
+            });
+            rebuildSelected();
+        };
 
         // ── Send message ──
         window.sendMessage=async function(){
