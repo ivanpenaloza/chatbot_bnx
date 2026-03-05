@@ -40,16 +40,7 @@ def init_db(db_path: str, session_secret: str, admin_user: str, admin_pass: str)
 
     conn = _get_conn()
 
-    # Drop all existing tables to wipe data (fresh start with new schema)
-    conn.executescript("""
-        DROP TABLE IF EXISTS messages;
-        DROP TABLE IF EXISTS chats;
-        DROP TABLE IF EXISTS sessions;
-        DROP TABLE IF EXISTS users;
-        DROP TABLE IF EXISTS documents;
-    """)
-    conn.commit()
-
+    # Create tables only if they don't already exist (preserves data across restarts)
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS users (
             username    TEXT PRIMARY KEY,

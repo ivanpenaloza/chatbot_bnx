@@ -838,10 +838,6 @@
         }
 
         function exportPdf(mdText,filename){
-            // Use the rendered HTML from the message body for a high-fidelity PDF
-            // Find the msg-body element from the row that triggered the export
-            var row=document.querySelector('.msg-row[data-raw-content]');
-            // We'll rebuild from markdown for a clean standalone document
             var plain=mdText.replace(/\\n/g,'\n');
             var htmlContent=formatMdForDocx(plain);
 
@@ -876,17 +872,14 @@
             iframeDoc.write(printHtml);
             iframeDoc.close();
 
-            // Wait for content to render, then trigger print dialog (Save as PDF)
             setTimeout(function(){
                 iframe.contentWindow.focus();
                 iframe.contentWindow.print();
-                // Clean up after print dialog closes
                 setTimeout(function(){document.body.removeChild(iframe);},1000);
             },300);
         }
 
         function exportDocx(mdText,filename){
-            // Build a clean HTML version and use Blob with Word-compatible HTML
             var plain=mdText.replace(/\\n/g,'\n');
             var htmlContent=formatMdForDocx(plain);
             var docHtml='<html xmlns:o="urn:schemas-microsoft-com:office:office" '
