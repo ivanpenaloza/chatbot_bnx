@@ -1,4 +1,5 @@
 update the functionality at /api/v1/rag/chat
 
 so the user can only create a  new chat when the current chat has at at least some answers from the LLMs. This avoid creating many 
-new empty chats
+new empty chats. But please is not necessary to keep showing over and over again messages on the 
+screen like 'Send at least one message before starting a new chat'

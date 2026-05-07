@@ -401,10 +401,7 @@
         }
 
         window.createNewChat=async function(){
-            if(activeChatId!==null&&!activeChatHasBotMsg){
-                addSystem('Send at least one message before starting a new chat.');
-                return;
-            }
+            if(activeChatId!==null&&!activeChatHasBotMsg) return;
             if(chats.length>=MAX_CHATS){
                 addSystem('Maximum '+MAX_CHATS+' chats reached. Delete one to create a new chat.');
                 return;

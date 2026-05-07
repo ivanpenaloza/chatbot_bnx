@@ -1,0 +1,5 @@
+update the functionality at /api/v1/rag/chat
+
+so that 
+
+1) 
