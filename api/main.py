@@ -149,6 +149,4 @@ if __name__ == '__main__':
                      log_level="info", reload=True)
     else:
         uvicorn.run("main:app", host=FQDN, port=PORT,
-                     log_level="info", reload=True,
-                     ssl_keyfile=os.path.expanduser(SSL_AUTO_KEYFILE),
-                     ssl_certfile=os.path.expanduser(SSL_AUTO_CERTIFICATE))
+                     log_level="info", reload=True)
