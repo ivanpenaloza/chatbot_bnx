@@ -1,0 +1,4 @@
+update the functionality at /api/v1/rag/chat
+
+so the user can only create a  new chat when the current chat has at at least some answers from the LLMs. This avoid creating many 
+new empty chats

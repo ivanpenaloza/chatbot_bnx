@@ -373,6 +373,7 @@
         var MAX_CHATS=50;
         var chats=[];
         var activeChatId=null;
+        var activeChatHasBotMsg=false;
 
         function renderChatHistory(){
             var list=document.getElementById('chatHistoryList');
@@ -400,6 +401,10 @@
         }
 
         window.createNewChat=async function(){
+            if(activeChatId!==null&&!activeChatHasBotMsg){
+                addSystem('Send at least one message before starting a new chat.');
+                return;
+            }
             if(chats.length>=MAX_CHATS){
                 addSystem('Maximum '+MAX_CHATS+' chats reached. Delete one to create a new chat.');
                 return;
@@ -411,6 +416,7 @@
                 var chat=data.chat;
                 chats.unshift(chat);
                 activeChatId=chat.id;
+                activeChatHasBotMsg=false;
                 clearChatUI();
                 renderChatHistory();
             }catch(e){addSystem('Error creating chat');}
@@ -422,7 +428,7 @@
                 chats=chats.filter(function(c){return c.id!==id;});
                 if(activeChatId===id){
                     if(chats.length>0){loadChat(chats[0].id);}
-                    else{activeChatId=null;clearChatUI();renderChatHistory();}
+                    else{activeChatId=null;activeChatHasBotMsg=false;clearChatUI();renderChatHistory();}
                 }else{renderChatHistory();}
             }catch(e){addSystem('Error deleting chat');}
         };
@@ -445,6 +451,7 @@
                         else if(m.role==='bot') addMsgToDOM(m.content,'bot',m.rag_sources||[],m.uploaded_sources||[],m.inference_time);
                     });
                 }
+                activeChatHasBotMsg=msgs.some(function(m){return m.role==='bot';});
             }catch(e){console.error('Error loading chat',e);}
             renderChatHistory();
         }
@@ -754,6 +761,7 @@
         }
 
         function addMsgToDOM(content,role,ragSources,uploadedSources,time){
+            if(role==='bot') activeChatHasBotMsg=true;
             hideWelcome();
             var row=document.createElement('div');
             row.className='msg-row '+role;
