@@ -391,7 +391,6 @@ def query_collections(
     n_results: int = 3,
 ) -> List[Dict[str, Any]]:
     client = get_chroma_client()
-    ef = get_embedding_fn()
 
     all_collections = client.list_collections()
     if collection_names:
@@ -405,6 +404,15 @@ def query_collections(
     results = []
     for cname in target_names:
         try:
+            # Peek at collection metadata first (without an embedding function)
+            # to determine which embedding model was used at ingest time.
+            col_peek = client.get_collection(name=cname)
+            col_meta = col_peek.metadata or {}
+            emb_model_key = col_meta.get("embedding_model", DEFAULT_EMBEDDING_KEY)
+            emb_model = emb_model_key  # label for the source card
+
+            # Use the matching embedding function so dimensions always align.
+            ef = get_embedding_fn(emb_model_key)
             collection = client.get_collection(name=cname, embedding_function=ef)
             if collection.count() == 0:
                 continue
@@ -416,8 +424,6 @@ def query_collections(
             docs = query_result.get("documents", [[]])[0]
             metas = query_result.get("metadatas", [[]])[0]
             dists = query_result.get("distances", [[]])[0]
-            col_meta = collection.metadata or {}
-            emb_model = col_meta.get("embedding_model", "unknown")
             for doc, meta, dist in zip(docs, metas, dists):
                 results.append({
                     "collection": cname,
@@ -430,8 +436,11 @@ def query_collections(
         except Exception as e:
             logger.warning("Error querying collection '%s': %s", cname, e)
 
+    # Sort all chunks across all collections by relevance (lowest distance first).
+    # Do NOT cap here — each collection already contributes at most n_results chunks,
+    # so every selected document is represented in the answer.
     results.sort(key=lambda x: x["distance"])
-    return results[:n_results]
+    return results
 
 
 # ─── Routes ───────────────────────────────────────────────────────────────────
