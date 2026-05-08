@@ -70,7 +70,14 @@ class LocalHFEmbeddingFunction:
         from sentence_transformers import SentenceTransformer
         import torch
         import numpy as np
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        # Use GPU only when >= 2 GiB of VRAM is free; otherwise fall back to
+        # CPU. The LLM can load after the embedding model and shrink free VRAM
+        # dramatically, so we also catch OOM at encode time (see __call__).
+        device = "cpu"
+        if torch.cuda.is_available():
+            free_bytes, _ = torch.cuda.mem_get_info()
+            if free_bytes >= 2 * 1024 ** 3:
+                device = "cuda"
         self._model = SentenceTransformer(model_path, trust_remote_code=True, device=device)
         self._name = "local-hf-" + model_key
         self._np = np
@@ -81,7 +88,17 @@ class LocalHFEmbeddingFunction:
         return self._name
 
     def __call__(self, input: List[str]) -> List:
-        embeddings = self._model.encode(input, show_progress_bar=False)
+        try:
+            embeddings = self._model.encode(input, show_progress_bar=False)
+        except RuntimeError as exc:
+            if "out of memory" in str(exc).lower() and self._model.device.type == "cuda":
+                import torch
+                torch.cuda.empty_cache()
+                logger.warning("CUDA OOM during embedding encode — moving model to CPU and retrying")
+                self._model = self._model.to("cpu")
+                embeddings = self._model.encode(input, show_progress_bar=False)
+            else:
+                raise
         return [self._np.array(e, dtype=self._np.float32) for e in embeddings]
 
     def embed_query(self, input: List[str]) -> List:
