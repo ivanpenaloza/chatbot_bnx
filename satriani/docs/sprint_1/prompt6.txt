@@ -1,0 +1,5 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+1) In the logo of the landing page. Change that logo for a state of the art logo similar to perplexity or openai logo, but obviously different. 
+Do not confusde the logo of Satriani, with the logo of Banamex. You just have to only focus on the logo of Satriani
+

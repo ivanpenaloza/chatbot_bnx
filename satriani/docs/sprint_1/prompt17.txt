@@ -1,0 +1,10 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+In the URL /api/v1/admin/panel almost everything is correct, but we need to fix some things:
+
+1) I prefer the state of the art upload document work in this way:
+1.1) There should be a button next to  select all in order to indicate 'upload new documents' 
+1.2) Once you click that button will appear the state of the art drag and drop files to be uploaded. 
+That functionality should be a little bit tranperant to show the ilusion that the user has not left the url
+/api/v1/admin/panel
+

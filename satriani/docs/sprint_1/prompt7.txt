@@ -1,0 +1,4 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+1) I love the logo of Satriani in the landing page. Please use the same logo for Satriani on the url  /api/v1/rag/chat
+

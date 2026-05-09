@@ -1,0 +1,12 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+Please can you help me with upda the whole logic of the state of the art ChatGPT:
+
+
+1) I need to refactor de satriani.db since we need that each user has a on to many relationship with chats. A user can have several chats 
+2) There is a one to many relationship between Chat and Messages, where a Chat can have several messages. 
+
+
+
+
+since each use needs to have their own history. For that reason you will have to erase all the data of each user created includign the admin

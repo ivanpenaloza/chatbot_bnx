@@ -1,0 +1,5 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+1) I really love the Banamex logo in the landing page. Please Can you add next to that logo in the landing page the word 'AI Labs' please
+keep the font size, font color and font style of the Banamex logo. 
+

@@ -1,0 +1,5 @@
+You are doing an excellent job doing an app similar to the state of the art OpenAI style. Now, we will need to improve the app even more
+
+1) Add the awesome logo of Banamex that is found in the landing page, now to the left of Administrator and Sign Out in the page associated with the 
+url /api/v1/admin/panel
+

@@ -1,0 +1,9 @@
+We need to update the 
+
+the functionality at /api/v1/rag/chat, so
+
+1) when I choose several rag documents and I ask several questions, I should be able to get 
+an answer citing the several sources by rank of relevance (as you have done so far, but now with
+several references)  since right now the application only cites only one type of references
+instead of following the intuitive path of using all the references selected in the RAG
+
