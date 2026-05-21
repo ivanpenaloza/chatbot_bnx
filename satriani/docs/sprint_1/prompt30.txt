@@ -1,0 +1,9 @@
+Given the fact that we are working in python 3.9.20 and given the fact that we need to generate either pdf or docx documents we need 
+
+1) The logo /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/satriani/api/images/banamex.png must be placed on the top left corner of each page in either the pdf or docx output
+2) Create another modular flow to read excel files and create state of the art reports from those excel files
+
+For that purpose use the following example at /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/satriani/docs/test_exel_docs
+
+1) You have an input in excel. 
+2) You have to do a summary of that meeting with the key points without losing details. Compare your output with th pdf to see if your answer is accurate.
