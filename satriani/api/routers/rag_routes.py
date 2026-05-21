@@ -156,57 +156,18 @@ def get_chroma_client():
     return _chroma_client
 
 
-# ─── Text Extraction ─────────────────────────────────────────────────────────
+# ─── Text Extraction (delegated to services.extractors) ─────────────────────
 
+from services.extractors import extract_text, SUPPORTED_EXTENSIONS  # noqa: E402
+
+# Keep these thin wrappers so any existing callers inside this file still work.
 def extract_text_from_docx(filepath: str) -> str:
-    from docx import Document
-    doc = Document(filepath)
-    paragraphs = []
-    for para in doc.paragraphs:
-        text = para.text.strip()
-        if text:
-            paragraphs.append(text)
-    for table in doc.tables:
-        for row in table.rows:
-            row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
-            if row_text:
-                paragraphs.append(row_text)
-    return "\n".join(paragraphs)
-
-
-
-
-
+    from services.extractors.docx_extractor import DocxExtractor
+    return DocxExtractor().extract(filepath)
 
 def extract_text_from_pdf(filepath: str) -> str:
-    """Extract text from PDF using pymupdf (fitz).
-
-    pymupdf uses the MuPDF engine which preserves word boundaries
-    from the PDF layout, producing clean readable text.
-    """
-    import fitz
-    text_parts = []
-    with fitz.open(filepath) as doc:
-        for page in doc:
-            t = page.get_text("text")
-            if t:
-                text_parts.append(t.strip())
-    raw = "\n".join(text_parts)
-    return _fix_pdf_spacing(raw)
-
-
-
-
-
-
-def extract_text(filepath: str) -> str:
-    ext = os.path.splitext(filepath)[1].lower()
-    if ext == ".docx":
-        return extract_text_from_docx(filepath)
-    elif ext == ".pdf":
-        return extract_text_from_pdf(filepath)
-    else:
-        raise ValueError(f"Unsupported file type: {ext}")
+    from services.extractors.pdf_extractor import PdfExtractor
+    return PdfExtractor().extract(filepath)
 
 
 # ─── Chunking ────────────────────────────────────────────────────────────────
@@ -545,12 +506,19 @@ async def rag_list_documents():
 
 @router.post("/rag/upload-context")
 async def upload_context_document(file: UploadFile = File(...)):
-    """User uploads a doc/pdf for temporary chat context (max 5MB).
-    Extracts text and returns it — does NOT persist to ChromaDB."""
+    """User uploads a document for temporary chat context (max 5MB).
+
+    Supported formats are determined by the extractor registry:
+    docx, pdf, xlsx, xls, csv.
+    Extracts text and returns it — does NOT persist to ChromaDB.
+    """
     fname = file.filename or "unknown"
     ext = os.path.splitext(fname)[1].lower()
-    if ext not in (".docx", ".pdf"):
-        raise HTTPException(status_code=400, detail="Only .docx and .pdf files are allowed")
+    if ext not in SUPPORTED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '{ext}'. Allowed: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"
+        )
 
     content = await file.read()
     size_mb = len(content) / (1024 * 1024)

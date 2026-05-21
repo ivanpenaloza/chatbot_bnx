@@ -174,9 +174,9 @@
         <div class="dnd-box" id="dndBox">
             <div class="dnd-box-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
             <div class="dnd-box-title">Upload Documents</div>
-            <div class="dnd-box-desc">Drag and drop .docx or .pdf files here, or click to browse.<br>Max 5 MB per file. These will be used as additional context.</div>
+            <div class="dnd-box-desc">Drag and drop .docx, .pdf, .xlsx, .xls, or .csv files here, or click to browse.<br>Max 5 MB per file. These will be used as additional context.</div>
             <button class="dnd-browse-btn" onclick="document.getElementById('dndFileInput').click()">Browse Files</button>
-            <input type="file" id="dndFileInput" accept=".docx,.pdf" multiple style="display:none" onchange="handleDndFiles(this.files)">
+            <input type="file" id="dndFileInput" accept=".docx,.pdf,.xlsx,.xls,.csv" multiple style="display:none" onchange="handleDndFiles(this.files)">
         </div>
     </div>
 
@@ -893,11 +893,28 @@
 
             if(format==='md'){
                 downloadFile(filename+'.md',rawContent,'text/markdown');
-            }else if(format==='pdf'){
-                exportPdf(rawContent,filename);
-            }else if(format==='docx'){
-                exportDocx(rawContent,filename);
+            }else if(format==='pdf'||format==='docx'){
+                exportServerSide(rawContent,filename,format);
             }
+        };
+
+        async function exportServerSide(mdText,filename,format){
+            try{
+                var res=await fetch('/api/v1/export/generate',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+                    body:JSON.stringify({content:mdText,format:format,title:filename})
+                });
+                if(!res.ok){var e=await res.json().catch(function(){return{detail:'unknown error'};});addSystem('Export error: '+(e.detail||res.statusText));return;}
+                var blob=await res.blob();
+                var ext=format==='pdf'?'.pdf':'.docx';
+                var url=URL.createObjectURL(blob);
+                var a=document.createElement('a');
+                a.href=url;a.download=filename+ext;
+                document.body.appendChild(a);a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }catch(ex){addSystem('Export error: '+ex.message);}
         };
 
         function downloadFile(name,content,mime){

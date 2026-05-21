@@ -20,6 +20,7 @@ from routers import rag_routes
 from routers import auth_routes
 from routers import admin_routes
 from routers import chat_routes
+from routers import export_routes
 
 # Set JAVA_HOME and HADOOP_HOME
 os.environ['JAVA_HOME'] = JAVA_HOME
@@ -115,6 +116,7 @@ app.include_router(admin_routes.router)
 app.include_router(chat_routes.router)
 app.include_router(llm_routes.router)
 app.include_router(rag_routes.router)
+app.include_router(export_routes.router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory='templates')
