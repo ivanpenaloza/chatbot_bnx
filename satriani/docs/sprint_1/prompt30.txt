@@ -1,10 +1,14 @@
 Given the fact that we are working in python 3.9.20 and given the fact that we need to generate either pdf or docx documents we need 
 
 1) The logo /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/satriani/api/images/banamex.png must be placed on the top left corner of each page in either the pdf or docx output
-so when you click on the 'more actions' three dots you can download the pdf or docx following the convention just described
-2) Create another modular flow to read excel files (so in the url /api/vi/rag/chat you can upload excel files) and create state of the art reports from those excel files
+so when you click on the 'more actions' three dots you can download the pdf or docx following the convention just described. The generation of the docx and pdf must be modular 
+since in the future we will gonna support more types of documents to be downloaded
+2) Create another modular flow to read excel files (so the already existing upload button in the url /api/vi/rag/chat can also work to upload excel files).
+Thtat part must also be modular since in the future we want to be able to upload many types of files.
+ Since our work is to generate summary, reports, etc. For each type of document uploaded there must be a state of the art and very robust way to generate good reports since 
+ we have to use pretty small llms like gema 3 1b or a llama 3.1 of 11b
 
-For that purpose use the following example at /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/satriani/docs/test_exel_docs
+For testings purposes and evaluate how good you are understanding this requirement use the following example at /home/ivan/ProjectPrometheus/StartupProjects/chatbot_bnx/satriani/docs/test_exel_docs:
 
 1) You have an input in excel. 
 2) You have to do a summary of that meeting with the key points without losing details. Compare your output with th pdf to see if your answer is accurate.
