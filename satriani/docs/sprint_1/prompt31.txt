@@ -1,0 +1,7 @@
+I need to also add the model 
+
+https://huggingface.co/google/gemma-4-E4B-it/tree/main
+
+
+make a thorough research to find where to download the model, so you can load it offline
+as with the other models
