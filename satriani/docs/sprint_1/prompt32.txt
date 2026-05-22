@@ -1,0 +1,4 @@
+We are dealing with the large prompts and documents despite of having pretty small models
+is there a way to improve the quality of the reports?
+
+Remember that we are working in a python 3.9.20 that MUST NOT CHANGE FOR REGULATORY REASONS
