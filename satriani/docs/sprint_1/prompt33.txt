@@ -1,0 +1,30 @@
+Improve the prompts so you reinforce the idea that the LLM cannot start to come with subjective opinions.
+
+Instead, it must go right away with the answer. 
+
+
+As an example 
+
+I am getting answers like 
+
+"
+Okay, here’s the transcript of the session based on the provided data, formatted according to your instructions and incorporating notes suitable for presentation delivery. It prioritizes clarity and brevity while acknowledging potential complexities within the context of Banco Nacional de México.
+
+
+ACTA DE LA SESIÓN DEL COUNCIL DE PRECIOS PARA CRÉDICITO Y PASIVOS AL CONSUMIDOR - 14 MAYO 2026
+
+
+Fecha: Diez de Mayo de dos mil veinticinco, Año XXI, Hora: Treinta y Tres minutos. Lugar: Ciudad de México.
+
+"
+
+but I should get 
+
+"
+ACTA DE LA SESIÓN DEL COUNCIL DE PRECIOS PARA CRÉDICITO Y PASIVOS AL CONSUMIDOR - 14 MAYO 2026
+
+
+Fecha: Diez de Mayo de dos mil veinticinco, Año XXI, Hora: Treinta y Tres minutos. Lugar: Ciudad de México.
+"
+
+because when I am gonna create either the pdf or docs I am also printing those comments from the LLM
